@@ -1,0 +1,38 @@
+// @ts-nocheck
+
+import { ConfigContext, ExpoConfig } from 'expo/config';
+
+type ExpoExtras = {
+    supabaseUrl: string;
+    supabaseAnonKey: string;
+    supabaseRedirectScheme: string;
+    supabaseRedirectHost: string;
+};
+
+const getExtra = (): ExpoExtras => ({
+    supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL ?? '',
+    supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '',
+    supabaseRedirectScheme: process.env.EXPO_PUBLIC_SUPABASE_REDIRECT_SCHEME ?? 'gymapp',
+    supabaseRedirectHost: process.env.EXPO_PUBLIC_SUPABASE_REDIRECT_HOST ?? 'auth',
+});
+
+export default ({ config }: ConfigContext): ExpoConfig => ({
+    ...config,
+    name: 'GymApp',
+    slug: 'gymapp',
+    version: '1.0.0',
+    orientation: 'portrait',
+    scheme: 'gymapp',
+    userInterfaceStyle: 'automatic',
+    assetBundlePatterns: ['**/*'],
+    ios: {
+        supportsTablet: false,
+    },
+    android: {
+        package: 'com.gymapp',
+    },
+    web: {
+        bundler: 'metro',
+    },
+    extra: getExtra(),
+});

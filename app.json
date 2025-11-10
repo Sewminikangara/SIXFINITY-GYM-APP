@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "GymApp",
+    "slug": "gymapp",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "gymapp",
+    "userInterfaceStyle": "automatic",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow GymApp to access your camera to take photos of your meals for nutrition tracking."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow GymApp to access your photos to upload meal images."
+        }
+      ]
+    ],
+    "android": {
+      "package": "com.gymapp"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.gymapp",
+      "usesAppleSignIn": true
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}
