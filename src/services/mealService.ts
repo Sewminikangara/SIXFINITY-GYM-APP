@@ -271,9 +271,7 @@ export const deleteMeal = async (mealId: string): Promise<void> => {
   }
 };
 
-// ============================================
-// MEAL ITEMS OPERATIONS
-// ============================================
+// MEAL ITEMS 
 
 /**
  * Add a meal item to a meal
@@ -347,13 +345,10 @@ export const deleteMealItem = async (itemId: string): Promise<void> => {
   }
 };
 
-// ============================================
 // DAILY NUTRITION SUMMARY
-// ============================================
 
 /**
  * Get daily nutrition summary for a specific date
- * Note: This is auto-calculated by database triggers
  */
 export const getDailyNutritionSummary = async (
   userId: string,
@@ -440,7 +435,7 @@ export const adjustCaloriesForWorkout = async (
   try {
     // Get current summary
     let summary = await getDailyNutritionSummary(userId, date);
-    
+
     if (!summary) {
       summary = await createDefaultDailySummary(userId, date);
     }
@@ -471,9 +466,7 @@ export const adjustCaloriesForWorkout = async (
   }
 };
 
-// ============================================
 // WATER INTAKE
-// ============================================
 
 export interface WaterIntake {
   id: string;
@@ -563,9 +556,7 @@ export const getWaterIntakeEntries = async (
   }
 };
 
-// ============================================
 // UTILITY FUNCTIONS
-// ============================================
 
 /**
  * Get today's date in ISO format (YYYY-MM-DD)

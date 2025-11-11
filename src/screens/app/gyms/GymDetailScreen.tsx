@@ -78,6 +78,8 @@ export const GymDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     const [showFullscreenGallery, setShowFullscreenGallery] = useState(false);
     const [fullscreenImageIndex, setFullscreenImageIndex] = useState(0);
     const [reviews, setReviews] = useState<Review[]>([]);
+    const [selectedDay, setSelectedDay] = useState<string>('All');
+    const [selectedClassType, setSelectedClassType] = useState<string>('All');
 
     // Mock data - will be replaced with real data from backend
     const mockEquipment: Equipment[] = [
@@ -225,7 +227,7 @@ export const GymDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         },
         {
             id: '4',
-            userName: 'Mike Johnson',
+            userName: 'Avishka IIIII',
             userPhoto: 'https://randomuser.me/api/portraits/men/22.jpg',
             rating: 3,
             comment: 'Decent gym but could use some upgrades to the locker room facilities. Equipment is good though.',
@@ -235,7 +237,7 @@ export const GymDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         },
         {
             id: '5',
-            userName: 'Sarah Williams',
+            userName: 'BANDARA KKK',
             userPhoto: 'https://randomuser.me/api/portraits/women/44.jpg',
             rating: 5,
             comment: 'Amazing atmosphere and great community! The yoga classes are top-notch.',
@@ -591,62 +593,379 @@ export const GymDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
                 {/* Trainers Section */}
                 <View style={styles.sectionCard}>
-                    <Text style={styles.sectionTitle}>Personal Trainers</Text>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>Personal Trainers</Text>
+                        <TouchableOpacity
+                            style={styles.viewAllButton}
+                            onPress={() => navigation.navigate('Trainers' as any)}>
+                            <Text style={styles.viewAllButtonText}>View All</Text>
+                            <Ionicons name="chevron-forward" size={16} color={palette.neonGreen} />
+                        </TouchableOpacity>
+                    </View>
+
                     {mockTrainers.map((trainer) => (
-                        <View key={trainer.id} style={styles.trainerCard}>
-                            <Image source={{ uri: trainer.photo }} style={styles.trainerPhoto} />
-                            <View style={styles.trainerInfo}>
-                                <Text style={styles.trainerName}>{trainer.name}</Text>
-                                {renderStars(trainer.rating)}
-                                <View style={styles.expertiseContainer}>
+                        <TouchableOpacity
+                            key={trainer.id}
+                            style={styles.trainerCardEnhanced}
+                            onPress={() => navigation.navigate('TrainerDetail' as any, { trainerId: trainer.id })}
+                        >
+                            {/* Trainer Photo */}
+                            <Image source={{ uri: trainer.photo }} style={styles.trainerPhotoLarge} />
+
+                            <View style={styles.trainerContentEnhanced}>
+                                {/* Name and Rating Row */}
+                                <View style={styles.trainerHeaderRow}>
+                                    <Text style={styles.trainerNameEnhanced}>{trainer.name}</Text>
+                                    <View style={styles.trainerRatingRow}>
+                                        <Ionicons name="star" size={16} color="#FFD700" />
+                                        <Text style={styles.trainerRatingText}>{trainer.rating}</Text>
+                                    </View>
+                                </View>
+
+                                {/* Expertise Tags */}
+                                <View style={styles.expertiseContainerEnhanced}>
                                     {trainer.expertise.map((exp, index) => (
-                                        <View key={index} style={styles.expertiseTag}>
-                                            <Text style={styles.expertiseText}>{exp}</Text>
+                                        <View key={index} style={styles.expertiseTagEnhanced}>
+                                            <Ionicons name="checkmark-circle" size={12} color={palette.neonGreen} />
+                                            <Text style={styles.expertiseTextEnhanced}>{exp}</Text>
                                         </View>
                                     ))}
                                 </View>
-                                <Text style={styles.trainerPrice}>${trainer.pricePerSession}/session</Text>
+
+                                {/* Price and Experience Row */}
+                                <View style={styles.trainerMetaRow}>
+                                    <View style={styles.trainerMetaItem}>
+                                        <Ionicons name="cash-outline" size={16} color={palette.neonGreen} />
+                                        <Text style={styles.trainerPriceEnhanced}>${trainer.pricePerSession}/session</Text>
+                                    </View>
+                                    <View style={styles.trainerMetaItem}>
+                                        <Ionicons name="time-outline" size={16} color={palette.textSecondary} />
+                                        <Text style={styles.trainerExperienceText}>5+ years exp</Text>
+                                    </View>
+                                </View>
+
+                                {/* Book Session Button */}
+                                <TouchableOpacity
+                                    style={styles.bookSessionButton}
+                                    onPress={() => handleBookTrainer(trainer)}
+                                >
+                                    <Ionicons name="calendar-outline" size={18} color="#000" />
+                                    <Text style={styles.bookSessionButtonText}>Book Session</Text>
+                                </TouchableOpacity>
                             </View>
-                            <TouchableOpacity
-                                style={styles.bookButton}
-                                onPress={() => handleBookTrainer(trainer)}
-                            >
-                                <Text style={styles.bookButtonText}>Book</Text>
-                            </TouchableOpacity>
-                        </View>
+                        </TouchableOpacity>
                     ))}
+
+                    {/* View All Trainers Link */}
+                    <TouchableOpacity
+                        style={styles.viewAllTrainersButton}
+                        onPress={() => navigation.navigate('Trainers' as any)}
+                    >
+                        <Text style={styles.viewAllTrainersText}>View All Trainers</Text>
+                        <Ionicons name="arrow-forward" size={18} color={palette.neonGreen} />
+                    </TouchableOpacity>
+                </View>
+
+                {/* Workout Types Section */}
+                <View style={styles.sectionCard}>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>Workout Types</Text>
+                        <TouchableOpacity
+                            style={styles.viewAllButton}
+                            onPress={() => Alert.alert('Coming Soon', 'All workout types coming soon!')}>
+                            <Text style={styles.viewAllButtonText}>View All</Text>
+                            <Ionicons name="chevron-forward" size={16} color={palette.neonGreen} />
+                        </TouchableOpacity>
+                    </View>
+
+                    <Text style={styles.workoutTypesSubtitle}>
+                        Explore the variety of workouts available at this gym
+                    </Text>
+
+                    <View style={styles.workoutTypesGrid}>
+                        {/* Yoga */}
+                        <TouchableOpacity
+                            style={styles.workoutTypeCard}
+                            onPress={() => Alert.alert('Yoga', 'View yoga class schedule')}>
+                            <View style={[styles.workoutTypeIconContainer, { backgroundColor: 'rgba(186, 104, 200, 0.15)' }]}>
+                                <Ionicons name="leaf" size={32} color="#BA68C8" />
+                            </View>
+                            <Text style={styles.workoutTypeName}>Yoga</Text>
+                            <Text style={styles.workoutTypeDescription}>Mind & body balance</Text>
+                            <View style={styles.workoutTypeMetaRow}>
+                                <Ionicons name="time-outline" size={14} color={palette.textSecondary} />
+                                <Text style={styles.workoutTypeMetaText}>60 min</Text>
+                            </View>
+                            <View style={styles.workoutTypeMetaRow}>
+                                <Ionicons name="people-outline" size={14} color={palette.textSecondary} />
+                                <Text style={styles.workoutTypeMetaText}>3 classes/week</Text>
+                            </View>
+                        </TouchableOpacity>
+
+                        {/* HIIT */}
+                        <TouchableOpacity
+                            style={styles.workoutTypeCard}
+                            onPress={() => Alert.alert('HIIT', 'View HIIT class schedule')}>
+                            <View style={[styles.workoutTypeIconContainer, { backgroundColor: 'rgba(239, 83, 80, 0.15)' }]}>
+                                <Ionicons name="flame" size={32} color="#EF5350" />
+                            </View>
+                            <Text style={styles.workoutTypeName}>HIIT</Text>
+                            <Text style={styles.workoutTypeDescription}>High intensity training</Text>
+                            <View style={styles.workoutTypeMetaRow}>
+                                <Ionicons name="time-outline" size={14} color={palette.textSecondary} />
+                                <Text style={styles.workoutTypeMetaText}>45 min</Text>
+                            </View>
+                            <View style={styles.workoutTypeMetaRow}>
+                                <Ionicons name="people-outline" size={14} color={palette.textSecondary} />
+                                <Text style={styles.workoutTypeMetaText}>2 classes/week</Text>
+                            </View>
+                        </TouchableOpacity>
+
+                        {/* CrossFit */}
+                        <TouchableOpacity
+                            style={styles.workoutTypeCard}
+                            onPress={() => Alert.alert('CrossFit', 'View CrossFit class schedule')}>
+                            <View style={[styles.workoutTypeIconContainer, { backgroundColor: 'rgba(0, 255, 127, 0.15)' }]}>
+                                <Ionicons name="barbell" size={32} color={palette.neonGreen} />
+                            </View>
+                            <Text style={styles.workoutTypeName}>CrossFit</Text>
+                            <Text style={styles.workoutTypeDescription}>Functional fitness</Text>
+                            <View style={styles.workoutTypeMetaRow}>
+                                <Ionicons name="time-outline" size={14} color={palette.textSecondary} />
+                                <Text style={styles.workoutTypeMetaText}>60 min</Text>
+                            </View>
+                            <View style={styles.workoutTypeMetaRow}>
+                                <Ionicons name="people-outline" size={14} color={palette.textSecondary} />
+                                <Text style={styles.workoutTypeMetaText}>3 classes/week</Text>
+                            </View>
+                        </TouchableOpacity>
+
+                        {/* Pilates */}
+                        <TouchableOpacity
+                            style={styles.workoutTypeCard}
+                            onPress={() => Alert.alert('Pilates', 'View Pilates class schedule')}>
+                            <View style={[styles.workoutTypeIconContainer, { backgroundColor: 'rgba(129, 199, 132, 0.15)' }]}>
+                                <Ionicons name="fitness" size={32} color="#81C784" />
+                            </View>
+                            <Text style={styles.workoutTypeName}>Pilates</Text>
+                            <Text style={styles.workoutTypeDescription}>Core strength</Text>
+                            <View style={styles.workoutTypeMetaRow}>
+                                <Ionicons name="time-outline" size={14} color={palette.textSecondary} />
+                                <Text style={styles.workoutTypeMetaText}>50 min</Text>
+                            </View>
+                            <View style={styles.workoutTypeMetaRow}>
+                                <Ionicons name="people-outline" size={14} color={palette.textSecondary} />
+                                <Text style={styles.workoutTypeMetaText}>2 classes/week</Text>
+                            </View>
+                        </TouchableOpacity>
+
+                        {/* Zumba */}
+                        <TouchableOpacity
+                            style={styles.workoutTypeCard}
+                            onPress={() => Alert.alert('Zumba', 'View Zumba class schedule')}>
+                            <View style={[styles.workoutTypeIconContainer, { backgroundColor: 'rgba(255, 179, 71, 0.15)' }]}>
+                                <Ionicons name="musical-notes" size={32} color="#FFB347" />
+                            </View>
+                            <Text style={styles.workoutTypeName}>Zumba</Text>
+                            <Text style={styles.workoutTypeDescription}>Dance fitness</Text>
+                            <View style={styles.workoutTypeMetaRow}>
+                                <Ionicons name="time-outline" size={14} color={palette.textSecondary} />
+                                <Text style={styles.workoutTypeMetaText}>55 min</Text>
+                            </View>
+                            <View style={styles.workoutTypeMetaRow}>
+                                <Ionicons name="people-outline" size={14} color={palette.textSecondary} />
+                                <Text style={styles.workoutTypeMetaText}>2 classes/week</Text>
+                            </View>
+                        </TouchableOpacity>
+
+                        {/* Spin */}
+                        <TouchableOpacity
+                            style={styles.workoutTypeCard}
+                            onPress={() => Alert.alert('Spin', 'View Spin class schedule')}>
+                            <View style={[styles.workoutTypeIconContainer, { backgroundColor: 'rgba(66, 165, 245, 0.15)' }]}>
+                                <Ionicons name="bicycle" size={32} color="#42A5F5" />
+                            </View>
+                            <Text style={styles.workoutTypeName}>Spin</Text>
+                            <Text style={styles.workoutTypeDescription}>Indoor cycling</Text>
+                            <View style={styles.workoutTypeMetaRow}>
+                                <Ionicons name="time-outline" size={14} color={palette.textSecondary} />
+                                <Text style={styles.workoutTypeMetaText}>45 min</Text>
+                            </View>
+                            <View style={styles.workoutTypeMetaRow}>
+                                <Ionicons name="people-outline" size={14} color={palette.textSecondary} />
+                                <Text style={styles.workoutTypeMetaText}>3 classes/week</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Browse All Link */}
+                    <TouchableOpacity
+                        style={styles.browseAllWorkoutsButton}
+                        onPress={() => Alert.alert('Coming Soon', 'Full workout types catalog coming soon!')}>
+                        <Text style={styles.browseAllWorkoutsText}>Browse All Workout Types</Text>
+                        <Ionicons name="grid-outline" size={18} color={palette.neonGreen} />
+                    </TouchableOpacity>
                 </View>
 
                 {/* Class Schedule */}
                 <View style={styles.sectionCard}>
-                    <Text style={styles.sectionTitle}>Class Schedule</Text>
-                    {mockClasses.map((gymClass) => (
-                        <View key={gymClass.id} style={styles.classCard}>
-                            <View style={styles.classHeader}>
-                                <Text style={styles.className}>{gymClass.name}</Text>
-                                <View style={styles.classTypeTag}>
-                                    <Text style={styles.classTypeText}>{gymClass.type}</Text>
-                                </View>
-                            </View>
-                            <Text style={styles.classInstructor}>Instructor: {gymClass.instructor}</Text>
-                            <Text style={styles.classDuration}>
-                                {gymClass.duration} • Capacity: {gymClass.capacity}
-                            </Text>
-                            <View style={styles.scheduleContainer}>
-                                {gymClass.schedule.map((time, index) => (
-                                    <Text key={index} style={styles.scheduleTime}>
-                                        • {time}
-                                    </Text>
-                                ))}
-                            </View>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>Class Schedule</Text>
+                        <TouchableOpacity
+                            style={styles.viewAllButton}
+                            onPress={() => Alert.alert('Coming Soon', 'Full class schedule view coming soon!')}>
+                            <Text style={styles.viewAllButtonText}>View All</Text>
+                            <Ionicons name="chevron-forward" size={16} color={palette.neonGreen} />
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Day Filter */}
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        style={styles.classFiltersRow}
+                    >
+                        {['All', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
                             <TouchableOpacity
-                                style={styles.bookClassButton}
-                                onPress={() => handleBookClass(gymClass)}
+                                key={day}
+                                style={[
+                                    styles.classDayChip,
+                                    selectedDay === day && styles.classDayChipActive
+                                ]}
+                                onPress={() => setSelectedDay(day)}
                             >
-                                <Text style={styles.bookButtonText}>Book Class</Text>
+                                <Text style={[
+                                    styles.classDayChipText,
+                                    selectedDay === day && styles.classDayChipTextActive
+                                ]}>
+                                    {day}
+                                </Text>
                             </TouchableOpacity>
-                        </View>
-                    ))}
+                        ))}
+                    </ScrollView>
+
+                    {/* Class Type Filter */}
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        style={styles.classFiltersRow}
+                    >
+                        {['All', 'Yoga', 'HIIT', 'CrossFit', 'Pilates', 'Zumba', 'Spin'].map((type) => (
+                            <TouchableOpacity
+                                key={type}
+                                style={[
+                                    styles.classTypeChip,
+                                    selectedClassType === type && styles.classTypeChipActive
+                                ]}
+                                onPress={() => setSelectedClassType(type)}
+                            >
+                                <Text style={[
+                                    styles.classTypeChipText,
+                                    selectedClassType === type && styles.classTypeChipTextActive
+                                ]}>
+                                    {type}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+
+                    {/* Class Cards */}
+                    {mockClasses.map((gymClass) => {
+                        // Calculate available spots
+                        const bookedSpots = Math.floor(Math.random() * gymClass.capacity);
+                        const availableSpots = gymClass.capacity - bookedSpots;
+                        const isAlmostFull = availableSpots <= 3;
+                        const isFull = availableSpots === 0;
+
+                        return (
+                            <View key={gymClass.id} style={styles.classCardEnhanced}>
+                                {/* Class Header */}
+                                <View style={styles.classHeaderEnhanced}>
+                                    <View style={styles.classMainInfo}>
+                                        <Text style={styles.classNameEnhanced}>{gymClass.name}</Text>
+                                        <View style={styles.classTypeTagEnhanced}>
+                                            <Ionicons name="fitness" size={12} color="#000" />
+                                            <Text style={styles.classTypeTextEnhanced}>{gymClass.type}</Text>
+                                        </View>
+                                    </View>
+
+                                    {/* Availability Badge */}
+                                    <View style={[
+                                        styles.availabilityBadge,
+                                        isFull && styles.availabilityBadgeFull,
+                                        isAlmostFull && !isFull && styles.availabilityBadgeAlmostFull
+                                    ]}>
+                                        <Text style={[
+                                            styles.availabilityBadgeText,
+                                            isFull && styles.availabilityBadgeTextFull
+                                        ]}>
+                                            {isFull ? 'Full' : `${availableSpots} spots`}
+                                        </Text>
+                                    </View>
+                                </View>
+
+                                {/* Instructor Info */}
+                                <View style={styles.classInstructorRow}>
+                                    <Ionicons name="person-circle-outline" size={18} color={palette.textSecondary} />
+                                    <Text style={styles.classInstructorEnhanced}>{gymClass.instructor}</Text>
+                                </View>
+
+                                {/* Duration & Capacity */}
+                                <View style={styles.classMetaRow}>
+                                    <View style={styles.classMetaItem}>
+                                        <Ionicons name="time-outline" size={16} color={palette.neonGreen} />
+                                        <Text style={styles.classMetaText}>{gymClass.duration}</Text>
+                                    </View>
+                                    <View style={styles.classMetaItem}>
+                                        <Ionicons name="people-outline" size={16} color={palette.neonGreen} />
+                                        <Text style={styles.classMetaText}>{bookedSpots}/{gymClass.capacity}</Text>
+                                    </View>
+                                </View>
+
+                                {/* Schedule Times */}
+                                <View style={styles.scheduleTimesContainer}>
+                                    {gymClass.schedule.map((time, index) => (
+                                        <View key={index} style={styles.scheduleTimeChip}>
+                                            <Ionicons name="calendar-outline" size={12} color={palette.neonGreen} />
+                                            <Text style={styles.scheduleTimeText}>{time}</Text>
+                                        </View>
+                                    ))}
+                                </View>
+
+                                {/* Book Button */}
+                                <TouchableOpacity
+                                    style={[
+                                        styles.bookClassButtonEnhanced,
+                                        isFull && styles.bookClassButtonDisabled
+                                    ]}
+                                    onPress={() => handleBookClass(gymClass)}
+                                    disabled={isFull}
+                                >
+                                    <Ionicons
+                                        name={isFull ? "lock-closed" : "checkmark-circle"}
+                                        size={18}
+                                        color={isFull ? palette.textSecondary : "#000"}
+                                    />
+                                    <Text style={[
+                                        styles.bookClassButtonTextEnhanced,
+                                        isFull && styles.bookClassButtonTextDisabled
+                                    ]}>
+                                        {isFull ? 'Class Full' : 'Book Class'}
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        );
+                    })}
+
+                    {/* View Full Schedule Link */}
+                    <TouchableOpacity
+                        style={styles.viewFullScheduleButton}
+                        onPress={() => Alert.alert('Coming Soon', 'Full weekly schedule view coming soon!')}
+                    >
+                        <Ionicons name="calendar" size={18} color={palette.neonGreen} />
+                        <Text style={styles.viewFullScheduleText}>View Full Weekly Schedule</Text>
+                        <Ionicons name="arrow-forward" size={18} color={palette.neonGreen} />
+                    </TouchableOpacity>
                 </View>
 
                 {/* Reviews Section */}
@@ -1521,5 +1840,413 @@ const styles = StyleSheet.create({
         ...typography.bodyBold,
         color: '#000',
         fontSize: 16,
+    },
+    // Enhanced Trainer Styles
+    trainerCardEnhanced: {
+        flexDirection: 'column',
+        backgroundColor: '#2A2A2A',
+        borderRadius: radii.lg,
+        marginBottom: spacing.lg,
+        overflow: 'hidden',
+    },
+    trainerPhotoLarge: {
+        width: '100%',
+        height: 200,
+        backgroundColor: '#1A1A1A',
+    },
+    trainerContentEnhanced: {
+        padding: spacing.lg,
+    },
+    trainerHeaderRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: spacing.sm,
+    },
+    trainerNameEnhanced: {
+        ...typography.heading2,
+        color: palette.textPrimary,
+        fontSize: 20,
+        fontWeight: '700',
+    },
+    trainerRatingRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        backgroundColor: 'rgba(255, 215, 0, 0.1)',
+        paddingHorizontal: spacing.sm,
+        paddingVertical: 4,
+        borderRadius: radii.sm,
+    },
+    trainerRatingText: {
+        ...typography.body,
+        color: '#FFD700',
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    expertiseContainerEnhanced: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: spacing.sm,
+        marginBottom: spacing.md,
+    },
+    expertiseTagEnhanced: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        backgroundColor: 'rgba(0, 255, 127, 0.1)',
+        paddingHorizontal: spacing.sm,
+        paddingVertical: 6,
+        borderRadius: radii.sm,
+        borderWidth: 1,
+        borderColor: 'rgba(0, 255, 127, 0.2)',
+    },
+    expertiseTextEnhanced: {
+        ...typography.caption,
+        color: palette.neonGreen,
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    trainerMetaRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: spacing.md,
+        paddingTop: spacing.md,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    },
+    trainerMetaItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.xs,
+    },
+    trainerPriceEnhanced: {
+        ...typography.body,
+        color: palette.neonGreen,
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    trainerExperienceText: {
+        ...typography.body,
+        color: palette.textSecondary,
+        fontSize: 14,
+    },
+    bookSessionButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: spacing.sm,
+        backgroundColor: palette.neonGreen,
+        paddingVertical: spacing.md,
+        borderRadius: radii.md,
+        marginTop: spacing.sm,
+    },
+    bookSessionButtonText: {
+        ...typography.bodyBold,
+        color: '#000',
+        fontSize: 16,
+        fontWeight: '700',
+    },
+    viewAllTrainersButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: spacing.sm,
+        paddingVertical: spacing.md,
+        marginTop: spacing.sm,
+        borderWidth: 1,
+        borderColor: palette.neonGreen,
+        borderRadius: radii.md,
+    },
+    viewAllTrainersText: {
+        ...typography.bodyBold,
+        color: palette.neonGreen,
+        fontSize: 16,
+    },
+    // Enhanced Class Schedule Styles
+    classFiltersRow: {
+        marginBottom: spacing.md,
+    },
+    classDayChip: {
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.sm,
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        borderRadius: radii.md,
+        marginRight: spacing.sm,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.1)',
+    },
+    classDayChipActive: {
+        backgroundColor: palette.neonGreen,
+        borderColor: palette.neonGreen,
+    },
+    classDayChipText: {
+        ...typography.body,
+        color: palette.textSecondary,
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    classDayChipTextActive: {
+        color: '#000',
+        fontWeight: '700',
+    },
+    classTypeChip: {
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.sm,
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        borderRadius: radii.md,
+        marginRight: spacing.sm,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.1)',
+    },
+    classTypeChipActive: {
+        backgroundColor: 'rgba(0, 255, 127, 0.15)',
+        borderColor: palette.neonGreen,
+    },
+    classTypeChipText: {
+        ...typography.body,
+        color: palette.textSecondary,
+        fontSize: 13,
+        fontWeight: '600',
+    },
+    classTypeChipTextActive: {
+        color: palette.neonGreen,
+        fontWeight: '700',
+    },
+    classCardEnhanced: {
+        backgroundColor: '#2A2A2A',
+        borderRadius: radii.lg,
+        padding: spacing.lg,
+        marginBottom: spacing.md,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
+    },
+    classHeaderEnhanced: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: spacing.md,
+    },
+    classMainInfo: {
+        flex: 1,
+        marginRight: spacing.md,
+    },
+    classNameEnhanced: {
+        ...typography.heading2,
+        color: palette.textPrimary,
+        fontSize: 18,
+        fontWeight: '700',
+        marginBottom: spacing.xs,
+    },
+    classTypeTagEnhanced: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        backgroundColor: palette.neonGreen,
+        paddingHorizontal: spacing.sm,
+        paddingVertical: 4,
+        borderRadius: radii.sm,
+        alignSelf: 'flex-start',
+    },
+    classTypeTextEnhanced: {
+        ...typography.caption,
+        color: '#000',
+        fontSize: 11,
+        fontWeight: '700',
+        textTransform: 'uppercase',
+    },
+    availabilityBadge: {
+        backgroundColor: 'rgba(0, 255, 127, 0.15)',
+        paddingHorizontal: spacing.sm,
+        paddingVertical: 6,
+        borderRadius: radii.sm,
+        borderWidth: 1,
+        borderColor: palette.neonGreen,
+    },
+    availabilityBadgeFull: {
+        backgroundColor: 'rgba(255, 107, 107, 0.15)',
+        borderColor: '#FF6B6B',
+    },
+    availabilityBadgeAlmostFull: {
+        backgroundColor: 'rgba(255, 165, 0, 0.15)',
+        borderColor: '#FFA500',
+    },
+    availabilityBadgeText: {
+        ...typography.caption,
+        color: palette.neonGreen,
+        fontSize: 11,
+        fontWeight: '700',
+    },
+    availabilityBadgeTextFull: {
+        color: '#FF6B6B',
+    },
+    classInstructorRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.xs,
+        marginBottom: spacing.sm,
+    },
+    classInstructorEnhanced: {
+        ...typography.body,
+        color: palette.textSecondary,
+        fontSize: 14,
+    },
+    classMetaRow: {
+        flexDirection: 'row',
+        gap: spacing.lg,
+        marginBottom: spacing.md,
+        paddingVertical: spacing.sm,
+        borderTopWidth: 1,
+        borderBottomWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
+    },
+    classMetaItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.xs,
+    },
+    classMetaText: {
+        ...typography.body,
+        color: palette.textPrimary,
+        fontSize: 13,
+        fontWeight: '600',
+    },
+    scheduleTimesContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: spacing.sm,
+        marginBottom: spacing.md,
+    },
+    scheduleTimeChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        backgroundColor: 'rgba(0, 255, 127, 0.1)',
+        paddingHorizontal: spacing.sm,
+        paddingVertical: 6,
+        borderRadius: radii.sm,
+        borderWidth: 1,
+        borderColor: 'rgba(0, 255, 127, 0.2)',
+    },
+    scheduleTimeText: {
+        ...typography.caption,
+        color: palette.neonGreen,
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    bookClassButtonEnhanced: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: spacing.sm,
+        backgroundColor: palette.neonGreen,
+        paddingVertical: spacing.md,
+        borderRadius: radii.md,
+        marginTop: spacing.sm,
+    },
+    bookClassButtonDisabled: {
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.2)',
+    },
+    bookClassButtonTextEnhanced: {
+        ...typography.bodyBold,
+        color: '#000',
+        fontSize: 15,
+        fontWeight: '700',
+    },
+    bookClassButtonTextDisabled: {
+        color: palette.textSecondary,
+    },
+    viewFullScheduleButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: spacing.sm,
+        paddingVertical: spacing.md,
+        marginTop: spacing.md,
+        borderWidth: 1,
+        borderColor: palette.neonGreen,
+        borderRadius: radii.md,
+    },
+    viewFullScheduleText: {
+        ...typography.bodyBold,
+        color: palette.neonGreen,
+        fontSize: 15,
+    },
+    // Workout Types Styles
+    workoutTypesSubtitle: {
+        ...typography.body,
+        color: palette.textSecondary,
+        fontSize: 14,
+        marginBottom: spacing.lg,
+        lineHeight: 20,
+    },
+    workoutTypesGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: spacing.md,
+        justifyContent: 'space-between',
+    },
+    workoutTypeCard: {
+        width: '48%',
+        backgroundColor: '#2A2A2A',
+        borderRadius: radii.lg,
+        padding: spacing.md,
+        marginBottom: spacing.sm,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
+    },
+    workoutTypeIconContainer: {
+        width: 64,
+        height: 64,
+        borderRadius: radii.lg,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: spacing.sm,
+        alignSelf: 'center',
+    },
+    workoutTypeName: {
+        ...typography.subtitle,
+        color: palette.textPrimary,
+        fontSize: 16,
+        fontWeight: '700',
+        marginBottom: spacing.xs,
+        textAlign: 'center',
+    },
+    workoutTypeDescription: {
+        ...typography.caption,
+        color: palette.textSecondary,
+        fontSize: 12,
+        textAlign: 'center',
+        marginBottom: spacing.sm,
+    },
+    workoutTypeMetaRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        justifyContent: 'center',
+        marginTop: 2,
+    },
+    workoutTypeMetaText: {
+        ...typography.caption,
+        color: palette.textSecondary,
+        fontSize: 11,
+    },
+    browseAllWorkoutsButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: spacing.sm,
+        paddingVertical: spacing.md,
+        marginTop: spacing.md,
+        borderWidth: 1,
+        borderColor: palette.neonGreen,
+        borderRadius: radii.md,
+    },
+    browseAllWorkoutsText: {
+        ...typography.bodyBold,
+        color: palette.neonGreen,
+        fontSize: 15,
     },
 });

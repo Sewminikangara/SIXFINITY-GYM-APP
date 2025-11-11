@@ -1,8 +1,5 @@
 /**
  * FatSecret Platform API - Barcode Scanning
- * 
- * Free Tier: Unlimited requests
- * Documentation: https://platform.fatsecret.com/api/
  */
 
 interface FatSecretConfig {
@@ -26,7 +23,6 @@ interface BarcodeNutritionData {
     barcode: string;
 }
 
-// Configuration - Add your API keys to .env file
 const config: FatSecretConfig = {
     clientId: process.env.EXPO_PUBLIC_FATSECRET_CLIENT_ID || '',
     clientSecret: process.env.EXPO_PUBLIC_FATSECRET_CLIENT_SECRET || '',
@@ -37,9 +33,6 @@ const config: FatSecretConfig = {
 let accessToken: string | null = null;
 let tokenExpiry: number = 0;
 
-/**
- * Get OAuth access token
- */
 const getAccessToken = async (): Promise<string> => {
     try {
         // Return cached token if still valid

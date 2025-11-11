@@ -1,8 +1,5 @@
 /**
  * Nutritionix API Service - Photo Recognition & Food Analysis
- * 
- * Free Tier: 200 requests/day
- * Documentation: https://docs.nutritionix.com/
  */
 
 interface NutritionixConfig {
@@ -23,7 +20,6 @@ interface NutritionData {
     servingSize: string;
 }
 
-// Configuration - Add your API keys to .env file
 const config: NutritionixConfig = {
     appId: process.env.EXPO_PUBLIC_NUTRITIONIX_APP_ID || '',
     appKey: process.env.EXPO_PUBLIC_NUTRITIONIX_APP_KEY || '',
@@ -36,17 +32,10 @@ console.log('Nutritionix Config:', {
     appId: config.appId,
 });
 
-/**
- * Analyze food from photo using Nutritionix Natural Language API
- * Note: Nutritionix doesn't have direct image upload, so we use text description
- * For production, you'd use Google Vision API to get food description first
- */
 export const analyzePhotoWithNutritionix = async (
     imageUri: string
 ): Promise<NutritionData> => {
     try {
-        // For now, we'll use a placeholder food query
-        // In production: Use Google Vision API to detect food from image first
         const foodQuery = 'mixed meal with protein and vegetables';
 
         const response = await fetch(`${config.baseUrl}/natural/nutrients`, {

@@ -28,9 +28,9 @@ export interface Gym {
     distance?: string; // Calculated based on user location
 }
 
-// Real gym data for Sri Lanka, Dubai, and Australia
+//  gym data for Sri Lanka, Dubai, and Australia
 export const GYM_DATABASE: Gym[] = [
-    // ============ SRI LANKA GYMS ============
+    //srilanka gyms
     {
         id: 'sl-001',
         name: 'Fitness First - Colombo City Centre',
@@ -160,7 +160,7 @@ export const GYM_DATABASE: Gym[] = [
         membershipTypes: ['Monthly', 'Quarterly']
     },
 
-    // ============ DUBAI GYMS ============
+    // dubai
     {
         id: 'db-001',
         name: 'Fitness First - Dubai Mall',
@@ -236,7 +236,7 @@ export const GYM_DATABASE: Gym[] = [
         membershipTypes: ['Monthly', 'Quarterly', 'Drop-in']
     },
 
-    // ============ AUSTRALIA GYMS ============
+    // australia
     {
         id: 'au-001',
         name: 'Fitness First - Sydney CBD',
@@ -343,7 +343,6 @@ export const GYM_DATABASE: Gym[] = [
 ];
 
 // Calculate distance between two coordinates using Haversine formula
-// This provides high accuracy for distance calculations (±0.1km precision)
 function calculateDistance(
     lat1: number,
     lon1: number,
