@@ -74,6 +74,58 @@ export type AppStackParamList = {
   Camera: undefined;
   FoodPhoto: undefined;
   BarcodeScanner: undefined;
+  // Profile & Stats screens
+  EditProfile: undefined;
+  BodyStats: undefined;
+  FitnessGoals: undefined;
+  Achievements: undefined;
+  WearableDevices: undefined;
+  // Wallet screens
+  Wallet: undefined;
+  TransactionHistory: undefined;
+  PaymentMethods: undefined;
+  AddPaymentMethod: undefined;
+  PaymentCheckout: {
+    bookingDetails: {
+      bookingId?: string;
+      gymName: string;
+      trainerName?: string;
+      sessionDate: string;
+      sessionTime: string;
+      duration: number;
+      baseFee: number;
+      discount: number;
+      tax: number;
+      finalAmount: number;
+      bookingType: 'gym' | 'trainer' | 'class';
+    };
+  };
+  PaymentSuccess: {
+    transactionId: string;
+    amount: number;
+    bookingDetails: any;
+    paymentMethod?: string;
+  };
+  PaymentFailed: {
+    error: string;
+    amount: number;
+    bookingDetails: any;
+  };
+  InvoiceViewer: {
+    transactionId: string;
+    amount?: number;
+    bookingDetails?: any;
+  };
+  // Bookings & Referrals screens
+  Bookings: undefined;
+  Referrals: undefined;
+  Rewards: undefined;
+  // Settings & Support screens
+  Offers: undefined;
+  Notifications: undefined;
+  NotificationSettings: undefined;
+  Settings: undefined;
+  HelpSupport: undefined;
 };
 
 export interface OnboardingParams {

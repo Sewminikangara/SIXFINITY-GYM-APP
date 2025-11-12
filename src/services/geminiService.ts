@@ -1,15 +1,13 @@
 /**
- * Google Gemini AI Service for Real Food Recognition
- * Uses Google Gemini Vision API to identify food from photos
- * Then queries USDA for accurate nutrition data
+ * google Gemini AI for Real Food Recognition
+ * Uses Google gemini Vision API to identify food from photos
+ * then queries USDA for accurate nutrition data
  */
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import * as FileSystem from 'expo-file-system/legacy';
 import { env } from '@/config/env';
 
-// Initialize Gemini AI
-// Get FREE API key from: https://makersuite.google.com/app/apikey
 const GEMINI_API_KEY = env.geminiApiKey;
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
@@ -32,13 +30,10 @@ interface NutritionData {
     source: 'gemini-usda' | 'gemini-estimate';
 }
 
-/**
- * Analyze food photo using Google Gemini Vision AI (Direct REST API)
- * Returns actual food items identified in the image
- */
+
 export async function analyzeFoodImage(imageUri: string): Promise<RecognizedFood[]> {
     try {
-        console.log('🤖 Analyzing food with Google Gemini AI...');
+        console.log(' Analyzing food with Google Gemini AI...');
 
         // Convert image to base64
         const base64 = await FileSystem.readAsStringAsync(imageUri, {
@@ -64,7 +59,6 @@ export async function analyzeFoodImage(imageUri: string): Promise<RecognizedFood
     
     Be accurate and specific. If you can't identify the food clearly, set lower confidence.`;
 
-        // Use direct REST API with experimental gemini-2.0-flash (supports vision)
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`;
 
         const requestBody = {
@@ -107,12 +101,12 @@ export async function analyzeFoodImage(imageUri: string): Promise<RecognizedFood
 
         const recognizedFoods: RecognizedFood[] = JSON.parse(jsonMatch[0]);
 
-        console.log(`✅ Identified ${recognizedFoods.length} food items:`, recognizedFoods.map(f => f.foodName).join(', '));
+        console.log(` Identified ${recognizedFoods.length} food items:`, recognizedFoods.map(f => f.foodName).join(', '));
 
         return recognizedFoods;
 
     } catch (error) {
-        console.error('❌ Gemini AI Error:', error);
+        console.error(' Gemini AI Error:', error);
         throw error;
     }
 }
@@ -127,7 +121,7 @@ async function getNutritionFromUSDA(foodName: string, servingSize?: string): Pro
 
         const url = `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${USDA_API_KEY}&query=${query}&pageSize=1`;
 
-        console.log(`📊 Querying USDA for: ${foodName}`);
+        console.log(` Querying USDA for: ${foodName}`);
 
         const response = await fetch(url);
         const data = await response.json();
@@ -156,18 +150,18 @@ async function getNutritionFromUSDA(foodName: string, servingSize?: string): Pro
             sugar: getNutrient(2000),    // Sugars
         };
     } catch (error) {
-        console.error(`❌ USDA Error for ${foodName}:`, error);
+        console.error(` USDA Error for ${foodName}:`, error);
         return null;
     }
 }
 
 /**
- * Complete food analysis: Photo → Gemini AI → USDA Nutrition
- * This is the main function to use for photo analysis
+ * Photo → Gemini AI → USDA Nutrition
+ * this is the main function 
  */
 export async function analyzePhotoForNutrition(imageUri: string): Promise<NutritionData> {
     try {
-        console.log('🍽️ Starting REAL food analysis...');
+        console.log('Starting REAL food analysis...');
 
         // Step 1: Identify food using Gemini AI
         const recognizedFoods = await analyzeFoodImage(imageUri);
@@ -179,13 +173,13 @@ export async function analyzePhotoForNutrition(imageUri: string): Promise<Nutrit
         // Step 2: Get nutrition for the primary food (highest confidence)
         const primaryFood = recognizedFoods.sort((a, b) => b.confidence - a.confidence)[0];
 
-        console.log(`🎯 Primary food: ${primaryFood.foodName} (${primaryFood.confidence}% confidence)`);
+        console.log(` Primary food: ${primaryFood.foodName} (${primaryFood.confidence}% confidence)`);
 
         // Step 3: Query USDA for accurate nutrition data
         const usdaNutrition = await getNutritionFromUSDA(primaryFood.foodName, primaryFood.servingSize);
 
         if (usdaNutrition) {
-            console.log('✅ Got accurate nutrition from USDA');
+            console.log(' Got accurate nutrition from USDA');
             return {
                 ...usdaNutrition,
                 source: 'gemini-usda',
@@ -193,7 +187,7 @@ export async function analyzePhotoForNutrition(imageUri: string): Promise<Nutrit
         }
 
         // Fallback: If USDA fails, use Gemini to estimate
-        console.log('⚠️ USDA not available, asking Gemini for nutrition estimate...');
+        console.log(' USDA not available, asking Gemini for nutrition estimate...');
 
         const nutritionEstimate = await getGeminiNutritionEstimate(primaryFood.foodName, primaryFood.servingSize);
 
@@ -203,7 +197,7 @@ export async function analyzePhotoForNutrition(imageUri: string): Promise<Nutrit
         };
 
     } catch (error) {
-        console.error('❌ Photo analysis failed:', error);
+        console.error(' Photo analysis failed:', error);
         throw error;
     }
 }
@@ -228,7 +222,6 @@ async function getGeminiNutritionEstimate(foodName: string, servingSize?: string
     
     Base estimates on standard USDA data. Be realistic and accurate.`;
 
-        // Use direct REST API with gemini-2.0-flash-exp
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`;
 
         const requestBody = {
@@ -273,7 +266,7 @@ async function getGeminiNutritionEstimate(foodName: string, servingSize?: string
         };
 
     } catch (error) {
-        console.error('❌ Gemini nutrition estimate failed:', error);
+        console.error('Gemini nutrition estimate failed:', error);
         throw error;
     }
 }

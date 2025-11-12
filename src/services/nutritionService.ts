@@ -1,10 +1,7 @@
-/**
- * Unified Nutrition Service
- * Now using: Google Gemini AI (REAL food recognition) + USDA (nutrition data)
- */
 
-import { getNutritionFromUSDA } from './clarifaiService';
-import { getNutritionFromFoodName } from './calorieNinjasService';
+
+//import { getNutritionFromUSDA } from './clarifaiService';
+//import { getNutritionFromFoodName } from './calorieNinjasService';
 import geminiService from './geminiService';
 
 export interface UnifiedNutritionData {
@@ -21,14 +18,12 @@ export interface UnifiedNutritionData {
     source: 'gemini-usda' | 'gemini-estimate' | 'usda' | 'calorieninjas' | 'mock';
 }
 
-/**
- * Analyze nutrition from a photo using REAL Google Gemini AI
- */
+
 export async function analyzePhotoNutrition(imageUri: string): Promise<UnifiedNutritionData> {
     try {
-        console.log('🤖 Analyzing photo with REAL AI (Google Gemini)...');
+        console.log('Analyzing photo with REAL AI (Google Gemini)...');
         const nutrition = await geminiService.analyzePhotoForNutrition(imageUri);
-        console.log(`✅ AI identified: ${nutrition.foodName} (${nutrition.source})`);
+        console.log(` AI identified: ${nutrition.foodName} (${nutrition.source})`);
 
         return {
             foodName: nutrition.foodName,
@@ -43,14 +38,14 @@ export async function analyzePhotoNutrition(imageUri: string): Promise<UnifiedNu
             source: nutrition.source,
         };
     } catch (error) {
-        console.error('❌ AI photo analysis error:', error);
+        console.error(' AI photo analysis error:', error);
         return getMockNutritionData('Photo Meal');
     }
 }
 
 export const analyzeManualEntry = async (foodText: string): Promise<UnifiedNutritionData> => {
     try {
-        console.log('🔍 Searching for:', foodText);
+        console.log(' Searching for:', foodText);
         const nutrition = await getNutritionFromUSDA(foodText);
         return {
             foodName: nutrition.foodName,

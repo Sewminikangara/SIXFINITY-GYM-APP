@@ -8,13 +8,14 @@ import {
     Image,
     RefreshControl,
     Alert,
+    ActivityIndicator,
 } from 'react-native';
 import { Screen } from '@/components';
 import { palette, spacing, typography, radii } from '@/theme';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppStackParamList } from '@/navigation/types';
 import { Ionicons } from '@expo/vector-icons';
-import { GYM_DATABASE, Gym } from '@/services/gymService';
+import { getUserGyms, getLastCheckIn, type Gym } from '@/services/gymService';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'MyGyms'>;
 
@@ -27,21 +28,60 @@ interface MyGym extends Gym {
 export const MyGymsScreen: React.FC<Props> = ({ navigation }) => {
     const [myGyms, setMyGyms] = useState<MyGym[]>([]);
     const [refreshing, setRefreshing] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    // TODO: Replace with actual user ID from auth context
+    const userId = 'user-123'; // Temporary hardcoded user ID
 
     useEffect(() => {
         loadMyGyms();
     }, []);
 
-    const loadMyGyms = () => {
-        // Mock data - will be replaced with real data from backend (gym_memberships table)
-        // For now, using first 3 gyms from database as sample
-        const mockMyGyms: MyGym[] = GYM_DATABASE.slice(0, 3).map((gym, index) => ({
-            ...gym,
-            lastVisited: getLastVisitedDate(index),
-            memberSince: getMemberSinceDate(index),
-            totalVisits: Math.floor(Math.random() * 50) + 10,
-        }));
-        setMyGyms(mockMyGyms);
+    const loadMyGyms = async () => {
+        try {
+            setLoading(true);
+            const { data, error } = await getUserGyms(userId);
+
+            if (error) {
+                console.error('Error loading my gyms:', error);
+                Alert.alert('Error', 'Failed to load your gyms. Please try again.');
+                setMyGyms([]);
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                setMyGyms([]);
+                return;
+            }
+
+            // Enrich gym data with last visited info
+            const enrichedGyms = await Promise.all(
+                data.map(async (gym) => {
+                    const { data: lastVisited } = await getLastCheckIn(userId, gym.id);
+
+                    return {
+                        ...gym,
+                        lastVisited: lastVisited || 'Never',
+                        memberSince: 'Jan 2024', // TODO: Get from gym_memberships table
+                        totalVisits: 0, // TODO: Get from check_ins table
+                    };
+                })
+            );
+
+            setMyGyms(enrichedGyms);
+        } catch (error) {
+            console.error('Unexpected error loading my gyms:', error);
+            Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+            setMyGyms([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await loadMyGyms();
+        setRefreshing(false);
     };
 
     const getLastVisitedDate = (index: number): string => {
@@ -99,12 +139,6 @@ export const MyGymsScreen: React.FC<Props> = ({ navigation }) => {
         if (visitsPerMonth >= 8) return 'Active member';
         if (visitsPerMonth >= 4) return 'Regular visitor';
         return 'Occasional visitor';
-    };
-
-    const onRefresh = () => {
-        setRefreshing(true);
-        loadMyGyms();
-        setTimeout(() => setRefreshing(false), 1000);
     };
 
     const handleCheckIn = (gym: MyGym) => {
@@ -262,25 +296,32 @@ export const MyGymsScreen: React.FC<Props> = ({ navigation }) => {
                     </Text>
                 </View>
 
-                <FlatList
-                    data={myGyms}
-                    renderItem={renderGymCard}
-                    keyExtractor={(item) => item.id}
-                    contentContainerStyle={[
-                        styles.listContent,
-                        myGyms.length === 0 && styles.emptyListContent,
-                    ]}
-                    showsVerticalScrollIndicator={false}
-                    refreshControl={
-                        <RefreshControl
-                            refreshing={refreshing}
-                            onRefresh={onRefresh}
-                            tintColor="#00FF7F"
-                            colors={['#00FF7F']}
-                        />
-                    }
-                    ListEmptyComponent={renderEmptyState}
-                />
+                {loading ? (
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" color={palette.neonGreen} />
+                        <Text style={styles.loadingText}>Loading your gyms...</Text>
+                    </View>
+                ) : (
+                    <FlatList
+                        data={myGyms}
+                        renderItem={renderGymCard}
+                        keyExtractor={(item) => item.id}
+                        contentContainerStyle={[
+                            styles.listContent,
+                            myGyms.length === 0 && styles.emptyListContent,
+                        ]}
+                        showsVerticalScrollIndicator={false}
+                        refreshControl={
+                            <RefreshControl
+                                refreshing={refreshing}
+                                onRefresh={onRefresh}
+                                tintColor="#00FF7F"
+                                colors={['#00FF7F']}
+                            />
+                        }
+                        ListEmptyComponent={renderEmptyState}
+                    />
+                )}
             </View>
         </Screen>
     );
@@ -537,6 +578,18 @@ const styles = StyleSheet.create({
     browseButtonText: {
         ...typography.bodyBold,
         color: '#000',
+        fontSize: 16,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: spacing.xl,
+    },
+    loadingText: {
+        ...typography.body,
+        color: palette.textSecondary,
+        marginTop: spacing.md,
         fontSize: 16,
     },
 });

@@ -4,9 +4,9 @@ import { useColorScheme, Platform, StyleSheet } from 'react-native';
 
 import { AppTabParamList } from './types';
 import { MealTabsNavigator } from './MealTabsNavigator';
+import { GymTabsNavigator } from './GymTabsNavigator';
 import {
   HomeScreen,
-  GymsScreen,
   MoreScreen,
   WorkoutScreen,
 } from '@/screens/app';
@@ -61,7 +61,7 @@ export const AppTabsNavigator = () => {
       />
       <Tab.Screen
         name="Gyms"
-        component={GymsScreen}
+        component={GymTabsNavigator}
         options={{ tabBarLabel: 'GYMS' }}
       />
       <Tab.Screen

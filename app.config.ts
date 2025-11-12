@@ -27,6 +27,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     assetBundlePatterns: ['**/*'],
     ios: {
         supportsTablet: false,
+        bundleIdentifier: 'com.gymapp',
     },
     android: {
         package: 'com.gymapp',

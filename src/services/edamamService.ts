@@ -1,8 +1,6 @@
 /**
  * Edamam Nutrition Analysis API - Manual Food Entry
  * 
- * Free Tier: 10,000 requests/month
- * Documentation: https://developer.edamam.com/edamam-docs-nutrition-api
  */
 
 interface EdamamConfig {
@@ -79,7 +77,6 @@ export const analyzeNutritionFromText = async (
 
 /**
  * Analyze nutrition for recipe (multiple ingredients)
- * Example: ["1 cup rice", "200g chicken", "2 tbsp olive oil"]
  */
 export const analyzeRecipe = async (
     ingredients: string[]
@@ -124,7 +121,6 @@ export const analyzeRecipe = async (
 
 /**
  * Parse food text into structured format
- * Helps with autocomplete and suggestions
  */
 export const parseFood = async (foodText: string): Promise<any> => {
     try {

@@ -12,60 +12,46 @@ import {
     Alert,
     Modal,
     StatusBar,
+    ActivityIndicator,
 } from 'react-native';
 import { Screen } from '@/components';
 import { palette, spacing, typography, radii } from '@/theme';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppStackParamList } from '@/navigation/types';
 import { Ionicons } from '@expo/vector-icons';
-import { GYM_DATABASE, Gym } from '@/services/gymService';
+import {
+    getGymDetails,
+    getEquipmentStatus,
+    getTrainers,
+    getClasses,
+    getReviews,
+    type Gym,
+    type Equipment as GymEquipment,
+    type Trainer as GymTrainer,
+    type Class as DatabaseClass,
+    type Review as DatabaseReview,
+} from '@/services/gymService';
 
 const { width } = Dimensions.get('window');
 
 type Props = NativeStackScreenProps<AppStackParamList, 'GymDetail'>;
 
-// Equipment data structure
-interface Equipment {
-    id: string;
-    name: string;
-    category: 'Cardio' | 'Strength' | 'Free Weights' | 'Functional' | 'Other';
-    image: string;
-    count: number;
-    specifications: string;
-    instructions: string;
+// Local Equipment data structure (enhanced with UI-specific fields)
+interface Equipment extends GymEquipment {
+    image?: string;
+    count?: number;
+    specifications?: string;
+    instructions?: string;
 }
 
-// Trainer data structure
-interface Trainer {
-    id: string;
-    name: string;
-    photo: string;
-    expertise: string[];
-    rating: number;
-    pricePerSession: number;
-}
+// Local Trainer data structure (same as database)
+interface Trainer extends GymTrainer { }
 
-// Class schedule data structure
-interface GymClass {
-    id: string;
-    name: string;
-    type: string;
-    instructor: string;
-    schedule: string[];
-    duration: string;
-    capacity: number;
-}
+// Local Class schedule data structure (enhanced with UI-specific fields)
+interface GymClass extends DatabaseClass { }
 
-// Review data structure
-interface Review {
-    id: string;
-    userName: string;
-    userPhoto: string;
-    rating: number;
-    comment: string;
-    date: string;
-    photos?: string[];
-    helpfulCount: number;
+// Local Review data structure (enhanced with UI-specific fields)
+interface Review extends DatabaseReview {
     wasHelpful?: boolean;
 }
 
@@ -78,187 +64,134 @@ export const GymDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     const [showFullscreenGallery, setShowFullscreenGallery] = useState(false);
     const [fullscreenImageIndex, setFullscreenImageIndex] = useState(0);
     const [reviews, setReviews] = useState<Review[]>([]);
+    const [selectedDay, setSelectedDay] = useState<string>('All');
+    const [selectedClassType, setSelectedClassType] = useState<string>('All');
 
-    // Mock data - will be replaced with real data from backend
-    const mockEquipment: Equipment[] = [
-        {
-            id: '1',
-            name: 'Treadmill',
-            category: 'Cardio',
-            image: 'https://images.unsplash.com/photo-1576678927484-cc907957088c?w=400',
-            count: 10,
-            specifications: 'Max Speed: 20 km/h, Incline: 0-15%, Display: LCD touchscreen',
-            instructions: 'Start with warm-up at 5 km/h, gradually increase speed. Use safety clip.',
-        },
-        {
-            id: '2',
-            name: 'Elliptical Trainer',
-            category: 'Cardio',
-            image: 'https://images.unsplash.com/photo-1623874514711-0f321325f318?w=400',
-            count: 8,
-            specifications: 'Resistance Levels: 20, Stride Length: 20", Heart Rate Monitor',
-            instructions: 'Stand upright, use handles for balance, maintain steady rhythm.',
-        },
-        {
-            id: '3',
-            name: 'Bench Press',
-            category: 'Strength',
-            image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400',
-            count: 5,
-            specifications: 'Adjustable bench, Olympic barbell compatible, Max load: 200kg',
-            instructions: 'Always use spotter, keep back flat, lower bar to chest level.',
-        },
-        {
-            id: '4',
-            name: 'Dumbbells',
-            category: 'Free Weights',
-            image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=400',
-            count: 50,
-            specifications: 'Range: 2.5kg - 50kg, Rubber coated, Various grips',
-            instructions: 'Select appropriate weight, maintain proper form, rerack after use.',
-        },
-        {
-            id: '5',
-            name: 'Cable Machine',
-            category: 'Functional',
-            image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400',
-            count: 4,
-            specifications: 'Adjustable height, 150kg weight stack, Multiple attachments',
-            instructions: 'Attach desired handle, set weight, perform exercise with controlled motion.',
-        },
-    ];
+    // Database-driven state
+    const [equipment, setEquipment] = useState<Equipment[]>([]);
+    const [trainers, setTrainers] = useState<Trainer[]>([]);
+    const [classes, setClasses] = useState<GymClass[]>([]);
 
-    const mockTrainers: Trainer[] = [
-        {
-            id: '1',
-            name: 'Avishka I',
-            photo: 'https://randomuser.me/api/portraits/men/1.jpg',
-            expertise: ['Strength Training', 'HIIT', 'Weight Loss'],
-            rating: 4.8,
-            pricePerSession: 50,
-        },
-        {
-            id: '2',
-            name: 'Avishka R',
-            photo: 'https://randomuser.me/api/portraits/women/2.jpg',
-            expertise: ['Yoga', 'Pilates', 'Flexibility'],
-            rating: 4.9,
-            pricePerSession: 45,
-        },
-        {
-            id: '3',
-            name: 'Avishka B',
-            photo: 'https://randomuser.me/api/portraits/men/3.jpg',
-            expertise: ['CrossFit', 'Olympic Lifting', 'Nutrition'],
-            rating: 4.7,
-            pricePerSession: 55,
-        },
-    ];
+    // Loading states
+    const [loadingGym, setLoadingGym] = useState(true);
+    const [loadingEquipment, setLoadingEquipment] = useState(true);
+    const [loadingTrainers, setLoadingTrainers] = useState(true);
+    const [loadingClasses, setLoadingClasses] = useState(true);
+    const [loadingReviews, setLoadingReviews] = useState(true);
 
-    const mockClasses: GymClass[] = [
-        {
-            id: '1',
-            name: 'Morning Yoga',
-            type: 'Yoga',
-            instructor: 'Kavinda K',
-            schedule: ['Mon 7:00 AM', 'Wed 7:00 AM', 'Fri 7:00 AM'],
-            duration: '60 min',
-            capacity: 20,
-        },
-        {
-            id: '2',
-            name: 'HIIT Power',
-            type: 'HIIT',
-            instructor: 'Devin A',
-            schedule: ['Tue 6:00 PM', 'Thu 6:00 PM'],
-            duration: '45 min',
-            capacity: 15,
-        },
-        {
-            id: '3',
-            name: 'CrossFit WOD',
-            type: 'CrossFit',
-            instructor: 'Avishka R',
-            schedule: ['Mon 5:30 PM', 'Wed 5:30 PM', 'Fri 5:30 PM'],
-            duration: '60 min',
-            capacity: 12,
-        },
-    ];
-
-    const mockReviews: Review[] = [
-        {
-            id: '1',
-            userName: 'Avishka RRRRRR',
-            userPhoto: 'https://randomuser.me/api/portraits/men/10.jpg',
-            rating: 5,
-            comment: 'Great gym with excellent equipment! Staff is very friendly and helpful. The trainers are knowledgeable and always ready to assist.',
-            date: '2024-10-15',
-            photos: [
-                'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400',
-                'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=400',
-            ],
-            helpfulCount: 24,
-            wasHelpful: false,
-        },
-        {
-            id: '2',
-            userName: 'Avishka RRRRRR',
-            userPhoto: 'https://randomuser.me/api/portraits/women/12.jpg',
-            rating: 4,
-            comment: 'Good facilities but can get crowded during peak hours. Would recommend coming in the morning for a better experience.',
-            date: '2024-10-10',
-            helpfulCount: 12,
-            wasHelpful: true,
-        },
-        {
-            id: '3',
-            userName: 'Avishka RRRRR',
-            userPhoto: 'https://randomuser.me/api/portraits/men/15.jpg',
-            rating: 5,
-            comment: 'Best gym in the area! Love the variety of classes and trainers. The equipment is always well-maintained and clean.',
-            date: '2024-10-05',
-            photos: [
-                'https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=400',
-            ],
-            helpfulCount: 18,
-            wasHelpful: false,
-        },
-        {
-            id: '4',
-            userName: 'Mike Johnson',
-            userPhoto: 'https://randomuser.me/api/portraits/men/22.jpg',
-            rating: 3,
-            comment: 'Decent gym but could use some upgrades to the locker room facilities. Equipment is good though.',
-            date: '2024-10-01',
-            helpfulCount: 5,
-            wasHelpful: false,
-        },
-        {
-            id: '5',
-            userName: 'Sarah Williams',
-            userPhoto: 'https://randomuser.me/api/portraits/women/44.jpg',
-            rating: 5,
-            comment: 'Amazing atmosphere and great community! The yoga classes are top-notch.',
-            date: '2024-09-28',
-            photos: [
-                'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400',
-                'https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=400',
-            ],
-            helpfulCount: 31,
-            wasHelpful: false,
-        },
-    ];
+    // Error state
+    const [gymError, setGymError] = useState<string | null>(null);
 
     useEffect(() => {
         loadGymDetails();
-        setReviews(mockReviews);
+        loadEquipment();
+        loadTrainers();
+        loadClasses();
+        loadReviews();
     }, [gymId]);
 
-    const loadGymDetails = () => {
-        // Get gym from GYM_DATABASE
-        const foundGym = GYM_DATABASE.find((g) => g.id === gymId);
-        if (foundGym) {
-            setGym(foundGym);
+    const loadGymDetails = async () => {
+        try {
+            setLoadingGym(true);
+            setGymError(null);
+            const { data, error } = await getGymDetails(gymId);
+
+            if (error) {
+                console.error('Error loading gym details:', error);
+                setGymError(error.message);
+                Alert.alert('Error', 'Failed to load gym details. Please try again.');
+            } else if (data) {
+                setGym(data);
+            } else {
+                setGymError('Gym not found');
+                Alert.alert('Error', 'Gym not found.');
+            }
+        } catch (error) {
+            console.error('Unexpected error loading gym details:', error);
+            setGymError('An unexpected error occurred');
+            Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+        } finally {
+            setLoadingGym(false);
+        }
+    };
+
+    const loadEquipment = async () => {
+        try {
+            setLoadingEquipment(true);
+            const { data, error } = await getEquipmentStatus(gymId);
+
+            if (error) {
+                console.error('Error loading equipment:', error);
+                setEquipment([]);
+            } else {
+                setEquipment(data || []);
+            }
+        } catch (error) {
+            console.error('Unexpected error loading equipment:', error);
+            setEquipment([]);
+        } finally {
+            setLoadingEquipment(false);
+        }
+    };
+
+    const loadTrainers = async () => {
+        try {
+            setLoadingTrainers(true);
+            const { data, error } = await getTrainers(gymId);
+
+            if (error) {
+                console.error('Error loading trainers:', error);
+                setTrainers([]);
+            } else {
+                setTrainers(data || []);
+            }
+        } catch (error) {
+            console.error('Unexpected error loading trainers:', error);
+            setTrainers([]);
+        } finally {
+            setLoadingTrainers(false);
+        }
+    };
+
+    const loadClasses = async () => {
+        try {
+            setLoadingClasses(true);
+            const { data, error } = await getClasses(gymId);
+
+            if (error) {
+                console.error('Error loading classes:', error);
+                setClasses([]);
+            } else {
+                setClasses(data || []);
+            }
+        } catch (error) {
+            console.error('Unexpected error loading classes:', error);
+            setClasses([]);
+        } finally {
+            setLoadingClasses(false);
+        }
+    };
+
+    const loadReviews = async () => {
+        try {
+            setLoadingReviews(true);
+            const { data, error } = await getReviews(gymId);
+
+            if (error) {
+                console.error('Error loading reviews:', error);
+                setReviews([]);
+            } else {
+                const enhancedReviews: Review[] = (data || []).map(review => ({
+                    ...review,
+                    wasHelpful: false,
+                }));
+                setReviews(enhancedReviews);
+            }
+        } catch (error) {
+            console.error('Unexpected error loading reviews:', error);
+            setReviews([]);
+        } finally {
+            setLoadingReviews(false);
         }
     };
 
@@ -266,8 +199,8 @@ export const GymDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
     const filteredEquipment =
         selectedCategory === 'All'
-            ? mockEquipment
-            : mockEquipment.filter((eq) => eq.category === selectedCategory);
+            ? equipment
+            : equipment.filter((eq) => eq.category === selectedCategory);
 
     const renderStars = (rating: number) => {
         return (
@@ -591,62 +524,399 @@ export const GymDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
                 {/* Trainers Section */}
                 <View style={styles.sectionCard}>
-                    <Text style={styles.sectionTitle}>Personal Trainers</Text>
-                    {mockTrainers.map((trainer) => (
-                        <View key={trainer.id} style={styles.trainerCard}>
-                            <Image source={{ uri: trainer.photo }} style={styles.trainerPhoto} />
-                            <View style={styles.trainerInfo}>
-                                <Text style={styles.trainerName}>{trainer.name}</Text>
-                                {renderStars(trainer.rating)}
-                                <View style={styles.expertiseContainer}>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>Personal Trainers</Text>
+                        <TouchableOpacity
+                            style={styles.viewAllButton}
+                            onPress={() => navigation.navigate('Trainers' as any)}>
+                            <Text style={styles.viewAllButtonText}>View All</Text>
+                            <Ionicons name="chevron-forward" size={16} color={palette.neonGreen} />
+                        </TouchableOpacity>
+                    </View>
+
+                    {loadingTrainers ? (
+                        <View style={styles.loadingContainer}>
+                            <ActivityIndicator size="large" color={palette.neonGreen} />
+                            <Text style={styles.loadingText}>Loading trainers...</Text>
+                        </View>
+                    ) : trainers.length === 0 ? (
+                        <View style={styles.emptyContainer}>
+                            <Ionicons name="people-outline" size={48} color={palette.textSecondary} />
+                            <Text style={styles.emptyText}>No trainers available at this gym</Text>
+                        </View>
+                    ) : trainers.map((trainer) => (
+                        <TouchableOpacity
+                            key={trainer.id}
+                            style={styles.trainerCardEnhanced}
+                            onPress={() => navigation.navigate('TrainerDetail' as any, { trainerId: trainer.id })}
+                        >
+                            {/* Trainer Photo */}
+                            <Image source={{ uri: trainer.photo }} style={styles.trainerPhotoLarge} />
+
+                            <View style={styles.trainerContentEnhanced}>
+                                {/* Name and Rating Row */}
+                                <View style={styles.trainerHeaderRow}>
+                                    <Text style={styles.trainerNameEnhanced}>{trainer.name}</Text>
+                                    <View style={styles.trainerRatingRow}>
+                                        <Ionicons name="star" size={16} color="#FFD700" />
+                                        <Text style={styles.trainerRatingText}>{trainer.rating}</Text>
+                                    </View>
+                                </View>
+
+                                {/* Expertise Tags */}
+                                <View style={styles.expertiseContainerEnhanced}>
                                     {trainer.expertise.map((exp, index) => (
-                                        <View key={index} style={styles.expertiseTag}>
-                                            <Text style={styles.expertiseText}>{exp}</Text>
+                                        <View key={index} style={styles.expertiseTagEnhanced}>
+                                            <Ionicons name="checkmark-circle" size={12} color={palette.neonGreen} />
+                                            <Text style={styles.expertiseTextEnhanced}>{exp}</Text>
                                         </View>
                                     ))}
                                 </View>
-                                <Text style={styles.trainerPrice}>${trainer.pricePerSession}/session</Text>
+
+                                {/* Price and Experience Row */}
+                                <View style={styles.trainerMetaRow}>
+                                    <View style={styles.trainerMetaItem}>
+                                        <Ionicons name="cash-outline" size={16} color={palette.neonGreen} />
+                                        <Text style={styles.trainerPriceEnhanced}>${trainer.pricePerSession}/session</Text>
+                                    </View>
+                                    <View style={styles.trainerMetaItem}>
+                                        <Ionicons name="time-outline" size={16} color={palette.textSecondary} />
+                                        <Text style={styles.trainerExperienceText}>5+ years exp</Text>
+                                    </View>
+                                </View>
+
+                                {/* Book Session Button */}
+                                <TouchableOpacity
+                                    style={styles.bookSessionButton}
+                                    onPress={() => handleBookTrainer(trainer)}
+                                >
+                                    <Ionicons name="calendar-outline" size={18} color="#000" />
+                                    <Text style={styles.bookSessionButtonText}>Book Session</Text>
+                                </TouchableOpacity>
                             </View>
-                            <TouchableOpacity
-                                style={styles.bookButton}
-                                onPress={() => handleBookTrainer(trainer)}
-                            >
-                                <Text style={styles.bookButtonText}>Book</Text>
-                            </TouchableOpacity>
-                        </View>
+                        </TouchableOpacity>
                     ))}
+
+                    {/* View All Trainers Link */}
+                    <TouchableOpacity
+                        style={styles.viewAllTrainersButton}
+                        onPress={() => navigation.navigate('Trainers' as any)}
+                    >
+                        <Text style={styles.viewAllTrainersText}>View All Trainers</Text>
+                        <Ionicons name="arrow-forward" size={18} color={palette.neonGreen} />
+                    </TouchableOpacity>
+                </View>
+
+                {/* Workout Types Section */}
+                <View style={styles.sectionCard}>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>Workout Types</Text>
+                        <TouchableOpacity
+                            style={styles.viewAllButton}
+                            onPress={() => Alert.alert('Coming Soon', 'All workout types coming soon!')}>
+                            <Text style={styles.viewAllButtonText}>View All</Text>
+                            <Ionicons name="chevron-forward" size={16} color={palette.neonGreen} />
+                        </TouchableOpacity>
+                    </View>
+
+                    <Text style={styles.workoutTypesSubtitle}>
+                        Explore the variety of workouts available at this gym
+                    </Text>
+
+                    <View style={styles.workoutTypesGrid}>
+                        {/* Yoga */}
+                        <TouchableOpacity
+                            style={styles.workoutTypeCard}
+                            onPress={() => Alert.alert('Yoga', 'View yoga class schedule')}>
+                            <View style={[styles.workoutTypeIconContainer, { backgroundColor: 'rgba(186, 104, 200, 0.15)' }]}>
+                                <Ionicons name="leaf" size={32} color="#BA68C8" />
+                            </View>
+                            <Text style={styles.workoutTypeName}>Yoga</Text>
+                            <Text style={styles.workoutTypeDescription}>Mind & body balance</Text>
+                            <View style={styles.workoutTypeMetaRow}>
+                                <Ionicons name="time-outline" size={14} color={palette.textSecondary} />
+                                <Text style={styles.workoutTypeMetaText}>60 min</Text>
+                            </View>
+                            <View style={styles.workoutTypeMetaRow}>
+                                <Ionicons name="people-outline" size={14} color={palette.textSecondary} />
+                                <Text style={styles.workoutTypeMetaText}>3 classes/week</Text>
+                            </View>
+                        </TouchableOpacity>
+
+                        {/* HIIT */}
+                        <TouchableOpacity
+                            style={styles.workoutTypeCard}
+                            onPress={() => Alert.alert('HIIT', 'View HIIT class schedule')}>
+                            <View style={[styles.workoutTypeIconContainer, { backgroundColor: 'rgba(239, 83, 80, 0.15)' }]}>
+                                <Ionicons name="flame" size={32} color="#EF5350" />
+                            </View>
+                            <Text style={styles.workoutTypeName}>HIIT</Text>
+                            <Text style={styles.workoutTypeDescription}>High intensity training</Text>
+                            <View style={styles.workoutTypeMetaRow}>
+                                <Ionicons name="time-outline" size={14} color={palette.textSecondary} />
+                                <Text style={styles.workoutTypeMetaText}>45 min</Text>
+                            </View>
+                            <View style={styles.workoutTypeMetaRow}>
+                                <Ionicons name="people-outline" size={14} color={palette.textSecondary} />
+                                <Text style={styles.workoutTypeMetaText}>2 classes/week</Text>
+                            </View>
+                        </TouchableOpacity>
+
+                        {/* CrossFit */}
+                        <TouchableOpacity
+                            style={styles.workoutTypeCard}
+                            onPress={() => Alert.alert('CrossFit', 'View CrossFit class schedule')}>
+                            <View style={[styles.workoutTypeIconContainer, { backgroundColor: 'rgba(0, 255, 127, 0.15)' }]}>
+                                <Ionicons name="barbell" size={32} color={palette.neonGreen} />
+                            </View>
+                            <Text style={styles.workoutTypeName}>CrossFit</Text>
+                            <Text style={styles.workoutTypeDescription}>Functional fitness</Text>
+                            <View style={styles.workoutTypeMetaRow}>
+                                <Ionicons name="time-outline" size={14} color={palette.textSecondary} />
+                                <Text style={styles.workoutTypeMetaText}>60 min</Text>
+                            </View>
+                            <View style={styles.workoutTypeMetaRow}>
+                                <Ionicons name="people-outline" size={14} color={palette.textSecondary} />
+                                <Text style={styles.workoutTypeMetaText}>3 classes/week</Text>
+                            </View>
+                        </TouchableOpacity>
+
+                        {/* Pilates */}
+                        <TouchableOpacity
+                            style={styles.workoutTypeCard}
+                            onPress={() => Alert.alert('Pilates', 'View Pilates class schedule')}>
+                            <View style={[styles.workoutTypeIconContainer, { backgroundColor: 'rgba(129, 199, 132, 0.15)' }]}>
+                                <Ionicons name="fitness" size={32} color="#81C784" />
+                            </View>
+                            <Text style={styles.workoutTypeName}>Pilates</Text>
+                            <Text style={styles.workoutTypeDescription}>Core strength</Text>
+                            <View style={styles.workoutTypeMetaRow}>
+                                <Ionicons name="time-outline" size={14} color={palette.textSecondary} />
+                                <Text style={styles.workoutTypeMetaText}>50 min</Text>
+                            </View>
+                            <View style={styles.workoutTypeMetaRow}>
+                                <Ionicons name="people-outline" size={14} color={palette.textSecondary} />
+                                <Text style={styles.workoutTypeMetaText}>2 classes/week</Text>
+                            </View>
+                        </TouchableOpacity>
+
+                        {/* Zumba */}
+                        <TouchableOpacity
+                            style={styles.workoutTypeCard}
+                            onPress={() => Alert.alert('Zumba', 'View Zumba class schedule')}>
+                            <View style={[styles.workoutTypeIconContainer, { backgroundColor: 'rgba(255, 179, 71, 0.15)' }]}>
+                                <Ionicons name="musical-notes" size={32} color="#FFB347" />
+                            </View>
+                            <Text style={styles.workoutTypeName}>Zumba</Text>
+                            <Text style={styles.workoutTypeDescription}>Dance fitness</Text>
+                            <View style={styles.workoutTypeMetaRow}>
+                                <Ionicons name="time-outline" size={14} color={palette.textSecondary} />
+                                <Text style={styles.workoutTypeMetaText}>55 min</Text>
+                            </View>
+                            <View style={styles.workoutTypeMetaRow}>
+                                <Ionicons name="people-outline" size={14} color={palette.textSecondary} />
+                                <Text style={styles.workoutTypeMetaText}>2 classes/week</Text>
+                            </View>
+                        </TouchableOpacity>
+
+                        {/* Spin */}
+                        <TouchableOpacity
+                            style={styles.workoutTypeCard}
+                            onPress={() => Alert.alert('Spin', 'View Spin class schedule')}>
+                            <View style={[styles.workoutTypeIconContainer, { backgroundColor: 'rgba(66, 165, 245, 0.15)' }]}>
+                                <Ionicons name="bicycle" size={32} color="#42A5F5" />
+                            </View>
+                            <Text style={styles.workoutTypeName}>Spin</Text>
+                            <Text style={styles.workoutTypeDescription}>Indoor cycling</Text>
+                            <View style={styles.workoutTypeMetaRow}>
+                                <Ionicons name="time-outline" size={14} color={palette.textSecondary} />
+                                <Text style={styles.workoutTypeMetaText}>45 min</Text>
+                            </View>
+                            <View style={styles.workoutTypeMetaRow}>
+                                <Ionicons name="people-outline" size={14} color={palette.textSecondary} />
+                                <Text style={styles.workoutTypeMetaText}>3 classes/week</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Browse All Link */}
+                    <TouchableOpacity
+                        style={styles.browseAllWorkoutsButton}
+                        onPress={() => Alert.alert('Coming Soon', 'Full workout types catalog coming soon!')}>
+                        <Text style={styles.browseAllWorkoutsText}>Browse All Workout Types</Text>
+                        <Ionicons name="grid-outline" size={18} color={palette.neonGreen} />
+                    </TouchableOpacity>
                 </View>
 
                 {/* Class Schedule */}
                 <View style={styles.sectionCard}>
-                    <Text style={styles.sectionTitle}>Class Schedule</Text>
-                    {mockClasses.map((gymClass) => (
-                        <View key={gymClass.id} style={styles.classCard}>
-                            <View style={styles.classHeader}>
-                                <Text style={styles.className}>{gymClass.name}</Text>
-                                <View style={styles.classTypeTag}>
-                                    <Text style={styles.classTypeText}>{gymClass.type}</Text>
-                                </View>
-                            </View>
-                            <Text style={styles.classInstructor}>Instructor: {gymClass.instructor}</Text>
-                            <Text style={styles.classDuration}>
-                                {gymClass.duration} • Capacity: {gymClass.capacity}
-                            </Text>
-                            <View style={styles.scheduleContainer}>
-                                {gymClass.schedule.map((time, index) => (
-                                    <Text key={index} style={styles.scheduleTime}>
-                                        • {time}
-                                    </Text>
-                                ))}
-                            </View>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>Class Schedule</Text>
+                        <TouchableOpacity
+                            style={styles.viewAllButton}
+                            onPress={() => Alert.alert('Coming Soon', 'Full class schedule view coming soon!')}>
+                            <Text style={styles.viewAllButtonText}>View All</Text>
+                            <Ionicons name="chevron-forward" size={16} color={palette.neonGreen} />
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Day Filter */}
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        style={styles.classFiltersRow}
+                    >
+                        {['All', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
                             <TouchableOpacity
-                                style={styles.bookClassButton}
-                                onPress={() => handleBookClass(gymClass)}
+                                key={day}
+                                style={[
+                                    styles.classDayChip,
+                                    selectedDay === day && styles.classDayChipActive
+                                ]}
+                                onPress={() => setSelectedDay(day)}
                             >
-                                <Text style={styles.bookButtonText}>Book Class</Text>
+                                <Text style={[
+                                    styles.classDayChipText,
+                                    selectedDay === day && styles.classDayChipTextActive
+                                ]}>
+                                    {day}
+                                </Text>
                             </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+
+                    {/* Class Type Filter */}
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        style={styles.classFiltersRow}
+                    >
+                        {['All', 'Yoga', 'HIIT', 'CrossFit', 'Pilates', 'Zumba', 'Spin'].map((type) => (
+                            <TouchableOpacity
+                                key={type}
+                                style={[
+                                    styles.classTypeChip,
+                                    selectedClassType === type && styles.classTypeChipActive
+                                ]}
+                                onPress={() => setSelectedClassType(type)}
+                            >
+                                <Text style={[
+                                    styles.classTypeChipText,
+                                    selectedClassType === type && styles.classTypeChipTextActive
+                                ]}>
+                                    {type}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+
+                    {/* Class Cards */}
+                    {loadingClasses ? (
+                        <View style={styles.loadingContainer}>
+                            <ActivityIndicator size="large" color={palette.neonGreen} />
+                            <Text style={styles.loadingText}>Loading classes...</Text>
                         </View>
-                    ))}
+                    ) : classes.length === 0 ? (
+                        <View style={styles.loadingContainer}>
+                            <Ionicons name="calendar-outline" size={48} color={palette.textSecondary} />
+                            <Text style={styles.loadingText}>No classes available at this gym</Text>
+                        </View>
+                    ) : classes.map((gymClass) => {
+                        // Calculate available spots
+                        const bookedSpots = Math.floor(Math.random() * gymClass.capacity);
+                        const availableSpots = gymClass.capacity - bookedSpots;
+                        const isAlmostFull = availableSpots <= 3;
+                        const isFull = availableSpots === 0;
+
+                        return (
+                            <View key={gymClass.id} style={styles.classCardEnhanced}>
+                                {/* Class Header */}
+                                <View style={styles.classHeaderEnhanced}>
+                                    <View style={styles.classMainInfo}>
+                                        <Text style={styles.classNameEnhanced}>{gymClass.name}</Text>
+                                        <View style={styles.classTypeTagEnhanced}>
+                                            <Ionicons name="fitness" size={12} color="#000" />
+                                            <Text style={styles.classTypeTextEnhanced}>{gymClass.type}</Text>
+                                        </View>
+                                    </View>
+
+                                    {/* Availability Badge */}
+                                    <View style={[
+                                        styles.availabilityBadge,
+                                        isFull && styles.availabilityBadgeFull,
+                                        isAlmostFull && !isFull && styles.availabilityBadgeAlmostFull
+                                    ]}>
+                                        <Text style={[
+                                            styles.availabilityBadgeText,
+                                            isFull && styles.availabilityBadgeTextFull
+                                        ]}>
+                                            {isFull ? 'Full' : `${availableSpots} spots`}
+                                        </Text>
+                                    </View>
+                                </View>
+
+                                {/* Instructor Info */}
+                                <View style={styles.classInstructorRow}>
+                                    <Ionicons name="person-circle-outline" size={18} color={palette.textSecondary} />
+                                    <Text style={styles.classInstructorEnhanced}>{gymClass.instructor}</Text>
+                                </View>
+
+                                {/* Duration & Capacity */}
+                                <View style={styles.classMetaRow}>
+                                    <View style={styles.classMetaItem}>
+                                        <Ionicons name="time-outline" size={16} color={palette.neonGreen} />
+                                        <Text style={styles.classMetaText}>{gymClass.duration}</Text>
+                                    </View>
+                                    <View style={styles.classMetaItem}>
+                                        <Ionicons name="people-outline" size={16} color={palette.neonGreen} />
+                                        <Text style={styles.classMetaText}>{bookedSpots}/{gymClass.capacity}</Text>
+                                    </View>
+                                </View>
+
+                                {/* Schedule Times */}
+                                <View style={styles.scheduleTimesContainer}>
+                                    {gymClass.schedule.map((time, index) => (
+                                        <View key={index} style={styles.scheduleTimeChip}>
+                                            <Ionicons name="calendar-outline" size={12} color={palette.neonGreen} />
+                                            <Text style={styles.scheduleTimeText}>{time}</Text>
+                                        </View>
+                                    ))}
+                                </View>
+
+                                {/* Book Button */}
+                                <TouchableOpacity
+                                    style={[
+                                        styles.bookClassButtonEnhanced,
+                                        isFull && styles.bookClassButtonDisabled
+                                    ]}
+                                    onPress={() => handleBookClass(gymClass)}
+                                    disabled={isFull}
+                                >
+                                    <Ionicons
+                                        name={isFull ? "lock-closed" : "checkmark-circle"}
+                                        size={18}
+                                        color={isFull ? palette.textSecondary : "#000"}
+                                    />
+                                    <Text style={[
+                                        styles.bookClassButtonTextEnhanced,
+                                        isFull && styles.bookClassButtonTextDisabled
+                                    ]}>
+                                        {isFull ? 'Class Full' : 'Book Class'}
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        );
+                    })}
+
+                    {/* View Full Schedule Link */}
+                    <TouchableOpacity
+                        style={styles.viewFullScheduleButton}
+                        onPress={() => Alert.alert('Coming Soon', 'Full weekly schedule view coming soon!')}
+                    >
+                        <Ionicons name="calendar" size={18} color={palette.neonGreen} />
+                        <Text style={styles.viewFullScheduleText}>View Full Weekly Schedule</Text>
+                        <Ionicons name="arrow-forward" size={18} color={palette.neonGreen} />
+                    </TouchableOpacity>
                 </View>
 
                 {/* Reviews Section */}
@@ -1521,5 +1791,426 @@ const styles = StyleSheet.create({
         ...typography.bodyBold,
         color: '#000',
         fontSize: 16,
+    },
+    // Enhanced Trainer Styles
+    trainerCardEnhanced: {
+        flexDirection: 'column',
+        backgroundColor: '#2A2A2A',
+        borderRadius: radii.lg,
+        marginBottom: spacing.lg,
+        overflow: 'hidden',
+    },
+    trainerPhotoLarge: {
+        width: '100%',
+        height: 200,
+        backgroundColor: '#1A1A1A',
+    },
+    trainerContentEnhanced: {
+        padding: spacing.lg,
+    },
+    trainerHeaderRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: spacing.sm,
+    },
+    trainerNameEnhanced: {
+        ...typography.heading2,
+        color: palette.textPrimary,
+        fontSize: 20,
+        fontWeight: '700',
+    },
+    trainerRatingRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        backgroundColor: 'rgba(255, 215, 0, 0.1)',
+        paddingHorizontal: spacing.sm,
+        paddingVertical: 4,
+        borderRadius: radii.sm,
+    },
+    trainerRatingText: {
+        ...typography.body,
+        color: '#FFD700',
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    expertiseContainerEnhanced: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: spacing.sm,
+        marginBottom: spacing.md,
+    },
+    expertiseTagEnhanced: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        backgroundColor: 'rgba(0, 255, 127, 0.1)',
+        paddingHorizontal: spacing.sm,
+        paddingVertical: 6,
+        borderRadius: radii.sm,
+        borderWidth: 1,
+        borderColor: 'rgba(0, 255, 127, 0.2)',
+    },
+    expertiseTextEnhanced: {
+        ...typography.caption,
+        color: palette.neonGreen,
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    trainerMetaRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: spacing.md,
+        paddingTop: spacing.md,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    },
+    trainerMetaItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.xs,
+    },
+    trainerPriceEnhanced: {
+        ...typography.body,
+        color: palette.neonGreen,
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    trainerExperienceText: {
+        ...typography.body,
+        color: palette.textSecondary,
+        fontSize: 14,
+    },
+    bookSessionButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: spacing.sm,
+        backgroundColor: palette.neonGreen,
+        paddingVertical: spacing.md,
+        borderRadius: radii.md,
+        marginTop: spacing.sm,
+    },
+    bookSessionButtonText: {
+        ...typography.bodyBold,
+        color: '#000',
+        fontSize: 16,
+        fontWeight: '700',
+    },
+    viewAllTrainersButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: spacing.sm,
+        paddingVertical: spacing.md,
+        marginTop: spacing.sm,
+        borderWidth: 1,
+        borderColor: palette.neonGreen,
+        borderRadius: radii.md,
+    },
+    viewAllTrainersText: {
+        ...typography.bodyBold,
+        color: palette.neonGreen,
+        fontSize: 16,
+    },
+    // Enhanced Class Schedule Styles
+    classFiltersRow: {
+        marginBottom: spacing.md,
+    },
+    classDayChip: {
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.sm,
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        borderRadius: radii.md,
+        marginRight: spacing.sm,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.1)',
+    },
+    classDayChipActive: {
+        backgroundColor: palette.neonGreen,
+        borderColor: palette.neonGreen,
+    },
+    classDayChipText: {
+        ...typography.body,
+        color: palette.textSecondary,
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    classDayChipTextActive: {
+        color: '#000',
+        fontWeight: '700',
+    },
+    classTypeChip: {
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.sm,
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        borderRadius: radii.md,
+        marginRight: spacing.sm,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.1)',
+    },
+    classTypeChipActive: {
+        backgroundColor: 'rgba(0, 255, 127, 0.15)',
+        borderColor: palette.neonGreen,
+    },
+    classTypeChipText: {
+        ...typography.body,
+        color: palette.textSecondary,
+        fontSize: 13,
+        fontWeight: '600',
+    },
+    classTypeChipTextActive: {
+        color: palette.neonGreen,
+        fontWeight: '700',
+    },
+    classCardEnhanced: {
+        backgroundColor: '#2A2A2A',
+        borderRadius: radii.lg,
+        padding: spacing.lg,
+        marginBottom: spacing.md,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
+    },
+    classHeaderEnhanced: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: spacing.md,
+    },
+    classMainInfo: {
+        flex: 1,
+        marginRight: spacing.md,
+    },
+    classNameEnhanced: {
+        ...typography.heading2,
+        color: palette.textPrimary,
+        fontSize: 18,
+        fontWeight: '700',
+        marginBottom: spacing.xs,
+    },
+    classTypeTagEnhanced: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        backgroundColor: palette.neonGreen,
+        paddingHorizontal: spacing.sm,
+        paddingVertical: 4,
+        borderRadius: radii.sm,
+        alignSelf: 'flex-start',
+    },
+    classTypeTextEnhanced: {
+        ...typography.caption,
+        color: '#000',
+        fontSize: 11,
+        fontWeight: '700',
+        textTransform: 'uppercase',
+    },
+    availabilityBadge: {
+        backgroundColor: 'rgba(0, 255, 127, 0.15)',
+        paddingHorizontal: spacing.sm,
+        paddingVertical: 6,
+        borderRadius: radii.sm,
+        borderWidth: 1,
+        borderColor: palette.neonGreen,
+    },
+    availabilityBadgeFull: {
+        backgroundColor: 'rgba(255, 107, 107, 0.15)',
+        borderColor: '#FF6B6B',
+    },
+    availabilityBadgeAlmostFull: {
+        backgroundColor: 'rgba(255, 165, 0, 0.15)',
+        borderColor: '#FFA500',
+    },
+    availabilityBadgeText: {
+        ...typography.caption,
+        color: palette.neonGreen,
+        fontSize: 11,
+        fontWeight: '700',
+    },
+    availabilityBadgeTextFull: {
+        color: '#FF6B6B',
+    },
+    classInstructorRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.xs,
+        marginBottom: spacing.sm,
+    },
+    classInstructorEnhanced: {
+        ...typography.body,
+        color: palette.textSecondary,
+        fontSize: 14,
+    },
+    classMetaRow: {
+        flexDirection: 'row',
+        gap: spacing.lg,
+        marginBottom: spacing.md,
+        paddingVertical: spacing.sm,
+        borderTopWidth: 1,
+        borderBottomWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
+    },
+    classMetaItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.xs,
+    },
+    classMetaText: {
+        ...typography.body,
+        color: palette.textPrimary,
+        fontSize: 13,
+        fontWeight: '600',
+    },
+    scheduleTimesContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: spacing.sm,
+        marginBottom: spacing.md,
+    },
+    scheduleTimeChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        backgroundColor: 'rgba(0, 255, 127, 0.1)',
+        paddingHorizontal: spacing.sm,
+        paddingVertical: 6,
+        borderRadius: radii.sm,
+        borderWidth: 1,
+        borderColor: 'rgba(0, 255, 127, 0.2)',
+    },
+    scheduleTimeText: {
+        ...typography.caption,
+        color: palette.neonGreen,
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    bookClassButtonEnhanced: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: spacing.sm,
+        backgroundColor: palette.neonGreen,
+        paddingVertical: spacing.md,
+        borderRadius: radii.md,
+        marginTop: spacing.sm,
+    },
+    bookClassButtonDisabled: {
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.2)',
+    },
+    bookClassButtonTextEnhanced: {
+        ...typography.bodyBold,
+        color: '#000',
+        fontSize: 15,
+        fontWeight: '700',
+    },
+    bookClassButtonTextDisabled: {
+        color: palette.textSecondary,
+    },
+    viewFullScheduleButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: spacing.sm,
+        paddingVertical: spacing.md,
+        marginTop: spacing.md,
+        borderWidth: 1,
+        borderColor: palette.neonGreen,
+        borderRadius: radii.md,
+    },
+    viewFullScheduleText: {
+        ...typography.bodyBold,
+        color: palette.neonGreen,
+        fontSize: 15,
+    },
+    // Workout Types Styles
+    workoutTypesSubtitle: {
+        ...typography.body,
+        color: palette.textSecondary,
+        fontSize: 14,
+        marginBottom: spacing.lg,
+        lineHeight: 20,
+    },
+    workoutTypesGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: spacing.md,
+        justifyContent: 'space-between',
+    },
+    workoutTypeCard: {
+        width: '48%',
+        backgroundColor: '#2A2A2A',
+        borderRadius: radii.lg,
+        padding: spacing.md,
+        marginBottom: spacing.sm,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
+    },
+    workoutTypeIconContainer: {
+        width: 64,
+        height: 64,
+        borderRadius: radii.lg,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: spacing.sm,
+        alignSelf: 'center',
+    },
+    workoutTypeName: {
+        ...typography.subtitle,
+        color: palette.textPrimary,
+        fontSize: 16,
+        fontWeight: '700',
+        marginBottom: spacing.xs,
+        textAlign: 'center',
+    },
+    workoutTypeDescription: {
+        ...typography.caption,
+        color: palette.textSecondary,
+        fontSize: 12,
+        textAlign: 'center',
+        marginBottom: spacing.sm,
+    },
+    workoutTypeMetaRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        justifyContent: 'center',
+        marginTop: 2,
+    },
+    workoutTypeMetaText: {
+        ...typography.caption,
+        color: palette.textSecondary,
+        fontSize: 11,
+    },
+    browseAllWorkoutsButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: spacing.sm,
+        paddingVertical: spacing.md,
+        marginTop: spacing.md,
+        borderWidth: 1,
+        borderColor: palette.neonGreen,
+        borderRadius: radii.md,
+    },
+    browseAllWorkoutsText: {
+        ...typography.bodyBold,
+        color: palette.neonGreen,
+        fontSize: 15,
+    },
+    // Loading & Empty States
+    emptyContainer: {
+        padding: spacing.xl,
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: spacing.md,
+    },
+    emptyText: {
+        ...typography.body,
+        color: palette.textSecondary,
+        textAlign: 'center',
+        fontSize: 15,
     },
 });
