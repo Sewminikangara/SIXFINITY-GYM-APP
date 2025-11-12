@@ -8,7 +8,28 @@ import {
     LiveStatusScreen,
     CheckInScreen,
     TrainersScreen,
-    TrainerDetailScreen
+    TrainerDetailScreen,
+    EditProfileScreen,
+    BodyStatsScreen,
+    FitnessGoalsScreen,
+    AchievementsScreen,
+    WearableDevicesScreen,
+    WalletScreen,
+    TransactionHistoryScreen,
+    PaymentMethodsScreen,
+    AddPaymentMethodScreen,
+    PaymentCheckoutScreen,
+    PaymentSuccessScreen,
+    PaymentFailedScreen,
+    InvoiceViewerScreen,
+    BookingsScreen,
+    ReferralsScreen,
+    RewardsScreen,
+    OffersScreen,
+    NotificationsScreen,
+    NotificationSettingsScreen,
+    SettingsScreen,
+    HelpSupportScreen,
 } from '@/screens/app';
 import { AddMealScreen } from '@/screens/app/meals/AddMealScreen';
 import { MealAnalysisScreen } from '@/screens/app/meals/MealAnalysisScreen';
@@ -115,6 +136,187 @@ export const AppNavigator = () => {
                 options={{
                     presentation: 'card',
                     animation: 'slide_from_right',
+                }}
+            />
+            {/* Profile & Stats screens */}
+            <Stack.Screen
+                name="EditProfile"
+                component={EditProfileScreen}
+                options={{
+                    presentation: 'card',
+                    headerShown: true,
+                    headerTitle: 'Edit Profile',
+                }}
+            />
+            <Stack.Screen
+                name="BodyStats"
+                component={BodyStatsScreen}
+                options={{
+                    presentation: 'card',
+                    headerShown: true,
+                    headerTitle: 'Body Stats',
+                }}
+            />
+            <Stack.Screen
+                name="FitnessGoals"
+                component={FitnessGoalsScreen}
+                options={{
+                    presentation: 'card',
+                    headerShown: true,
+                    headerTitle: 'Fitness Goals',
+                }}
+            />
+            <Stack.Screen
+                name="Achievements"
+                component={AchievementsScreen}
+                options={{
+                    presentation: 'card',
+                    headerShown: true,
+                    headerTitle: 'Achievements',
+                }}
+            />
+            <Stack.Screen
+                name="WearableDevices"
+                component={WearableDevicesScreen}
+                options={{
+                    presentation: 'card',
+                    headerShown: true,
+                    headerTitle: 'Wearable Devices',
+                }}
+            />
+            {/* Wallet screens */}
+            <Stack.Screen
+                name="Wallet"
+                component={WalletScreen}
+                options={{
+                    presentation: 'card',
+                    headerShown: true,
+                    headerTitle: 'Wallet',
+                }}
+            />
+            <Stack.Screen
+                name="TransactionHistory"
+                component={TransactionHistoryScreen}
+                options={{
+                    presentation: 'card',
+                    headerShown: true,
+                    headerTitle: 'Transaction History',
+                }}
+            />
+            <Stack.Screen
+                name="PaymentMethods"
+                component={PaymentMethodsScreen}
+                options={{
+                    presentation: 'card',
+                    headerShown: false,
+                }}
+            />
+            <Stack.Screen
+                name="AddPaymentMethod"
+                component={AddPaymentMethodScreen}
+                options={{
+                    presentation: 'card',
+                    headerShown: false,
+                }}
+            />
+            <Stack.Screen
+                name="PaymentCheckout"
+                component={PaymentCheckoutScreen}
+                options={{
+                    presentation: 'card',
+                    headerShown: false,
+                }}
+            />
+            <Stack.Screen
+                name="PaymentSuccess"
+                component={PaymentSuccessScreen}
+                options={{
+                    presentation: 'card',
+                    headerShown: false,
+                    gestureEnabled: false,
+                }}
+            />
+            <Stack.Screen
+                name="PaymentFailed"
+                component={PaymentFailedScreen}
+                options={{
+                    presentation: 'card',
+                    headerShown: false,
+                }}
+            />
+            <Stack.Screen
+                name="InvoiceViewer"
+                component={InvoiceViewerScreen}
+                options={{
+                    presentation: 'card',
+                    headerShown: false,
+                }}
+            />
+            {/* Bookings & Referrals screens */}
+            <Stack.Screen
+                name="Bookings"
+                component={BookingsScreen}
+                options={{
+                    presentation: 'card',
+                    headerShown: false,
+                }}
+            />
+            <Stack.Screen
+                name="Referrals"
+                component={ReferralsScreen}
+                options={{
+                    presentation: 'card',
+                    headerShown: false,
+                }}
+            />
+            <Stack.Screen
+                name="Rewards"
+                component={RewardsScreen}
+                options={{
+                    presentation: 'card',
+                    headerShown: false,
+                }}
+            />
+            <Stack.Screen
+                name="Offers"
+                component={OffersScreen}
+                options={{
+                    presentation: 'card',
+                    headerShown: false,
+                }}
+            />
+            {/* Notifications screens */}
+            <Stack.Screen
+                name="Notifications"
+                component={NotificationsScreen}
+                options={{
+                    presentation: 'card',
+                    headerShown: false,
+                }}
+            />
+            <Stack.Screen
+                name="NotificationSettings"
+                component={NotificationSettingsScreen}
+                options={{
+                    presentation: 'card',
+                    headerShown: false,
+                }}
+            />
+            {/* Settings & Support screens */}
+            <Stack.Screen
+                name="Settings"
+                component={SettingsScreen}
+                options={{
+                    presentation: 'card',
+                    headerShown: false,
+                }}
+            />
+            <Stack.Screen
+                name="HelpSupport"
+                component={HelpSupportScreen}
+                options={{
+                    presentation: 'card',
+                    headerShown: false,
                 }}
             />
         </Stack.Navigator>

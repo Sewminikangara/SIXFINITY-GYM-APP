@@ -1,4 +1,5 @@
-// Gym Service - Handles gym data and filtering logic
+// Gym Service - Handles gym data and filtering logic with Supabase integration
+import { supabase } from '@/config/supabaseClient';
 
 export interface GymLocation {
     latitude: number;
@@ -28,319 +29,50 @@ export interface Gym {
     distance?: string; // Calculated based on user location
 }
 
-//  gym data for Sri Lanka, Dubai, and Australia
-export const GYM_DATABASE: Gym[] = [
-    //srilanka gyms
-    {
-        id: 'sl-001',
-        name: 'Fitness First - Colombo City Centre',
-        description: 'Premium fitness center with state-of-the-art equipment, personal training, and group classes in the heart of Colombo.',
-        facilities: ['parking', 'wifi', 'shower', 'locker', 'trainer', 'pool', 'sauna', 'cafe'],
-        rating: 4.7,
-        reviewCount: 245,
-        priceRange: '$$$',
-        pricePerMonth: 12000, // LKR
-        image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop',
-        images: [
-            'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop',
-            'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&h=600&fit=crop',
-            'https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=800&h=600&fit=crop',
-            'https://images.unsplash.com/photo-1558017487-06bf9f82613a?w=800&h=600&fit=crop'
-        ],
-        location: {
-            latitude: 6.9271,
-            longitude: 79.8612,
-            address: 'Colombo City Centre, Colombo 02',
-            city: 'Colombo',
-            country: 'Sri Lanka'
-        },
-        openingHours: '5:00 AM - 11:00 PM',
-        phoneNumber: '+94 11 234 5678',
-        website: 'https://fitnessfirst.lk',
-        membershipTypes: ['Monthly', '3 Months', '6 Months', 'Annual']
-    },
-    {
-        id: 'sl-002',
-        name: 'Gold\'s Gym - Nugegoda',
-        description: 'World-class gym with Olympic equipment, cardio zones, and certified trainers. Perfect for bodybuilding and strength training.',
-        facilities: ['parking', 'wifi', 'shower', 'locker', 'trainer', 'supplement'],
-        rating: 4.6,
-        reviewCount: 189,
-        priceRange: '$$',
-        pricePerMonth: 8500, // LKR
-        image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&h=600&fit=crop',
-        images: [
-            'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&h=600&fit=crop',
-            'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop',
-            'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&h=600&fit=crop'
-        ],
-        location: {
-            latitude: 6.8649,
-            longitude: 79.8997,
-            address: 'High Level Road, Nugegoda',
-            city: 'Nugegoda',
-            country: 'Sri Lanka'
-        },
-        openingHours: '6:00 AM - 10:00 PM',
-        phoneNumber: '+94 11 289 4567',
-        membershipTypes: ['Monthly', 'Quarterly', 'Annual']
-    },
-    {
-        id: 'sl-003',
-        name: 'Life Fitness - Rajagiriya',
-        description: 'Modern fitness studio with CrossFit boxes, spinning classes, and yoga sessions. Community-focused environment.',
-        facilities: ['parking', 'wifi', 'shower', 'locker', 'trainer', 'yoga', 'crossfit'],
-        rating: 4.8,
-        reviewCount: 312,
-        priceRange: '$$',
-        pricePerMonth: 9500, // LKR
-        image: 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&h=600&fit=crop',
-        images: [
-            'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&h=600&fit=crop',
-            'https://images.unsplash.com/photo-1623874228601-f4193c7b1818?w=800&h=600&fit=crop'
-        ],
-        location: {
-            latitude: 6.9147,
-            longitude: 79.8910,
-            address: 'Kotte Road, Rajagiriya',
-            city: 'Rajagiriya',
-            country: 'Sri Lanka'
-        },
-        openingHours: '5:30 AM - 10:30 PM',
-        phoneNumber: '+94 11 278 9012',
-        membershipTypes: ['Monthly', '6 Months', 'Annual']
-    },
-    {
-        id: 'sl-004',
-        name: 'Anytime Fitness - Dehiwala',
-        description: '24/7 gym access with modern equipment and personalized training programs. Part of the global Anytime Fitness network.',
-        facilities: ['parking', 'wifi', 'shower', 'locker', 'trainer', '24hours'],
-        rating: 4.5,
-        reviewCount: 156,
-        priceRange: '$$',
-        pricePerMonth: 7500, // LKR
-        image: 'https://images.unsplash.com/photo-1623874228601-f4193c7b1818?w=800&h=600&fit=crop',
-        images: [
-            'https://images.unsplash.com/photo-1623874228601-f4193c7b1818?w=800&h=600&fit=crop',
-            'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop'
-        ],
-        location: {
-            latitude: 6.8562,
-            longitude: 79.8631,
-            address: 'Galle Road, Dehiwala',
-            city: 'Dehiwala',
-            country: 'Sri Lanka'
-        },
-        openingHours: '24 Hours',
-        phoneNumber: '+94 11 271 2345',
-        membershipTypes: ['Monthly', 'Annual']
-    },
-    {
-        id: 'sl-005',
-        name: 'Power Zone Fitness - Kandy',
-        description: 'Comprehensive fitness center in Kandy with strength training, cardio equipment, and group fitness classes.',
-        facilities: ['parking', 'shower', 'locker', 'trainer', 'zumba'],
-        rating: 4.4,
-        reviewCount: 98,
-        priceRange: '$',
-        pricePerMonth: 5500, // LKR
-        image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop',
-        images: [
-            'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop'
-        ],
-        location: {
-            latitude: 7.2906,
-            longitude: 80.6337,
-            address: 'Peradeniya Road, Kandy',
-            city: 'Kandy',
-            country: 'Sri Lanka'
-        },
-        openingHours: '6:00 AM - 9:00 PM',
-        phoneNumber: '+94 81 223 4567',
-        membershipTypes: ['Monthly', 'Quarterly']
-    },
+export interface Equipment {
+    id: string;
+    name: string;
+    category: string;
+    isAvailable: boolean;
+    inUseBy?: string;
+    estimatedWaitTime?: number; // in minutes
+    queueCount?: number;
+}
 
-    // dubai
-    {
-        id: 'db-001',
-        name: 'Fitness First - Dubai Mall',
-        description: 'Luxury gym in Dubai Mall with panoramic city views, premium equipment, spa facilities, and celebrity trainers.',
-        facilities: ['parking', 'wifi', 'shower', 'locker', 'trainer', 'pool', 'sauna', 'spa', 'cafe'],
-        rating: 4.9,
-        reviewCount: 567,
-        priceRange: '$$$$',
-        pricePerMonth: 650, // AED
-        image: 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&h=600&fit=crop',
-        images: [
-            'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&h=600&fit=crop',
-            'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop'
-        ],
-        location: {
-            latitude: 25.1972,
-            longitude: 55.2744,
-            address: 'Dubai Mall, Downtown Dubai',
-            city: 'Dubai',
-            country: 'Dubai'
-        },
-        openingHours: '6:00 AM - 12:00 AM',
-        phoneNumber: '+971 4 339 8877',
-        website: 'https://fitnessfirstme.com',
-        membershipTypes: ['Monthly', 'Quarterly', 'Annual', 'Platinum']
-    },
-    {
-        id: 'db-002',
-        name: 'Gold\'s Gym - Marina',
-        description: 'Iconic gym brand in Dubai Marina with cutting-edge equipment, Olympic lifting area, and stunning views.',
-        facilities: ['parking', 'wifi', 'shower', 'locker', 'trainer', 'pool', 'supplement'],
-        rating: 4.7,
-        reviewCount: 423,
-        priceRange: '$$$',
-        pricePerMonth: 550, // AED
-        image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&h=600&fit=crop',
-        images: [
-            'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&h=600&fit=crop'
-        ],
-        location: {
-            latitude: 25.0785,
-            longitude: 55.1382,
-            address: 'Dubai Marina Walk',
-            city: 'Dubai',
-            country: 'Dubai'
-        },
-        openingHours: '5:00 AM - 11:00 PM',
-        phoneNumber: '+971 4 423 8899',
-        membershipTypes: ['Monthly', 'Semi-Annual', 'Annual']
-    },
-    {
-        id: 'db-003',
-        name: 'CrossFit Box - Business Bay',
-        description: 'Premier CrossFit facility with expert coaches, competition training, and nutrition guidance.',
-        facilities: ['parking', 'wifi', 'shower', 'locker', 'trainer', 'crossfit', 'nutrition'],
-        rating: 4.8,
-        reviewCount: 289,
-        priceRange: '$$$',
-        pricePerMonth: 600, // AED
-        image: 'https://images.unsplash.com/photo-1623874228601-f4193c7b1818?w=800&h=600&fit=crop',
-        images: [
-            'https://images.unsplash.com/photo-1623874228601-f4193c7b1818?w=800&h=600&fit=crop'
-        ],
-        location: {
-            latitude: 25.1864,
-            longitude: 55.2662,
-            address: 'Business Bay, Dubai',
-            city: 'Dubai',
-            country: 'Dubai'
-        },
-        openingHours: '5:30 AM - 10:00 PM',
-        phoneNumber: '+971 4 567 8900',
-        membershipTypes: ['Monthly', 'Quarterly', 'Drop-in']
-    },
+export interface Trainer {
+    id: string;
+    name: string;
+    photo: string;
+    expertise: string[];
+    rating: number;
+    pricePerSession: number;
+    bio?: string;
+    certifications?: string[];
+}
 
-    // australia
-    {
-        id: 'au-001',
-        name: 'Fitness First - Sydney CBD',
-        description: 'Premier fitness club in Sydney CBD with rooftop pool, group classes, and personal training services.',
-        facilities: ['parking', 'wifi', 'shower', 'locker', 'trainer', 'pool', 'sauna', 'cafe', 'yoga'],
-        rating: 4.6,
-        reviewCount: 534,
-        priceRange: '$$$',
-        pricePerMonth: 89, // AUD
-        image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop',
-        images: [
-            'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop',
-            'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&h=600&fit=crop'
-        ],
-        location: {
-            latitude: -33.8688,
-            longitude: 151.2093,
-            address: '123 George Street, Sydney',
-            city: 'Sydney',
-            country: 'Australia',
-            state: 'NSW'
-        },
-        openingHours: '5:00 AM - 11:00 PM',
-        phoneNumber: '+61 2 9876 5432',
-        website: 'https://fitnessfirst.com.au',
-        membershipTypes: ['Monthly', 'Fortnightly', 'Annual']
-    },
-    {
-        id: 'au-002',
-        name: 'F45 Training - Melbourne',
-        description: 'Innovative 45-minute HIIT workouts with functional training. Popular Australian fitness concept.',
-        facilities: ['wifi', 'shower', 'locker', 'trainer', 'hiit'],
-        rating: 4.9,
-        reviewCount: 687,
-        priceRange: '$$',
-        pricePerMonth: 65, // AUD
-        image: 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&h=600&fit=crop',
-        images: [
-            'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&h=600&fit=crop'
-        ],
-        location: {
-            latitude: -37.8136,
-            longitude: 144.9631,
-            address: 'Collins Street, Melbourne',
-            city: 'Melbourne',
-            country: 'Australia',
-            state: 'VIC'
-        },
-        openingHours: '5:00 AM - 8:00 PM',
-        phoneNumber: '+61 3 9012 3456',
-        website: 'https://f45training.com',
-        membershipTypes: ['Monthly', 'Unlimited', '3x per week']
-    },
-    {
-        id: 'au-003',
-        name: 'Anytime Fitness - Brisbane',
-        description: '24/7 access gym with modern equipment, group classes, and nationwide access to all Anytime Fitness locations.',
-        facilities: ['parking', 'wifi', 'shower', 'locker', 'trainer', '24hours'],
-        rating: 4.5,
-        reviewCount: 345,
-        priceRange: '$$',
-        pricePerMonth: 70, // AUD
-        image: 'https://images.unsplash.com/photo-1623874228601-f4193c7b1818?w=800&h=600&fit=crop',
-        images: [
-            'https://images.unsplash.com/photo-1623874228601-f4193c7b1818?w=800&h=600&fit=crop'
-        ],
-        location: {
-            latitude: -27.4698,
-            longitude: 153.0251,
-            address: 'Queen Street Mall, Brisbane',
-            city: 'Brisbane',
-            country: 'Australia',
-            state: 'QLD'
-        },
-        openingHours: '24 Hours',
-        phoneNumber: '+61 7 3234 5678',
-        membershipTypes: ['Fortnightly', 'Monthly']
-    },
-    {
-        id: 'au-004',
-        name: 'Jetts Fitness - Perth',
-        description: 'Budget-friendly 24/7 gym with quality equipment and friendly staff. Great value for money.',
-        facilities: ['parking', 'wifi', 'shower', 'locker', '24hours'],
-        rating: 4.3,
-        reviewCount: 234,
-        priceRange: '$',
-        pricePerMonth: 45, // AUD
-        image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop',
-        images: [
-            'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop'
-        ],
-        location: {
-            latitude: -31.9505,
-            longitude: 115.8605,
-            address: 'Murray Street, Perth',
-            city: 'Perth',
-            country: 'Australia',
-            state: 'WA'
-        },
-        openingHours: '24 Hours',
-        phoneNumber: '+61 8 9321 4567',
-        membershipTypes: ['Fortnightly', 'Annual']
-    }
-];
+export interface Class {
+    id: string;
+    name: string;
+    type: string;
+    instructor: string;
+    duration: string;
+    capacity: number;
+    bookedCount: number;
+    schedule: string[];
+    description?: string;
+}
+
+export interface Review {
+    id: string;
+    userName: string;
+    userPhoto: string;
+    rating: number;
+    comment: string;
+    date: string;
+    photos?: string[];
+    helpfulCount: number;
+}
+
 
 // Calculate distance between two coordinates using Haversine formula
 function calculateDistance(
@@ -382,6 +114,18 @@ function calculateDistance(
     return Math.round(distance);
 }
 
+// Format distance for display
+function formatDistance(distKm: number): string {
+    if (distKm < 1) {
+        const meters = Math.round(distKm * 1000);
+        return `${meters} m`;
+    } else if (distKm < 10) {
+        return `${distKm.toFixed(1)} km`;
+    } else {
+        return `${Math.round(distKm)} km`;
+    }
+}
+
 export interface GymFilters {
     searchQuery?: string;
     country?: 'Sri Lanka' | 'Dubai' | 'Australia' | 'All';
@@ -396,124 +140,537 @@ export interface GymFilters {
     };
 }
 
-export function filterGyms(filters: GymFilters): Gym[] {
-    let gyms = [...GYM_DATABASE];
-    console.log('Starting with', gyms.length, 'gyms');
+/**
+ * Fetch gyms from Supabase with filters
+ */
+export async function getGyms(filters: GymFilters = {}): Promise<{ data: Gym[] | null; error: Error | null }> {
+    try {
+        let query = supabase.from('gyms').select('*');
 
-    // Filter by country
-    if (filters.country && filters.country !== 'All') {
-        gyms = gyms.filter((gym) => gym.location.country === filters.country);
-        console.log('After country filter:', gyms.length, 'gyms');
-    }
+        // Filter by country
+        if (filters.country && filters.country !== 'All') {
+            query = query.eq('country', filters.country);
+        }
 
-    // Filter by city
-    if (filters.city && filters.city.trim() && filters.city !== 'All') {
-        console.log('Filtering by city:', filters.city);
-        gyms = gyms.filter((gym) =>
-            gym.location.city.toLowerCase() === filters.city!.toLowerCase().trim()
-        );
-        console.log('After city filter:', gyms.length, 'gyms');
-    }
+        // Filter by city
+        if (filters.city && filters.city.trim() && filters.city !== 'All') {
+            query = query.ilike('city', filters.city.trim());
+        }
 
-    // Filter by search query (name, description, address)
-    if (filters.searchQuery && filters.searchQuery.trim()) {
-        const query = filters.searchQuery.toLowerCase();
-        console.log('Searching for:', query);
-        gyms = gyms.filter(
-            (gym) =>
-                gym.name.toLowerCase().includes(query) ||
-                gym.description.toLowerCase().includes(query) ||
-                gym.location.address.toLowerCase().includes(query) ||
-                gym.location.city.toLowerCase().includes(query)
-        );
-        console.log('After search filter:', gyms.length, 'gyms');
-    }
+        // Filter by search query
+        if (filters.searchQuery && filters.searchQuery.trim()) {
+            const searchTerm = `%${filters.searchQuery.trim()}%`;
+            query = query.or(`name.ilike.${searchTerm},description.ilike.${searchTerm},address.ilike.${searchTerm}`);
+        }
 
-    // Calculate distance and filter by max distance
-    if (filters.userLocation) {
-        gyms = gyms.map((gym) => {
-            const distKm = calculateDistance(
-                filters.userLocation!.latitude,
-                filters.userLocation!.longitude,
-                gym.location.latitude,
-                gym.location.longitude
+        // Filter by minimum rating
+        if (filters.minRating) {
+            query = query.gte('rating', filters.minRating);
+        }
+
+        const { data: gymsData, error } = await query;
+
+        if (error) {
+            console.error('Error fetching gyms:', error);
+            return { data: null, error: new Error(error.message) };
+        }
+
+        if (!gymsData) {
+            return { data: [], error: null };
+        }
+
+        // Transform database format to app format
+        let gyms: Gym[] = gymsData.map((gym: any) => ({
+            id: gym.id,
+            name: gym.name,
+            description: gym.description || '',
+            facilities: gym.facilities || [],
+            rating: gym.rating || 0,
+            reviewCount: gym.review_count || 0,
+            priceRange: gym.price_range || '$$',
+            pricePerMonth: gym.price_per_month || 0,
+            image: gym.photos?.[0] || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop',
+            images: gym.photos || [],
+            location: {
+                latitude: gym.latitude || 0,
+                longitude: gym.longitude || 0,
+                address: gym.address || '',
+                city: gym.city || '',
+                country: gym.country || 'Sri Lanka',
+                state: gym.state,
+            },
+            openingHours: gym.opening_hours || '24 Hours',
+            phoneNumber: gym.phone_number || '',
+            website: gym.website,
+            membershipTypes: gym.membership_types || [],
+        }));
+
+        // Filter by facilities
+        if (filters.facilities && filters.facilities.length > 0) {
+            gyms = gyms.filter((gym) =>
+                filters.facilities!.every((facility) => gym.facilities.includes(facility))
             );
+        }
 
-            // Format distance: show meters if under 1km, otherwise km
-            let distanceText: string;
-            if (distKm < 1) {
-                const meters = Math.round(distKm * 1000);
-                distanceText = `${meters} m`;
-            } else if (distKm < 10) {
-                distanceText = `${distKm.toFixed(1)} km`;
-            } else {
-                distanceText = `${Math.round(distKm)} km`;
+        // Filter by price range
+        if (filters.priceRange && filters.priceRange.length > 0) {
+            gyms = gyms.filter((gym) => filters.priceRange!.includes(gym.priceRange));
+        }
+
+        // Calculate distance and filter by max distance
+        if (filters.userLocation) {
+            gyms = gyms.map((gym) => {
+                const distKm = calculateDistance(
+                    filters.userLocation!.latitude,
+                    filters.userLocation!.longitude,
+                    gym.location.latitude,
+                    gym.location.longitude
+                );
+
+                return {
+                    ...gym,
+                    distance: formatDistance(distKm),
+                };
+            });
+
+            // Filter by max distance
+            if (filters.maxDistance) {
+                gyms = gyms.filter((gym) => {
+                    const distanceStr = gym.distance!.replace(' m', '').replace(' km', '');
+                    const distanceValue = gym.distance!.includes(' m')
+                        ? parseFloat(distanceStr) / 1000
+                        : parseFloat(distanceStr);
+                    return distanceValue <= filters.maxDistance!;
+                });
             }
 
-            return {
-                ...gym,
-                distance: distanceText,
-            };
-        });
-
-        if (filters.maxDistance) {
-            gyms = gyms.filter((gym) => {
-                // Parse distance value (handle both 'm' and 'km')
-                const distanceStr = gym.distance!.replace(' m', '').replace(' km', '');
-                const distanceValue = gym.distance!.includes(' m')
-                    ? parseFloat(distanceStr) / 1000 // Convert meters to km
-                    : parseFloat(distanceStr);
-                return distanceValue <= filters.maxDistance!;
+            // Sort by distance
+            gyms.sort((a, b) => {
+                const distA = a.distance!.includes(' m')
+                    ? parseFloat(a.distance!.replace(' m', '')) / 1000
+                    : parseFloat(a.distance!.replace(' km', ''));
+                const distB = b.distance!.includes(' m')
+                    ? parseFloat(b.distance!.replace(' m', '')) / 1000
+                    : parseFloat(b.distance!.replace(' km', ''));
+                return distA - distB;
             });
         }
 
-        // Sort by distance
-        gyms.sort((a, b) => {
-            // Parse and normalize to km for comparison
-            const distA = a.distance!.includes(' m')
-                ? parseFloat(a.distance!.replace(' m', '')) / 1000
-                : parseFloat(a.distance!.replace(' km', ''));
-            const distB = b.distance!.includes(' m')
-                ? parseFloat(b.distance!.replace(' m', '')) / 1000
-                : parseFloat(b.distance!.replace(' km', ''));
-            return distA - distB;
+        return { data: gyms, error: null };
+    } catch (err) {
+        console.error('Error in getGyms:', err);
+        return { data: null, error: err as Error };
+    }
+}
+
+/**
+ * Get detailed gym information by ID
+ */
+export async function getGymDetails(gymId: string): Promise<{ data: Gym | null; error: Error | null }> {
+    try {
+        const { data, error } = await supabase
+            .from('gyms')
+            .select('*')
+            .eq('id', gymId)
+            .single();
+
+        if (error) {
+            console.error('Error fetching gym details:', error);
+            return { data: null, error: new Error(error.message) };
+        }
+
+        if (!data) {
+            return { data: null, error: new Error('Gym not found') };
+        }
+
+        const gym: Gym = {
+            id: data.id,
+            name: data.name,
+            description: data.description || '',
+            facilities: data.facilities || [],
+            rating: data.rating || 0,
+            reviewCount: data.review_count || 0,
+            priceRange: data.price_range || '$$',
+            pricePerMonth: data.price_per_month || 0,
+            image: data.photos?.[0] || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop',
+            images: data.photos || [],
+            location: {
+                latitude: data.latitude || 0,
+                longitude: data.longitude || 0,
+                address: data.address || '',
+                city: data.city || '',
+                country: data.country || 'Sri Lanka',
+                state: data.state,
+            },
+            openingHours: data.opening_hours || '24 Hours',
+            phoneNumber: data.phone_number || '',
+            website: data.website,
+            membershipTypes: data.membership_types || [],
+        };
+
+        return { data: gym, error: null };
+    } catch (err) {
+        console.error('Error in getGymDetails:', err);
+        return { data: null, error: err as Error };
+    }
+}
+
+/**
+ * Get user's saved gyms and memberships
+ */
+export async function getUserGyms(userId: string): Promise<{ data: Gym[] | null; error: Error | null }> {
+    try {
+        const { data: memberships, error } = await supabase
+            .from('gym_memberships')
+            .select(`
+                *,
+                gyms (*)
+            `)
+            .eq('user_id', userId)
+            .eq('is_active', true);
+
+        if (error) {
+            console.error('Error fetching user gyms:', error);
+            return { data: null, error: new Error(error.message) };
+        }
+
+        if (!memberships || memberships.length === 0) {
+            return { data: [], error: null };
+        }
+
+        const gyms: Gym[] = memberships.map((membership: any) => {
+            const gym = membership.gyms;
+            return {
+                id: gym.id,
+                name: gym.name,
+                description: gym.description || '',
+                facilities: gym.facilities || [],
+                rating: gym.rating || 0,
+                reviewCount: gym.review_count || 0,
+                priceRange: gym.price_range || '$$',
+                pricePerMonth: gym.price_per_month || 0,
+                image: gym.photos?.[0] || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop',
+                images: gym.photos || [],
+                location: {
+                    latitude: gym.latitude || 0,
+                    longitude: gym.longitude || 0,
+                    address: gym.address || '',
+                    city: gym.city || '',
+                    country: gym.country || 'Sri Lanka',
+                    state: gym.state,
+                },
+                openingHours: gym.opening_hours || '24 Hours',
+                phoneNumber: gym.phone_number || '',
+                website: gym.website,
+                membershipTypes: gym.membership_types || [],
+            };
         });
-    }
 
-    // Filter by facilities
-    if (filters.facilities && filters.facilities.length > 0) {
-        gyms = gyms.filter((gym) =>
-            filters.facilities!.every((facility) => gym.facilities.includes(facility))
-        );
+        return { data: gyms, error: null };
+    } catch (err) {
+        console.error('Error in getUserGyms:', err);
+        return { data: null, error: err as Error };
     }
-
-    // Filter by price range
-    if (filters.priceRange && filters.priceRange.length > 0) {
-        gyms = gyms.filter((gym) => filters.priceRange!.includes(gym.priceRange));
-    }
-
-    // Filter by minimum rating
-    if (filters.minRating) {
-        gyms = gyms.filter((gym) => gym.rating >= filters.minRating!);
-    }
-
-    return gyms;
 }
 
-export function getGymById(id: string): Gym | undefined {
-    return GYM_DATABASE.find((gym) => gym.id === id);
+/**
+ * Get equipment status for a gym
+ */
+export async function getEquipmentStatus(gymId: string): Promise<{ data: Equipment[] | null; error: Error | null }> {
+    try {
+        const { data: equipmentData, error } = await supabase
+            .from('equipment')
+            .select(`
+                *,
+                equipment_usage!left (
+                    user_id,
+                    start_time,
+                    end_time
+                ),
+                equipment_queue!left (
+                    id
+                )
+            `)
+            .eq('gym_id', gymId)
+            .order('category', { ascending: true })
+            .order('name', { ascending: true });
+
+        if (error) {
+            console.error('Error fetching equipment status:', error);
+            return { data: null, error: new Error(error.message) };
+        }
+
+        if (!equipmentData) {
+            return { data: [], error: null };
+        }
+
+        const equipment: Equipment[] = equipmentData.map((item: any) => {
+            const activeUsage = item.equipment_usage?.find((usage: any) => !usage.end_time);
+            const queueCount = item.equipment_queue?.length || 0;
+
+            let estimatedWaitTime = 0;
+            if (activeUsage) {
+                const startTime = new Date(activeUsage.start_time);
+                const now = new Date();
+                const elapsedMinutes = Math.floor((now.getTime() - startTime.getTime()) / (1000 * 60));
+                const avgSessionTime = 30; // Average 30 min session
+                estimatedWaitTime = Math.max(0, avgSessionTime - elapsedMinutes);
+            }
+
+            return {
+                id: item.id,
+                name: item.name,
+                category: item.category,
+                isAvailable: item.is_available && !activeUsage,
+                inUseBy: activeUsage ? activeUsage.user_id : undefined,
+                estimatedWaitTime: activeUsage ? estimatedWaitTime : undefined,
+                queueCount,
+            };
+        });
+
+        return { data: equipment, error: null };
+    } catch (err) {
+        console.error('Error in getEquipmentStatus:', err);
+        return { data: null, error: err as Error };
+    }
 }
 
+/**
+ * Get trainers for a gym
+ */
+export async function getTrainers(gymId: string): Promise<{ data: Trainer[] | null; error: Error | null }> {
+    try {
+        const { data, error } = await supabase
+            .from('trainers')
+            .select('*')
+            .eq('gym_id', gymId)
+            .eq('is_active', true)
+            .order('rating', { ascending: false });
+
+        if (error) {
+            console.error('Error fetching trainers:', error);
+            return { data: null, error: new Error(error.message) };
+        }
+
+        if (!data) {
+            return { data: [], error: null };
+        }
+
+        const trainers: Trainer[] = data.map((trainer: any) => ({
+            id: trainer.id,
+            name: trainer.name,
+            photo: trainer.photo || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(trainer.name),
+            expertise: trainer.expertise || [],
+            rating: trainer.rating || 0,
+            pricePerSession: trainer.price_per_session || 0,
+            bio: trainer.bio,
+            certifications: trainer.certifications || [],
+        }));
+
+        return { data: trainers, error: null };
+    } catch (err) {
+        console.error('Error in getTrainers:', err);
+        return { data: null, error: err as Error };
+    }
+}
+
+/**
+ * Get classes for a gym
+ */
+export async function getClasses(gymId: string): Promise<{ data: Class[] | null; error: Error | null }> {
+    try {
+        const { data, error } = await supabase
+            .from('classes')
+            .select(`
+                *,
+                class_bookings!left (id)
+            `)
+            .eq('gym_id', gymId)
+            .eq('is_active', true)
+            .order('name', { ascending: true });
+
+        if (error) {
+            console.error('Error fetching classes:', error);
+            return { data: null, error: new Error(error.message) };
+        }
+
+        if (!data) {
+            return { data: [], error: null };
+        }
+
+        const classes: Class[] = data.map((cls: any) => {
+            const bookedCount = cls.class_bookings?.length || 0;
+
+            return {
+                id: cls.id,
+                name: cls.name,
+                type: cls.class_type,
+                instructor: cls.instructor_name,
+                duration: cls.duration_minutes ? `${cls.duration_minutes} min` : '60 min',
+                capacity: cls.max_capacity || 20,
+                bookedCount,
+                schedule: cls.schedule || [],
+                description: cls.description,
+            };
+        });
+
+        return { data: classes, error: null };
+    } catch (err) {
+        console.error('Error in getClasses:', err);
+        return { data: null, error: err as Error };
+    }
+}
+
+/**
+ * Get reviews for a gym
+ */
+export async function getReviews(gymId: string): Promise<{ data: Review[] | null; error: Error | null }> {
+    try {
+        const { data, error } = await supabase
+            .from('gym_reviews')
+            .select(`
+                *,
+                review_helpful_votes!left (id)
+            `)
+            .eq('gym_id', gymId)
+            .order('created_at', { ascending: false })
+            .limit(50);
+
+        if (error) {
+            console.error('Error fetching reviews:', error);
+            return { data: null, error: new Error(error.message) };
+        }
+
+        if (!data) {
+            return { data: [], error: null };
+        }
+
+        const reviews: Review[] = data.map((review: any) => ({
+            id: review.id,
+            userName: review.user_name || 'Anonymous',
+            userPhoto: review.user_photo || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(review.user_name || 'User'),
+            rating: review.rating,
+            comment: review.comment || '',
+            date: new Date(review.created_at).toLocaleDateString(),
+            photos: review.photos || [],
+            helpfulCount: review.review_helpful_votes?.length || 0,
+        }));
+
+        return { data: reviews, error: null };
+    } catch (err) {
+        console.error('Error in getReviews:', err);
+        return { data: null, error: err as Error };
+    }
+}
+
+/**
+ * Get last check-in date for a gym
+ */
+export async function getLastCheckIn(userId: string, gymId: string): Promise<{ data: string | null; error: Error | null }> {
+    try {
+        const { data, error } = await supabase
+            .from('check_ins')
+            .select('check_in_time')
+            .eq('user_id', userId)
+            .eq('gym_id', gymId)
+            .order('check_in_time', { ascending: false })
+            .limit(1)
+            .single();
+
+        if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+            console.error('Error fetching last check-in:', error);
+            return { data: null, error: new Error(error.message) };
+        }
+
+        if (!data) {
+            return { data: null, error: null };
+        }
+
+        const checkInDate = new Date(data.check_in_time);
+        const now = new Date();
+        const diffDays = Math.floor((now.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
+
+        let lastVisited: string;
+        if (diffDays === 0) {
+            lastVisited = 'Today';
+        } else if (diffDays === 1) {
+            lastVisited = 'Yesterday';
+        } else if (diffDays < 7) {
+            lastVisited = `${diffDays} days ago`;
+        } else if (diffDays < 30) {
+            const weeks = Math.floor(diffDays / 7);
+            lastVisited = `${weeks} week${weeks > 1 ? 's' : ''} ago`;
+        } else {
+            const months = Math.floor(diffDays / 30);
+            lastVisited = `${months} month${months > 1 ? 's' : ''} ago`;
+        }
+
+        return { data: lastVisited, error: null };
+    } catch (err) {
+        console.error('Error in getLastCheckIn:', err);
+        return { data: null, error: err as Error };
+    }
+}
+
+/**
+ * Legacy function for backward compatibility - uses new getGyms internally
+ */
+export async function filterGyms(filters: GymFilters): Promise<Gym[]> {
+    const { data, error } = await getGyms(filters);
+    if (error || !data) {
+        console.error('Error filtering gyms:', error);
+        return [];
+    }
+    return data;
+}
+
+/**
+ * Legacy function for backward compatibility - uses new getGymDetails internally
+ */
+export async function getGymById(id: string): Promise<Gym | undefined> {
+    const { data, error } = await getGymDetails(id);
+    if (error || !data) {
+        console.error('Error getting gym by id:', error);
+        return undefined;
+    }
+    return data;
+}
+
+/**
+ * Get available countries
+ */
 export function getCountries(): string[] {
     return ['All', 'Sri Lanka', 'Dubai', 'Australia'];
 }
 
-export function getCitiesByCountry(country: string): string[] {
-    if (country === 'All') {
-        return [];
+/**
+ * Get cities by country from database
+ */
+export async function getCitiesByCountry(country: string): Promise<{ data: string[] | null; error: Error | null }> {
+    try {
+        if (country === 'All') {
+            return { data: [], error: null };
+        }
+
+        const { data, error } = await supabase
+            .from('gyms')
+            .select('city')
+            .eq('country', country);
+
+        if (error) {
+            console.error('Error fetching cities:', error);
+            return { data: null, error: new Error(error.message) };
+        }
+
+        if (!data) {
+            return { data: [], error: null };
+        }
+
+        // Extract unique cities and sort
+        const cities = [...new Set(data.map((gym: any) => gym.city))].sort();
+        return { data: cities, error: null };
+    } catch (err) {
+        console.error('Error in getCitiesByCountry:', err);
+        return { data: null, error: err as Error };
     }
-    const cities = GYM_DATABASE.filter((gym) => gym.location.country === country)
-        .map((gym) => gym.location.city)
-        .filter((city, index, self) => self.indexOf(city) === index);
-    return cities.sort();
 }

@@ -1,14 +1,3 @@
-/**
- * MealAnalysisScreen - AI Meal Scanning & Nutrition Analysis
- * 
- * FLOW:
- * 1. User takes photo OR scans barcode
- * 2. Shows image with "X% Scanning..." overlay
- * 3. AI analyzes nutrition facts
- * 4. Displays 6 macro circles (Carbs, Protein, Fat, Fiber, Sodium, None)
- * 5. User can save meal with custom name and meal type
- */
-
 import React, { useState, useEffect } from 'react';
 import {
     View,

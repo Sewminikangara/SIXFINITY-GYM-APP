@@ -13,3 +13,4 @@ export { AIMealSuggestionCard } from './AIMealSuggestionCard';
 export { WeeklyMealPlans } from './WeeklyMealPlans';
 export { GymFiltersModal } from './GymFiltersModal';
 export type { GymFilterOptions } from './GymFiltersModal';
+export { default as PaymentProcessingModal } from './PaymentProcessingModal';

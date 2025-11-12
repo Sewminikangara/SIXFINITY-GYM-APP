@@ -12,60 +12,46 @@ import {
     Alert,
     Modal,
     StatusBar,
+    ActivityIndicator,
 } from 'react-native';
 import { Screen } from '@/components';
 import { palette, spacing, typography, radii } from '@/theme';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppStackParamList } from '@/navigation/types';
 import { Ionicons } from '@expo/vector-icons';
-import { GYM_DATABASE, Gym } from '@/services/gymService';
+import {
+    getGymDetails,
+    getEquipmentStatus,
+    getTrainers,
+    getClasses,
+    getReviews,
+    type Gym,
+    type Equipment as GymEquipment,
+    type Trainer as GymTrainer,
+    type Class as DatabaseClass,
+    type Review as DatabaseReview,
+} from '@/services/gymService';
 
 const { width } = Dimensions.get('window');
 
 type Props = NativeStackScreenProps<AppStackParamList, 'GymDetail'>;
 
-// Equipment data structure
-interface Equipment {
-    id: string;
-    name: string;
-    category: 'Cardio' | 'Strength' | 'Free Weights' | 'Functional' | 'Other';
-    image: string;
-    count: number;
-    specifications: string;
-    instructions: string;
+// Local Equipment data structure (enhanced with UI-specific fields)
+interface Equipment extends GymEquipment {
+    image?: string;
+    count?: number;
+    specifications?: string;
+    instructions?: string;
 }
 
-// Trainer data structure
-interface Trainer {
-    id: string;
-    name: string;
-    photo: string;
-    expertise: string[];
-    rating: number;
-    pricePerSession: number;
-}
+// Local Trainer data structure (same as database)
+interface Trainer extends GymTrainer { }
 
-// Class schedule data structure
-interface GymClass {
-    id: string;
-    name: string;
-    type: string;
-    instructor: string;
-    schedule: string[];
-    duration: string;
-    capacity: number;
-}
+// Local Class schedule data structure (enhanced with UI-specific fields)
+interface GymClass extends DatabaseClass { }
 
-// Review data structure
-interface Review {
-    id: string;
-    userName: string;
-    userPhoto: string;
-    rating: number;
-    comment: string;
-    date: string;
-    photos?: string[];
-    helpfulCount: number;
+// Local Review data structure (enhanced with UI-specific fields)
+interface Review extends DatabaseReview {
     wasHelpful?: boolean;
 }
 
@@ -81,186 +67,131 @@ export const GymDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     const [selectedDay, setSelectedDay] = useState<string>('All');
     const [selectedClassType, setSelectedClassType] = useState<string>('All');
 
-    // Mock data - will be replaced with real data from backend
-    const mockEquipment: Equipment[] = [
-        {
-            id: '1',
-            name: 'Treadmill',
-            category: 'Cardio',
-            image: 'https://images.unsplash.com/photo-1576678927484-cc907957088c?w=400',
-            count: 10,
-            specifications: 'Max Speed: 20 km/h, Incline: 0-15%, Display: LCD touchscreen',
-            instructions: 'Start with warm-up at 5 km/h, gradually increase speed. Use safety clip.',
-        },
-        {
-            id: '2',
-            name: 'Elliptical Trainer',
-            category: 'Cardio',
-            image: 'https://images.unsplash.com/photo-1623874514711-0f321325f318?w=400',
-            count: 8,
-            specifications: 'Resistance Levels: 20, Stride Length: 20", Heart Rate Monitor',
-            instructions: 'Stand upright, use handles for balance, maintain steady rhythm.',
-        },
-        {
-            id: '3',
-            name: 'Bench Press',
-            category: 'Strength',
-            image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400',
-            count: 5,
-            specifications: 'Adjustable bench, Olympic barbell compatible, Max load: 200kg',
-            instructions: 'Always use spotter, keep back flat, lower bar to chest level.',
-        },
-        {
-            id: '4',
-            name: 'Dumbbells',
-            category: 'Free Weights',
-            image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=400',
-            count: 50,
-            specifications: 'Range: 2.5kg - 50kg, Rubber coated, Various grips',
-            instructions: 'Select appropriate weight, maintain proper form, rerack after use.',
-        },
-        {
-            id: '5',
-            name: 'Cable Machine',
-            category: 'Functional',
-            image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400',
-            count: 4,
-            specifications: 'Adjustable height, 150kg weight stack, Multiple attachments',
-            instructions: 'Attach desired handle, set weight, perform exercise with controlled motion.',
-        },
-    ];
+    // Database-driven state
+    const [equipment, setEquipment] = useState<Equipment[]>([]);
+    const [trainers, setTrainers] = useState<Trainer[]>([]);
+    const [classes, setClasses] = useState<GymClass[]>([]);
 
-    const mockTrainers: Trainer[] = [
-        {
-            id: '1',
-            name: 'Avishka I',
-            photo: 'https://randomuser.me/api/portraits/men/1.jpg',
-            expertise: ['Strength Training', 'HIIT', 'Weight Loss'],
-            rating: 4.8,
-            pricePerSession: 50,
-        },
-        {
-            id: '2',
-            name: 'Avishka R',
-            photo: 'https://randomuser.me/api/portraits/women/2.jpg',
-            expertise: ['Yoga', 'Pilates', 'Flexibility'],
-            rating: 4.9,
-            pricePerSession: 45,
-        },
-        {
-            id: '3',
-            name: 'Avishka B',
-            photo: 'https://randomuser.me/api/portraits/men/3.jpg',
-            expertise: ['CrossFit', 'Olympic Lifting', 'Nutrition'],
-            rating: 4.7,
-            pricePerSession: 55,
-        },
-    ];
+    // Loading states
+    const [loadingGym, setLoadingGym] = useState(true);
+    const [loadingEquipment, setLoadingEquipment] = useState(true);
+    const [loadingTrainers, setLoadingTrainers] = useState(true);
+    const [loadingClasses, setLoadingClasses] = useState(true);
+    const [loadingReviews, setLoadingReviews] = useState(true);
 
-    const mockClasses: GymClass[] = [
-        {
-            id: '1',
-            name: 'Morning Yoga',
-            type: 'Yoga',
-            instructor: 'Kavinda K',
-            schedule: ['Mon 7:00 AM', 'Wed 7:00 AM', 'Fri 7:00 AM'],
-            duration: '60 min',
-            capacity: 20,
-        },
-        {
-            id: '2',
-            name: 'HIIT Power',
-            type: 'HIIT',
-            instructor: 'Devin A',
-            schedule: ['Tue 6:00 PM', 'Thu 6:00 PM'],
-            duration: '45 min',
-            capacity: 15,
-        },
-        {
-            id: '3',
-            name: 'CrossFit WOD',
-            type: 'CrossFit',
-            instructor: 'Avishka R',
-            schedule: ['Mon 5:30 PM', 'Wed 5:30 PM', 'Fri 5:30 PM'],
-            duration: '60 min',
-            capacity: 12,
-        },
-    ];
-
-    const mockReviews: Review[] = [
-        {
-            id: '1',
-            userName: 'Avishka RRRRRR',
-            userPhoto: 'https://randomuser.me/api/portraits/men/10.jpg',
-            rating: 5,
-            comment: 'Great gym with excellent equipment! Staff is very friendly and helpful. The trainers are knowledgeable and always ready to assist.',
-            date: '2024-10-15',
-            photos: [
-                'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400',
-                'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=400',
-            ],
-            helpfulCount: 24,
-            wasHelpful: false,
-        },
-        {
-            id: '2',
-            userName: 'Avishka RRRRRR',
-            userPhoto: 'https://randomuser.me/api/portraits/women/12.jpg',
-            rating: 4,
-            comment: 'Good facilities but can get crowded during peak hours. Would recommend coming in the morning for a better experience.',
-            date: '2024-10-10',
-            helpfulCount: 12,
-            wasHelpful: true,
-        },
-        {
-            id: '3',
-            userName: 'Avishka RRRRR',
-            userPhoto: 'https://randomuser.me/api/portraits/men/15.jpg',
-            rating: 5,
-            comment: 'Best gym in the area! Love the variety of classes and trainers. The equipment is always well-maintained and clean.',
-            date: '2024-10-05',
-            photos: [
-                'https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=400',
-            ],
-            helpfulCount: 18,
-            wasHelpful: false,
-        },
-        {
-            id: '4',
-            userName: 'Avishka IIIII',
-            userPhoto: 'https://randomuser.me/api/portraits/men/22.jpg',
-            rating: 3,
-            comment: 'Decent gym but could use some upgrades to the locker room facilities. Equipment is good though.',
-            date: '2024-10-01',
-            helpfulCount: 5,
-            wasHelpful: false,
-        },
-        {
-            id: '5',
-            userName: 'BANDARA KKK',
-            userPhoto: 'https://randomuser.me/api/portraits/women/44.jpg',
-            rating: 5,
-            comment: 'Amazing atmosphere and great community! The yoga classes are top-notch.',
-            date: '2024-09-28',
-            photos: [
-                'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400',
-                'https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=400',
-            ],
-            helpfulCount: 31,
-            wasHelpful: false,
-        },
-    ];
+    // Error state
+    const [gymError, setGymError] = useState<string | null>(null);
 
     useEffect(() => {
         loadGymDetails();
-        setReviews(mockReviews);
+        loadEquipment();
+        loadTrainers();
+        loadClasses();
+        loadReviews();
     }, [gymId]);
 
-    const loadGymDetails = () => {
-        // Get gym from GYM_DATABASE
-        const foundGym = GYM_DATABASE.find((g) => g.id === gymId);
-        if (foundGym) {
-            setGym(foundGym);
+    const loadGymDetails = async () => {
+        try {
+            setLoadingGym(true);
+            setGymError(null);
+            const { data, error } = await getGymDetails(gymId);
+
+            if (error) {
+                console.error('Error loading gym details:', error);
+                setGymError(error.message);
+                Alert.alert('Error', 'Failed to load gym details. Please try again.');
+            } else if (data) {
+                setGym(data);
+            } else {
+                setGymError('Gym not found');
+                Alert.alert('Error', 'Gym not found.');
+            }
+        } catch (error) {
+            console.error('Unexpected error loading gym details:', error);
+            setGymError('An unexpected error occurred');
+            Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+        } finally {
+            setLoadingGym(false);
+        }
+    };
+
+    const loadEquipment = async () => {
+        try {
+            setLoadingEquipment(true);
+            const { data, error } = await getEquipmentStatus(gymId);
+
+            if (error) {
+                console.error('Error loading equipment:', error);
+                setEquipment([]);
+            } else {
+                setEquipment(data || []);
+            }
+        } catch (error) {
+            console.error('Unexpected error loading equipment:', error);
+            setEquipment([]);
+        } finally {
+            setLoadingEquipment(false);
+        }
+    };
+
+    const loadTrainers = async () => {
+        try {
+            setLoadingTrainers(true);
+            const { data, error } = await getTrainers(gymId);
+
+            if (error) {
+                console.error('Error loading trainers:', error);
+                setTrainers([]);
+            } else {
+                setTrainers(data || []);
+            }
+        } catch (error) {
+            console.error('Unexpected error loading trainers:', error);
+            setTrainers([]);
+        } finally {
+            setLoadingTrainers(false);
+        }
+    };
+
+    const loadClasses = async () => {
+        try {
+            setLoadingClasses(true);
+            const { data, error } = await getClasses(gymId);
+
+            if (error) {
+                console.error('Error loading classes:', error);
+                setClasses([]);
+            } else {
+                setClasses(data || []);
+            }
+        } catch (error) {
+            console.error('Unexpected error loading classes:', error);
+            setClasses([]);
+        } finally {
+            setLoadingClasses(false);
+        }
+    };
+
+    const loadReviews = async () => {
+        try {
+            setLoadingReviews(true);
+            const { data, error } = await getReviews(gymId);
+
+            if (error) {
+                console.error('Error loading reviews:', error);
+                setReviews([]);
+            } else {
+                const enhancedReviews: Review[] = (data || []).map(review => ({
+                    ...review,
+                    wasHelpful: false,
+                }));
+                setReviews(enhancedReviews);
+            }
+        } catch (error) {
+            console.error('Unexpected error loading reviews:', error);
+            setReviews([]);
+        } finally {
+            setLoadingReviews(false);
         }
     };
 
@@ -268,8 +199,8 @@ export const GymDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
     const filteredEquipment =
         selectedCategory === 'All'
-            ? mockEquipment
-            : mockEquipment.filter((eq) => eq.category === selectedCategory);
+            ? equipment
+            : equipment.filter((eq) => eq.category === selectedCategory);
 
     const renderStars = (rating: number) => {
         return (
@@ -603,7 +534,17 @@ export const GymDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                         </TouchableOpacity>
                     </View>
 
-                    {mockTrainers.map((trainer) => (
+                    {loadingTrainers ? (
+                        <View style={styles.loadingContainer}>
+                            <ActivityIndicator size="large" color={palette.neonGreen} />
+                            <Text style={styles.loadingText}>Loading trainers...</Text>
+                        </View>
+                    ) : trainers.length === 0 ? (
+                        <View style={styles.emptyContainer}>
+                            <Ionicons name="people-outline" size={48} color={palette.textSecondary} />
+                            <Text style={styles.emptyText}>No trainers available at this gym</Text>
+                        </View>
+                    ) : trainers.map((trainer) => (
                         <TouchableOpacity
                             key={trainer.id}
                             style={styles.trainerCardEnhanced}
@@ -870,7 +811,17 @@ export const GymDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                     </ScrollView>
 
                     {/* Class Cards */}
-                    {mockClasses.map((gymClass) => {
+                    {loadingClasses ? (
+                        <View style={styles.loadingContainer}>
+                            <ActivityIndicator size="large" color={palette.neonGreen} />
+                            <Text style={styles.loadingText}>Loading classes...</Text>
+                        </View>
+                    ) : classes.length === 0 ? (
+                        <View style={styles.loadingContainer}>
+                            <Ionicons name="calendar-outline" size={48} color={palette.textSecondary} />
+                            <Text style={styles.loadingText}>No classes available at this gym</Text>
+                        </View>
+                    ) : classes.map((gymClass) => {
                         // Calculate available spots
                         const bookedSpots = Math.floor(Math.random() * gymClass.capacity);
                         const availableSpots = gymClass.capacity - bookedSpots;
@@ -2247,6 +2198,19 @@ const styles = StyleSheet.create({
     browseAllWorkoutsText: {
         ...typography.bodyBold,
         color: palette.neonGreen,
+        fontSize: 15,
+    },
+    // Loading & Empty States
+    emptyContainer: {
+        padding: spacing.xl,
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: spacing.md,
+    },
+    emptyText: {
+        ...typography.body,
+        color: palette.textSecondary,
+        textAlign: 'center',
         fontSize: 15,
     },
 });

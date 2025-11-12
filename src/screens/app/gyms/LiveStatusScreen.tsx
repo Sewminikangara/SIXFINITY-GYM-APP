@@ -8,6 +8,7 @@ import {
     Image,
     Alert,
     Modal,
+    ActivityIndicator,
 } from 'react-native';
 import { Screen } from '@/components';
 import { palette, spacing, typography, radii } from '@/theme';
@@ -15,7 +16,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppStackParamList } from '@/navigation/types';
 import { Ionicons } from '@expo/vector-icons';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { GYM_DATABASE, Gym } from '@/services/gymService';
+import { getUserGyms, getEquipmentStatus, type Gym } from '@/services/gymService';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'LiveStatus'>;
 
@@ -64,11 +65,75 @@ export const LiveStatusScreen: React.FC<Props> = ({ route, navigation }) => {
     const [showGymSelectorModal, setShowGymSelectorModal] = useState(false);
     const [selectedEquipmentForUse, setSelectedEquipmentForUse] = useState<Equipment | null>(null);
     const [customDuration, setCustomDuration] = useState<string>('');
+    const [loading, setLoading] = useState(true);
+    const [equipment, setEquipment] = useState<Equipment[]>([]);
+    const [myGyms, setMyGyms] = useState<Gym[]>([]);
 
-    // Mock data - will be replaced with real-time data from backend
-    const myGyms = GYM_DATABASE.filter((g) =>
-        ['sl-001', 'sl-002', 'dubai-001'].includes(g.id)
-    );
+    // TODO: Replace with actual user ID from auth context
+    const userId = 'user-123';
+
+    useEffect(() => {
+        loadMyGyms();
+    }, []);
+
+    useEffect(() => {
+        if (selectedGymId) {
+            loadEquipment();
+            // Auto-refresh every 30 seconds
+            const interval = setInterval(() => {
+                loadEquipment();
+            }, 30000);
+            return () => clearInterval(interval);
+        }
+    }, [selectedGymId]);
+
+    const loadMyGyms = async () => {
+        try {
+            const { data, error } = await getUserGyms(userId);
+            if (error) {
+                console.error('Error loading gyms:', error);
+            } else {
+                setMyGyms(data || []);
+                // If no gym selected and user has gyms, select first one
+                if (!selectedGymId && data && data.length > 0) {
+                    setSelectedGymId(data[0].id);
+                }
+            }
+        } catch (error) {
+            console.error('Unexpected error loading gyms:', error);
+        }
+    };
+
+    const loadEquipment = async () => {
+        try {
+            setLoading(true);
+            const { data, error } = await getEquipmentStatus(selectedGymId);
+
+            if (error) {
+                console.error('Error loading equipment:', error);
+                Alert.alert('Error', 'Failed to load equipment status.');
+                setEquipment([]);
+            } else {
+                // Transform database equipment to UI equipment format
+                const uiEquipment: Equipment[] = (data || []).map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    category: item.category as any,
+                    image: 'https://images.unsplash.com/photo-1576678927484-cc907957088c?w=400',
+                    status: item.isAvailable ? 'available' : item.queueCount && item.queueCount > 0 ? 'occupied' : 'in-use',
+                    remainingTime: item.estimatedWaitTime,
+                    waitCount: item.queueCount,
+                    currentUser: item.inUseBy ? 'User' : undefined,
+                }));
+                setEquipment(uiEquipment);
+            }
+        } catch (error) {
+            console.error('Unexpected error loading equipment:', error);
+            setEquipment([]);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const [gymStatus, setGymStatus] = useState<GymStatus>({
         currentCount: 35,
@@ -88,56 +153,6 @@ export const LiveStatusScreen: React.FC<Props> = ({ route, navigation }) => {
         ],
         bestTimeToVisit: 'Come after 7 PM - usually quiet',
     });
-
-    const [equipment, setEquipment] = useState<Equipment[]>([
-        {
-            id: 'eq-1',
-            name: 'Treadmill #1',
-            category: 'Cardio',
-            image: 'https://images.unsplash.com/photo-1576678927484-cc907957088c?w=400',
-            status: 'available',
-        },
-        {
-            id: 'eq-2',
-            name: 'Treadmill #2',
-            category: 'Cardio',
-            image: 'https://images.unsplash.com/photo-1576678927484-cc907957088c?w=400',
-            status: 'in-use',
-            remainingTime: 15,
-            currentUser: 'John D.',
-        },
-        {
-            id: 'eq-3',
-            name: 'Bench Press #1',
-            category: 'Strength',
-            image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400',
-            status: 'occupied',
-            waitCount: 2,
-        },
-        {
-            id: 'eq-4',
-            name: 'Elliptical #1',
-            category: 'Cardio',
-            image: 'https://images.unsplash.com/photo-1623874514711-0f321325f318?w=400',
-            status: 'available',
-        },
-        {
-            id: 'eq-5',
-            name: 'Cable Machine',
-            category: 'Functional',
-            image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400',
-            status: 'in-use',
-            remainingTime: 8,
-            currentUser: 'Sarah M.',
-        },
-        {
-            id: 'eq-6',
-            name: 'Dumbbells 20kg',
-            category: 'Free Weights',
-            image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=400',
-            status: 'available',
-        },
-    ]);
 
     const [myQueue, setMyQueue] = useState<QueueItem[]>([
         {

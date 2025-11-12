@@ -24,7 +24,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import * as Location from 'expo-location';
 import { palette, spacing, typography } from '@/theme';
 import { GymFiltersModal, type GymFilterOptions } from '@/components';
-import { filterGyms, getCountries, getCitiesByCountry, type Gym, type GymFilters } from '@/services/gymService';
+import { getGyms, getCountries, getCitiesByCountry, type Gym, type GymFilters } from '@/services/gymService';
 import { AppTabParamList, AppStackParamList } from '@/navigation/types';
 
 type GymsScreenNavigation = CompositeNavigationProp<
@@ -181,35 +181,63 @@ export const GymsScreen = () => {
         return 'All';
     };
 
-    const loadGymsWithLocation = (lat: number, lng: number, country: string) => {
-        const filters: GymFilters = {
-            country: country !== 'All' ? country as any : undefined,
-            city: selectedCity || undefined,
-            searchQuery: searchQuery.trim() || undefined,
-            userLocation: { latitude: lat, longitude: lng },
-            // Only apply distance filter if 'All' countries selected
-            maxDistance: country === 'All' ? selectedDistance : undefined,
-            facilities: selectedFacilities.length > 0 ? selectedFacilities : undefined,
-            minRating: minRating > 0 ? minRating : undefined,
-        };
+    const loadGymsWithLocation = async (lat: number, lng: number, country: string) => {
+        try {
+            const filters: GymFilters = {
+                country: country !== 'All' ? country as any : undefined,
+                city: selectedCity || undefined,
+                searchQuery: searchQuery.trim() || undefined,
+                userLocation: { latitude: lat, longitude: lng },
+                // Only apply distance filter if 'All' countries selected
+                maxDistance: country === 'All' ? selectedDistance : undefined,
+                facilities: selectedFacilities.length > 0 ? selectedFacilities : undefined,
+                minRating: minRating > 0 ? minRating : undefined,
+            };
 
-        const results = filterGyms(filters);
-        setGyms(results);
-        setLoading(false);
+            const { data, error } = await getGyms(filters);
+
+            if (error) {
+                console.error('Error loading gyms:', error);
+                Alert.alert('Error', 'Failed to load gyms. Please try again.');
+                setGyms([]);
+            } else {
+                setGyms(data || []);
+            }
+        } catch (error) {
+            console.error('Unexpected error loading gyms:', error);
+            Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+            setGyms([]);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const loadGymsWithoutLocation = () => {
-        const filters: GymFilters = {
-            country: selectedCountry !== 'All' ? selectedCountry as any : undefined,
-            city: selectedCity || undefined,
-            searchQuery: searchQuery.trim() || undefined,
-            facilities: selectedFacilities.length > 0 ? selectedFacilities : undefined,
-            minRating: minRating > 0 ? minRating : undefined,
-        };
+    const loadGymsWithoutLocation = async () => {
+        try {
+            const filters: GymFilters = {
+                country: selectedCountry !== 'All' ? selectedCountry as any : undefined,
+                city: selectedCity || undefined,
+                searchQuery: searchQuery.trim() || undefined,
+                facilities: selectedFacilities.length > 0 ? selectedFacilities : undefined,
+                minRating: minRating > 0 ? minRating : undefined,
+            };
 
-        const results = filterGyms(filters);
-        setGyms(results);
-        setLoading(false);
+            const { data, error } = await getGyms(filters);
+
+            if (error) {
+                console.error('Error loading gyms:', error);
+                Alert.alert('Error', 'Failed to load gyms. Please try again.');
+                setGyms([]);
+            } else {
+                setGyms(data || []);
+            }
+        } catch (error) {
+            console.error('Unexpected error loading gyms:', error);
+            Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+            setGyms([]);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const onRefresh = async () => {

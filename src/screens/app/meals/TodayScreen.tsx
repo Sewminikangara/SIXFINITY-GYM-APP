@@ -1,13 +1,3 @@
-/**
- * TodayScreen - TODAY TAB (Daily Tracking)
- * 
- * 5 SECTIONS ONLY:
- * 1. Quick Actions (Camera, Manual, Barcode)
- * 2. Daily Calories Summary (Circle progress + macros)
- * 3. Today's Meals (Breakfast, Lunch, Dinner, Snacks)
- * 4. Water Intake (Progress bar + quick add buttons)
- * 5. AI Meal Suggestions (Personalized recommendations)
- */
 
 import React, { useState, useEffect, useCallback } from 'react';
 import {
