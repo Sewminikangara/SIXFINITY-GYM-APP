@@ -84,17 +84,17 @@ export default function NotificationsScreen() {
     const getTypeIcon = (type: NotificationType) => {
         switch (type) {
             case 'booking':
-                return '📅';
+                return '';
             case 'payment':
-                return '💳';
+                return '';
             case 'reward':
-                return '🎁';
+                return '';
             case 'system':
-                return '⚙️';
+                return '';
             case 'promo':
-                return '🎉';
+                return '';
             default:
-                return '🔔';
+                return '';
         }
     };
 
@@ -156,7 +156,7 @@ export default function NotificationsScreen() {
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Notifications</Text>
                 <TouchableOpacity onPress={() => navigation.navigate('NotificationSettings' as never)}>
-                    <Text style={styles.settingsButton}>⚙️</Text>
+                    <Text style={styles.settingsButton}></Text>
                 </TouchableOpacity>
             </View>
 
@@ -181,7 +181,7 @@ export default function NotificationsScreen() {
 
             {notifications.length === 0 ? (
                 <View style={styles.emptyContainer}>
-                    <Text style={styles.emptyIcon}>🔔</Text>
+                    <Text style={styles.emptyIcon}></Text>
                     <Text style={styles.emptyTitle}>No Notifications</Text>
                     <Text style={styles.emptyText}>
                         You're all caught up! We'll notify you when something important happens.

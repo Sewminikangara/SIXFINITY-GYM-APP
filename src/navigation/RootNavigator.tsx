@@ -32,18 +32,38 @@ export const RootNavigator = () => {
 
   return (
     <NavigationContainer theme={theme}>
-      <Stack.Navigator id={undefined} screenOptions={{ headerShown: false }}>
+      <Stack.Navigator id="RootStack" screenOptions={{ headerShown: false }}>
         {showSplash || status === 'loading' ? (
           <>
-            <Stack.Screen name="Splash" component={SplashScreen} />
-            <Stack.Screen name="Loading" component={LoadingScreen} />
+            <Stack.Screen
+              name="Splash"
+              component={SplashScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Loading"
+              component={LoadingScreen}
+              options={{ headerShown: false }}
+            />
           </>
         ) : status === 'signedOut' ? (
-          <Stack.Screen name="Auth" component={AuthNavigator} />
+          <Stack.Screen
+            name="Auth"
+            component={AuthNavigator}
+            options={{ headerShown: false }}
+          />
         ) : status === 'onboarding' ? (
-          <Stack.Screen name="Onboarding" component={OnboardingNavigator} />
+          <Stack.Screen
+            name="Onboarding"
+            component={OnboardingNavigator}
+            options={{ headerShown: false }}
+          />
         ) : (
-          <Stack.Screen name="App" component={AppNavigator} />
+          <Stack.Screen
+            name="App"
+            component={AppNavigator}
+            options={{ headerShown: false }}
+          />
         )}
       </Stack.Navigator>
     </NavigationContainer>

@@ -24,12 +24,23 @@
       ]
     ],
     "android": {
-      "package": "com.gymapp"
+      "package": "com.gymapp",
+      "permissions": [
+        "ACTIVITY_RECOGNITION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.gymapp",
-      "usesAppleSignIn": true
+      "usesAppleSignIn": true,
+      "infoPlist": {
+        "NSMotionUsageDescription": "We need access to your motion data to track your daily steps and activity level.",
+        "NSCameraUsageDescription": "Allow GymApp to access your camera to take photos of your meals for nutrition tracking.",
+        "NSPhotoLibraryUsageDescription": "Allow GymApp to access your photos to upload meal images."
+      }
     },
     "web": {
       "bundler": "metro"

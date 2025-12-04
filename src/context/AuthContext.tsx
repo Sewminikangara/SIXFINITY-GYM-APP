@@ -9,6 +9,7 @@ import * as WebBrowser from 'expo-web-browser';
 
 import { env } from '@/config/env';
 import { supabase } from '@/config/supabaseClient';
+import * as WebAPI from '@/services/webApiService';
 
 export type AuthStatus = 'loading' | 'signedOut' | 'onboarding' | 'signedIn';
 
@@ -179,12 +180,19 @@ export const AuthProvider = ({ children }: PropsWithChildren): ReactElement => {
   }, []);
 
   const loadStoredSession = useCallback(async () => {
+    console.log('🔄 Loading stored session...');
     try {
       const [storedSession, storedOnboarding, storedBiometric] = await Promise.all([
         AsyncStorage.getItem(SESSION_STORAGE_KEY),
         AsyncStorage.getItem(ONBOARDING_STORAGE_KEY),
         AsyncStorage.getItem(BIOMETRIC_STORAGE_KEY),
       ]);
+
+      console.log('📦 Stored data:', {
+        hasSession: !!storedSession,
+        onboarding: storedOnboarding,
+        biometric: storedBiometric,
+      });
 
       setBiometricsEnabled(storedBiometric === 'true');
 
@@ -204,6 +212,7 @@ export const AuthProvider = ({ children }: PropsWithChildren): ReactElement => {
             const onboarding = storedOnboarding === 'true';
             onboardingRef.current = onboarding;
             setOnboardingComplete(onboarding);
+            console.log('✅ Session restored, onboarding:', onboarding);
             // Don't query database on app startup - use cached value
             // Database will be checked on next sign-in
           } else if (error) {
@@ -212,6 +221,7 @@ export const AuthProvider = ({ children }: PropsWithChildren): ReactElement => {
             // No session - ensure onboarding is true (so we show auth screens, not onboarding)
             onboardingRef.current = true;
             setOnboardingComplete(true);
+            console.log('⚠️ Session restore failed, showing auth screens');
           }
         }
       } else {
@@ -219,6 +229,7 @@ export const AuthProvider = ({ children }: PropsWithChildren): ReactElement => {
         // Set onboarding to true so status resolves to 'signedOut' not 'onboarding'
         onboardingRef.current = true;
         setOnboardingComplete(true);
+        console.log('📭 No stored session, user signed out');
       }
     } catch (error) {
       console.warn('Failed to restore authentication session', error);
@@ -226,6 +237,7 @@ export const AuthProvider = ({ children }: PropsWithChildren): ReactElement => {
       onboardingRef.current = true;
       setOnboardingComplete(true);
     } finally {
+      console.log('✅ Session loading complete, setting initializing to false');
       setInitializing(false);
     }
   }, [persistSession]); const registerAuthChangeListener = useCallback(() => {
@@ -318,106 +330,137 @@ export const AuthProvider = ({ children }: PropsWithChildren): ReactElement => {
 
   useEffect(() => {
     updateStatus(session, onboardingComplete, initializing);
+    console.log('📊 Auth Status Update:', {
+      hasSession: !!session,
+      onboardingComplete,
+      initializing,
+      status: resolveStatus(session, onboardingComplete, initializing),
+    });
   }, [session, onboardingComplete, initializing, updateStatus]);
 
   const signIn = useCallback(
     async ({ email, password }: Credentials): Promise<AuthActionResult> => {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      try {
+        // Sign in with SUPABASE only
+        // Web system sync already happened during onboarding
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
-      if (error) {
-        return { success: false, error: error.message };
-      }
+        if (error) {
+          return { success: false, error: error.message };
+        }
 
-      if (data.session && data.user) {
-        await persistSession(data.session);
+        if (data.session && data.user) {
+          await persistSession(data.session);
 
-        // Always check database for onboarding status on sign-in
-        try {
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('onboarding_completed')
-            .eq('id', data.user.id)
-            .single();
+          // Always check database for onboarding status on sign-in
+          try {
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('onboarding_completed')
+              .eq('id', data.user.id)
+              .single();
 
-          if (!profileError && profile) {
-            const isComplete = profile.onboarding_completed === true;
-            onboardingRef.current = isComplete;
-            setOnboardingComplete(isComplete);
-            await AsyncStorage.setItem(ONBOARDING_STORAGE_KEY, isComplete ? 'true' : 'false');
-          } else {
-            // Profile doesn't exist or query failed - assume onboarding needed
-            console.warn('Could not fetch profile, assuming onboarding needed:', profileError);
+            if (!profileError && profile) {
+              const isComplete = profile.onboarding_completed === true;
+              onboardingRef.current = isComplete;
+              setOnboardingComplete(isComplete);
+              await AsyncStorage.setItem(ONBOARDING_STORAGE_KEY, isComplete ? 'true' : 'false');
+            } else {
+              // Profile doesn't exist or query failed - assume onboarding needed
+              console.warn('Could not fetch profile, assuming onboarding needed:', profileError);
+              onboardingRef.current = false;
+              setOnboardingComplete(false);
+              await AsyncStorage.setItem(ONBOARDING_STORAGE_KEY, 'false');
+            }
+          } catch (err) {
+            console.warn('Error checking onboarding status:', err);
+            // On error, default to needing onboarding
             onboardingRef.current = false;
             setOnboardingComplete(false);
             await AsyncStorage.setItem(ONBOARDING_STORAGE_KEY, 'false');
           }
-        } catch (err) {
-          console.warn('Error checking onboarding status:', err);
-          // On error, default to needing onboarding
-          onboardingRef.current = false;
-          setOnboardingComplete(false);
-          await AsyncStorage.setItem(ONBOARDING_STORAGE_KEY, 'false');
         }
-      }
 
-      return { success: true };
+        return { success: true };
+      } catch (error: any) {
+        console.error('❌ Sign in error:', error);
+        return { success: false, error: error.message || 'Sign in failed' };
+      }
     },
     [persistSession],
   ); const signUp = useCallback(
     async ({ email, password, fullName }: SignUpPayload): Promise<AuthActionResult> => {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            full_name: fullName,
-          },
-        },
-      });
-
-      if (error) {
-        return { success: false, error: error.message };
-      }
-
-      if (data.session && data.user) {
-        await persistSession(data.session);
-
-        // Create profile row immediately with onboarding_completed = false
-        try {
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert({
-              id: data.user.id,
-              email: data.user.email!,
+      try {
+        // Sign up with SUPABASE only
+        // Web system sync will happen AFTER onboarding completes
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: redirectUrl,
+            data: {
               full_name: fullName,
-              onboarding_completed: false,
-            });
+            },
+          },
+        });
 
-          if (profileError && !profileError.message.includes('duplicate')) {
-            console.warn('Failed to create profile:', profileError);
-          }
-        } catch (err) {
-          console.warn('Profile creation error:', err);
+        if (error) {
+          return { success: false, error: error.message };
         }
 
-        // New user - onboarding NOT complete
-        onboardingRef.current = false;
-        setOnboardingComplete(false);
-        await AsyncStorage.setItem(ONBOARDING_STORAGE_KEY, 'false');
+        if (data.session && data.user) {
+          await persistSession(data.session);
 
-        return { success: true };
+          // Create profile row immediately with onboarding_completed = false
+          try {
+            const { error: profileError } = await supabase
+              .from('profiles')
+              .insert({
+                id: data.user.id,
+                email: data.user.email!,
+                full_name: fullName,
+                onboarding_completed: false,
+              });
+
+            if (profileError && !profileError.message.includes('duplicate')) {
+              console.warn('Failed to create profile:', profileError);
+            }
+          } catch (err) {
+            console.warn('Profile creation error:', err);
+          }
+
+          // New user - onboarding NOT complete
+          onboardingRef.current = false;
+          setOnboardingComplete(false);
+          await AsyncStorage.setItem(ONBOARDING_STORAGE_KEY, 'false');
+
+          return { success: true };
+        }
+
+        return { success: true, needsVerification: true };
+      } catch (error: any) {
+        console.error('❌ Sign up error:', error);
+        return { success: false, error: error.message || 'Sign up failed' };
       }
-
-      return { success: true, needsVerification: true };
     },
     [persistSession],
   ); const signOut = useCallback(async () => {
+    // Clear Supabase session
     await supabase.auth.signOut();
     await persistSession(null);
+
+    // Clear web system tokens
+    try {
+      await SecureStore.deleteItemAsync('web_access_token');
+      await SecureStore.deleteItemAsync('web_refresh_token');
+      await AsyncStorage.removeItem('web_user_data');
+      console.log('✅ Cleared web system tokens');
+    } catch (error) {
+      console.warn('Error clearing web tokens:', error);
+    }
   }, [persistSession]);
 
   const resetPassword = useCallback(async (email: string): Promise<AuthActionResult> => {
@@ -633,6 +676,52 @@ export const AuthProvider = ({ children }: PropsWithChildren): ReactElement => {
         if (error) {
           console.error('Failed to save onboarding to database:', error);
           throw error;
+        }
+
+        // 🌐 SYNC WITH WEB SYSTEM after onboarding complete
+        console.log('🌐 Syncing user data with web system...');
+        try {
+          // First, register user in web system if not already registered
+          const webToken = await SecureStore.getItemAsync('web_access_token');
+
+          if (!webToken && user.email) {
+            // User not in web system yet - register them now
+            const signupResult = await WebAPI.signup({
+              fullName: profile.fullName,
+              email: user.email,
+              password: 'temp_password_' + Date.now(), // Temporary password
+              role: 'member',
+            });
+
+            if (signupResult.success) {
+              await SecureStore.setItemAsync('web_access_token', signupResult.data.tokens.accessToken);
+              await SecureStore.setItemAsync('web_refresh_token', signupResult.data.tokens.refreshToken);
+              console.log('✅ User registered in web system!');
+            }
+          }
+
+          // Send complete profile data to web system
+          const accessToken = await SecureStore.getItemAsync('web_access_token');
+          if (accessToken) {
+            await WebAPI.authenticatedRequest('/api/members/profile', accessToken, {
+              method: 'PUT',
+              body: JSON.stringify({
+                fullName: profile.fullName,
+                age: profile.age,
+                gender: profile.gender,
+                height: profile.heightCm,
+                weight: profile.weightKg,
+                goalWeight: profile.goalWeightKg,
+                primaryGoal: profile.primaryGoal,
+                activityLevel: profile.activityLevel,
+                // Add more fields as needed by web API
+              }),
+            });
+            console.log('✅ Profile synced with web system!');
+          }
+        } catch (webError: any) {
+          // Don't block onboarding if web sync fails
+          console.log('⚠️ Web system sync failed (will retry later):', webError.message);
         }
       }
     } catch (error) {

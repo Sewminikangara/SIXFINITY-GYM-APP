@@ -5,10 +5,6 @@
 
 import { supabase } from '@/config/supabaseClient';
 
-// ============================================================================
-// TYPES & INTERFACES
-// ============================================================================
-
 export interface Wallet {
     wallet_id: string;
     user_id: string;
@@ -144,9 +140,6 @@ export interface WalletTopup {
     created_at: string;
 }
 
-// ============================================================================
-// WALLET OPERATIONS
-// ============================================================================
 
 /**
  * Get wallet balance and details
@@ -208,9 +201,6 @@ export const checkSufficientBalance = async (userId: string, amount: number): Pr
     }
 };
 
-// ============================================================================
-// TOP-UP OPERATIONS
-// ============================================================================
 
 /**
  * Initiate wallet top-up

@@ -238,7 +238,7 @@ export const MoreScreen = () => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Wallet & Payments</Text>
 
-        {/* TEST BUTTON - Remove this after testing */}
+        {/* TEST BUTTON - for testing */}
         <TouchableOpacity
           style={styles.testButton}
           onPress={() => {
@@ -259,7 +259,7 @@ export const MoreScreen = () => {
             });
           }}
         >
-          <Text style={styles.testButtonText}>🧪 TEST PAYMENT CHECKOUT</Text>
+          <Text style={styles.testButtonText}> TEST PAYMENT CHECKOUT</Text>
         </TouchableOpacity>
 
         <MenuItem

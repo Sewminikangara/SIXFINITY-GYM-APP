@@ -122,7 +122,7 @@ export default function SettingsScreen() {
 
                     <View style={styles.settingRow}>
                         <View style={styles.settingLeft}>
-                            <Text style={styles.settingIcon}>🔐</Text>
+                            <Text style={styles.settingIcon}></Text>
                             <Text style={styles.settingLabel}>Biometric Authentication</Text>
                         </View>
                         <Switch
@@ -135,7 +135,7 @@ export default function SettingsScreen() {
 
                     <TouchableOpacity style={styles.settingRow}>
                         <View style={styles.settingLeft}>
-                            <Text style={styles.settingIcon}>🛡️</Text>
+                            <Text style={styles.settingIcon}></Text>
                             <Text style={styles.settingLabel}>Privacy Settings</Text>
                         </View>
                         <Text style={styles.settingArrow}>→</Text>
@@ -143,7 +143,7 @@ export default function SettingsScreen() {
 
                     <TouchableOpacity style={styles.settingRow}>
                         <View style={styles.settingLeft}>
-                            <Text style={styles.settingIcon}>📱</Text>
+                            <Text style={styles.settingIcon}></Text>
                             <Text style={styles.settingLabel}>Connected Devices</Text>
                         </View>
                         <Text style={styles.settingArrow}>→</Text>
@@ -156,7 +156,7 @@ export default function SettingsScreen() {
 
                     <View style={styles.settingRow}>
                         <View style={styles.settingLeft}>
-                            <Text style={styles.settingIcon}>🌙</Text>
+                            <Text style={styles.settingIcon}></Text>
                             <Text style={styles.settingLabel}>Dark Mode</Text>
                         </View>
                         <Switch
@@ -169,7 +169,7 @@ export default function SettingsScreen() {
 
                     <TouchableOpacity style={styles.settingRow}>
                         <View style={styles.settingLeft}>
-                            <Text style={styles.settingIcon}>🎨</Text>
+                            <Text style={styles.settingIcon}></Text>
                             <Text style={styles.settingLabel}>Theme Color</Text>
                         </View>
                         <View style={styles.settingRight}>
@@ -185,7 +185,7 @@ export default function SettingsScreen() {
 
                     <TouchableOpacity style={styles.settingRow}>
                         <View style={styles.settingLeft}>
-                            <Text style={styles.settingIcon}>🌍</Text>
+                            <Text style={styles.settingIcon}></Text>
                             <Text style={styles.settingLabel}>Language</Text>
                         </View>
                         <View style={styles.settingRight}>
@@ -196,7 +196,7 @@ export default function SettingsScreen() {
 
                     <TouchableOpacity style={styles.settingRow}>
                         <View style={styles.settingLeft}>
-                            <Text style={styles.settingIcon}>📍</Text>
+                            <Text style={styles.settingIcon}></Text>
                             <Text style={styles.settingLabel}>Region</Text>
                         </View>
                         <View style={styles.settingRight}>
@@ -218,7 +218,7 @@ export default function SettingsScreen() {
 
                     <View style={styles.settingRow}>
                         <View style={styles.settingLeft}>
-                            <Text style={styles.settingIcon}>💾</Text>
+                            <Text style={styles.settingIcon}></Text>
                             <Text style={styles.settingLabel}>Auto Backup</Text>
                         </View>
                         <Switch
@@ -231,7 +231,7 @@ export default function SettingsScreen() {
 
                     <View style={styles.settingRow}>
                         <View style={styles.settingLeft}>
-                            <Text style={styles.settingIcon}>📶</Text>
+                            <Text style={styles.settingIcon}></Text>
                             <Text style={styles.settingLabel}>Download Over WiFi Only</Text>
                         </View>
                         <Switch
@@ -249,7 +249,7 @@ export default function SettingsScreen() {
 
                     <View style={styles.settingRow}>
                         <View style={styles.settingLeft}>
-                            <Text style={styles.settingIcon}>📷</Text>
+                            <Text style={styles.settingIcon}></Text>
                             <Text style={styles.settingLabel}>Show Profile Photo</Text>
                         </View>
                         <Switch
@@ -262,7 +262,7 @@ export default function SettingsScreen() {
 
                     <View style={styles.settingRow}>
                         <View style={styles.settingLeft}>
-                            <Text style={styles.settingIcon}>📊</Text>
+                            <Text style={styles.settingIcon}></Text>
                             <Text style={styles.settingLabel}>Share Activity</Text>
                         </View>
                         <Switch
@@ -275,7 +275,7 @@ export default function SettingsScreen() {
 
                     <View style={styles.settingRow}>
                         <View style={styles.settingLeft}>
-                            <Text style={styles.settingIcon}>🏷️</Text>
+                            <Text style={styles.settingIcon}></Text>
                             <Text style={styles.settingLabel}>Allow Tagging</Text>
                         </View>
                         <Switch
@@ -293,7 +293,7 @@ export default function SettingsScreen() {
 
                     <TouchableOpacity style={styles.settingRow}>
                         <View style={styles.settingLeft}>
-                            <Text style={styles.settingIcon}>ℹ️</Text>
+                            <Text style={styles.settingIcon}>ℹ</Text>
                             <Text style={styles.settingLabel}>About SIXFINITY</Text>
                         </View>
                         <Text style={styles.settingArrow}>→</Text>
@@ -301,7 +301,7 @@ export default function SettingsScreen() {
 
                     <TouchableOpacity style={styles.settingRow}>
                         <View style={styles.settingLeft}>
-                            <Text style={styles.settingIcon}>📄</Text>
+                            <Text style={styles.settingIcon}></Text>
                             <Text style={styles.settingLabel}>Terms of Service</Text>
                         </View>
                         <Text style={styles.settingArrow}>→</Text>
@@ -309,7 +309,7 @@ export default function SettingsScreen() {
 
                     <TouchableOpacity style={styles.settingRow}>
                         <View style={styles.settingLeft}>
-                            <Text style={styles.settingIcon}>🔒</Text>
+                            <Text style={styles.settingIcon}></Text>
                             <Text style={styles.settingLabel}>Privacy Policy</Text>
                         </View>
                         <Text style={styles.settingArrow}>→</Text>
@@ -317,7 +317,7 @@ export default function SettingsScreen() {
 
                     <View style={styles.settingRow}>
                         <View style={styles.settingLeft}>
-                            <Text style={styles.settingIcon}>📱</Text>
+                            <Text style={styles.settingIcon}></Text>
                             <Text style={styles.settingLabel}>App Version</Text>
                         </View>
                         <Text style={styles.settingValue}>2.0.1</Text>

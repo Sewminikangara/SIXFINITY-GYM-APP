@@ -194,11 +194,11 @@ export const WalletScreen: React.FC = () => {
 
     const handleRedeemPoints = () => {
         if (rewardPoints < 100) {
-            Alert.alert('Insufficient Points', 'You need at least 100 points to redeem (₹10)');
+            Alert.alert('Insufficient Points', 'You need at least 100 points to redeem (10)');
             return;
         }
 
-        const redeemableAmount = Math.floor(rewardPoints / 10); // 10 points = ₹1
+        const redeemableAmount = Math.floor(rewardPoints / 10); // 10 points = 1LKR
 
         Alert.alert(
             'Redeem Points',
@@ -286,7 +286,7 @@ export const WalletScreen: React.FC = () => {
 
             <View style={styles.rewardPointsContainer}>
                 <View style={styles.rewardPointsInfo}>
-                    <Text style={styles.rewardPointsLabel}>🎁 Referral Rewards</Text>
+                    <Text style={styles.rewardPointsLabel}>Referral Rewards</Text>
                     <Text style={styles.rewardPointsValue}>{rewardPoints} pts</Text>
                 </View>
                 {rewardPoints >= 100 && (

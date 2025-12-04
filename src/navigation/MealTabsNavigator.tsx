@@ -10,7 +10,7 @@ const Tab = createMaterialTopTabNavigator();
 export const MealTabsNavigator = () => {
     return (
         <Tab.Navigator
-            id={undefined}
+            id="MealTabs"
             screenOptions={{
                 tabBarStyle: {
                     backgroundColor: palette.background,

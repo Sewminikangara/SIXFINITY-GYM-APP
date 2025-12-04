@@ -49,17 +49,31 @@ export type AppStackParamList = {
   };
   Trainers: undefined;
   TrainerDetail: {
-    trainer: {
-      id: string;
-      name: string;
-      location: string;
-      rating: number;
-      image: string;
-      specialization: string[];
-      experience: number;
-      pricePerSession: number;
-      available: boolean;
-    };
+    trainerId: string;
+  };
+  TrainerMessage: {
+    trainerId: string;
+    trainerName: string;
+  };
+  SubmitReview: {
+    trainerId: string;
+    trainerName: string;
+    bookingId?: string;
+  };
+  ActiveWorkout: {
+    workoutId: string;
+    bookingId?: string;
+    trainerName?: string;
+  };
+  BookSession: {
+    trainerId: string;
+    slotId: string;
+    trainer: any;
+  };
+  MyBookings: undefined;
+  RescheduleSession: {
+    bookingId: string;
+    booking: any;
   };
   // Meal screens
   AddMeal: {

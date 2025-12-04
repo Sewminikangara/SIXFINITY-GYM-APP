@@ -29,12 +29,12 @@ interface Transaction {
 }
 
 const TRANSACTION_ICONS = {
-    topup: '💳',
-    booking: '🏋️',
-    refund: '↩️',
-    reward: '🎁',
-    referral: '👥',
-    cashback: '💰',
+    topup: '',
+    booking: '',
+    refund: '',
+    reward: '',
+    referral: '',
+    cashback: '',
 };
 
 const FILTER_OPTIONS = [
@@ -45,12 +45,12 @@ const FILTER_OPTIONS = [
 ];
 
 const CATEGORY_FILTERS = [
-    { id: 'all', label: 'All Categories', icon: '📋' },
-    { id: 'topup', label: 'Top-ups', icon: '💳' },
-    { id: 'booking', label: 'Bookings', icon: '🏋️' },
-    { id: 'reward', label: 'Rewards', icon: '🎁' },
-    { id: 'referral', label: 'Referrals', icon: '👥' },
-    { id: 'refund', label: 'Refunds', icon: '↩️' },
+    { id: 'all', label: 'All Categories', icon: '' },
+    { id: 'topup', label: 'Top-ups', icon: '' },
+    { id: 'booking', label: 'Bookings', icon: '' },
+    { id: 'reward', label: 'Rewards', icon: '' },
+    { id: 'referral', label: 'Referrals', icon: '' },
+    { id: 'refund', label: 'Refunds', icon: '' },
 ];
 
 export const TransactionHistoryScreen: React.FC = () => {
@@ -295,13 +295,13 @@ export const TransactionHistoryScreen: React.FC = () => {
                     style={styles.filterToggleButton}
                     onPress={() => setShowFilters(!showFilters)}
                 >
-                    <Text style={styles.filterToggleIcon}>⚙️</Text>
+                    <Text style={styles.filterToggleIcon}></Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={[styles.advancedFilterButton, activeFiltersCount > 0 && styles.advancedFilterButtonActive]}
                     onPress={() => setShowAdvancedFilters(true)}
                 >
-                    <Text style={styles.advancedFilterIcon}>🎯</Text>
+                    <Text style={styles.advancedFilterIcon}></Text>
                     {activeFiltersCount > 0 && (
                         <View style={styles.filterBadge}>
                             <Text style={styles.filterBadgeText}>{activeFiltersCount}</Text>
@@ -476,7 +476,7 @@ export const TransactionHistoryScreen: React.FC = () => {
                     </View>
                 ) : (
                     <View style={styles.emptyState}>
-                        <Text style={styles.emptyStateIcon}>📭</Text>
+                        <Text style={styles.emptyStateIcon}></Text>
                         <Text style={styles.emptyStateTitle}>No transactions found</Text>
                         <Text style={styles.emptyStateText}>
                             {searchQuery || selectedFilter !== 'all' || selectedCategory !== 'all'
@@ -506,7 +506,7 @@ export const TransactionHistoryScreen: React.FC = () => {
                         <ScrollView style={styles.modalBody}>
                             {/* Date Range Filter */}
                             <View style={styles.filterGroup}>
-                                <Text style={styles.filterGroupTitle}>📅 Date Range</Text>
+                                <Text style={styles.filterGroupTitle}> Date Range</Text>
 
                                 <View style={styles.datePickerRow}>
                                     <View style={styles.datePickerItem}>
@@ -549,7 +549,7 @@ export const TransactionHistoryScreen: React.FC = () => {
 
                             {/* Amount Range Filter */}
                             <View style={styles.filterGroup}>
-                                <Text style={styles.filterGroupTitle}>💰 Amount Range</Text>
+                                <Text style={styles.filterGroupTitle}> Amount Range</Text>
 
                                 <View style={styles.amountRangeContainer}>
                                     <Text style={styles.amountRangeLabel}>

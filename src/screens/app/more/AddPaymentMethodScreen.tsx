@@ -50,11 +50,11 @@ export default function AddPaymentMethodScreen() {
     const [setAsDefault, setSetAsDefault] = useState(false);
 
     const paymentTypes = [
-        { id: 'credit_card' as const, label: 'Credit Card', icon: '💳' },
-        { id: 'debit_card' as const, label: 'Debit Card', icon: '💳' },
-        { id: 'upi' as const, label: 'UPI', icon: '📱' },
-        { id: 'bank_account' as const, label: 'Bank Account', icon: '🏦' },
-        { id: 'paypal' as const, label: 'PayPal', icon: '🅿️' },
+        { id: 'credit_card' as const, label: 'Credit Card', icon: '' },
+        { id: 'debit_card' as const, label: 'Debit Card', icon: '' },
+        { id: 'upi' as const, label: 'UPI', icon: '' },
+        { id: 'bank_account' as const, label: 'Bank Account', icon: '' },
+        { id: 'paypal' as const, label: 'PayPal', icon: '' },
     ];
 
     const detectCardBrand = (number: string) => {
@@ -411,7 +411,7 @@ export default function AddPaymentMethodScreen() {
                 <Text style={styles.label}>Account Holder Name *</Text>
                 <TextInput
                     style={styles.input}
-                    placeholder="John Doe"
+                    placeholder="Avishka RRRR"
                     placeholderTextColor={palette.textTertiary}
                     value={accountHolderName}
                     onChangeText={setAccountHolderName}
@@ -524,7 +524,7 @@ export default function AddPaymentMethodScreen() {
 
                 {/* Security Note */}
                 <View style={styles.securityNote}>
-                    <Text style={styles.securityIcon}>🔒</Text>
+                    <Text style={styles.securityIcon}></Text>
                     <View style={styles.securityContent}>
                         <Text style={styles.securityTitle}>Your Data is Secure</Text>
                         <Text style={styles.securityText}>

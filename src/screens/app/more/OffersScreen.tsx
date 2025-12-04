@@ -40,7 +40,7 @@ export default function OffersScreen() {
             title: 'New Year Fitness Sale',
             description: 'Get 30% off on all gym memberships',
             discount: '30% OFF',
-            icon: '🎉',
+            icon: '',
             validUntil: new Date(Date.now() + 15 * 86400000),
             status: 'available',
             terms: [
@@ -56,7 +56,7 @@ export default function OffersScreen() {
             title: 'Trainer Session Combo',
             description: 'Buy 5 sessions, get 1 free',
             discount: 'BUY 5 GET 1',
-            icon: '🏋️',
+            icon: '',
             validUntil: new Date(Date.now() + 30 * 86400000),
             status: 'available',
             terms: [
@@ -72,7 +72,7 @@ export default function OffersScreen() {
             title: 'Weekend Warrior',
             description: '₹500 off on weekend bookings',
             discount: '₹500 OFF',
-            icon: '🌞',
+            icon: '',
             validUntil: new Date(Date.now() + 7 * 86400000),
             status: 'available',
             terms: [
@@ -86,9 +86,9 @@ export default function OffersScreen() {
         {
             id: '4',
             title: 'First Booking Discount',
-            description: 'Flat ₹200 off on your first booking',
-            discount: '₹200 OFF',
-            icon: '🎁',
+            description: 'Flat 20% off on your first booking',
+            discount: '20% OFF',
+            icon: '',
             validUntil: new Date(Date.now() + 60 * 86400000),
             status: 'claimed',
             code: 'FIRST200',
@@ -105,7 +105,7 @@ export default function OffersScreen() {
             title: 'Yoga Class Bundle',
             description: '20% off on 10+ yoga class bookings',
             discount: '20% OFF',
-            icon: '🧘',
+            icon: '',
             validUntil: new Date(Date.now() + 45 * 86400000),
             status: 'claimed',
             code: 'YOGA20',
@@ -122,7 +122,7 @@ export default function OffersScreen() {
             title: 'Summer Special',
             description: 'Free month on annual membership',
             discount: '1 MONTH FREE',
-            icon: '☀️',
+            icon: '',
             validUntil: new Date(Date.now() - 5 * 86400000),
             status: 'expired',
             terms: [
@@ -237,7 +237,7 @@ export default function OffersScreen() {
                 {filteredOffers.length === 0 ? (
                     <View style={styles.emptyContainer}>
                         <Text style={styles.emptyIcon}>
-                            {activeTab === 'available' ? '🎁' : activeTab === 'claimed' ? '✅' : '❌'}
+                            {activeTab === 'available' ? '' : activeTab === 'claimed' ? '✅' : '❌'}
                         </Text>
                         <Text style={styles.emptyTitle}>
                             {activeTab === 'available' ? 'No Available Offers' :

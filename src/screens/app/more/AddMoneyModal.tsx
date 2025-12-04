@@ -135,15 +135,15 @@ export const AddMoneyModal: React.FC<AddMoneyModalProps> = ({ visible, onClose, 
         switch (type) {
             case 'credit_card':
             case 'debit_card':
-                return '💳';
+                return '';
             case 'upi':
-                return '📱';
+                return '';
             case 'paypal':
-                return '🅿️';
+                return '';
             case 'bank_account':
-                return '🏦';
+                return '';
             default:
-                return '💳';
+                return '';
         }
     };
 
@@ -272,7 +272,7 @@ export const AddMoneyModal: React.FC<AddMoneyModalProps> = ({ visible, onClose, 
 
                         {/* Security Note */}
                         <View style={styles.securityNote}>
-                            <Text style={styles.securityIcon}>🔒</Text>
+                            <Text style={styles.securityIcon}></Text>
                             <Text style={styles.securityText}>
                                 Your payment is secured with SSL encryption
                             </Text>

@@ -101,20 +101,20 @@ export default function PaymentMethodsScreen() {
         switch (type) {
             case 'credit_card':
             case 'debit_card':
-                return '💳';
+                return '';
             case 'upi':
-                return '📱';
+                return '';
             case 'paypal':
             case 'apple_pay':
-                return '🅿️';
+                return '';
             case 'google_pay':
-                return '📱';
+                return '';
             case 'bank_account':
-                return '🏦';
+                return '';
             case 'wallet':
-                return '💰';
+                return '';
             default:
-                return '💰';
+                return '';
         }
     };
 
@@ -153,7 +153,7 @@ export default function PaymentMethodsScreen() {
                     <View style={{ width: 60 }} />
                 </View>
                 <View style={styles.emptyContainer}>
-                    <Text style={styles.emptyIcon}>🔐</Text>
+                    <Text style={styles.emptyIcon}></Text>
                     <Text style={styles.emptyTitle}>Please Log In</Text>
                     <Text style={styles.emptyText}>
                         You need to be logged in to manage payment methods
@@ -178,7 +178,7 @@ export default function PaymentMethodsScreen() {
             <ScrollView style={styles.scrollView}>
                 {/* Info Card */}
                 <View style={styles.infoCard}>
-                    <Text style={styles.infoIcon}>🔒</Text>
+                    <Text style={styles.infoIcon}></Text>
                     <View style={styles.infoContent}>
                         <Text style={styles.infoTitle}>Secure Payments</Text>
                         <Text style={styles.infoText}>
@@ -190,7 +190,7 @@ export default function PaymentMethodsScreen() {
                 {/* Payment Methods List */}
                 {methods.length === 0 ? (
                     <View style={styles.emptyContainer}>
-                        <Text style={styles.emptyIcon}>💳</Text>
+                        <Text style={styles.emptyIcon}></Text>
                         <Text style={styles.emptyTitle}>No Payment Methods</Text>
                         <Text style={styles.emptyText}>
                             Add a payment method to make faster and secure payments
@@ -275,7 +275,7 @@ export default function PaymentMethodsScreen() {
 
                 {/* Regional Gateway Info */}
                 <View style={styles.gatewayInfo}>
-                    <Text style={styles.gatewayTitle}>🌍 Supported Payment Gateways</Text>
+                    <Text style={styles.gatewayTitle}>Supported Payment Gateways</Text>
                     <Text style={styles.gatewayText}>
                         • Razorpay (India){'\n'}
                         • Stripe (International){'\n'}
@@ -289,7 +289,7 @@ export default function PaymentMethodsScreen() {
 
                 {/* Security Info */}
                 <View style={styles.securityCard}>
-                    <Text style={styles.securityTitle}>🔐 Security & Privacy</Text>
+                    <Text style={styles.securityTitle}>Security & Privacy</Text>
                     <Text style={styles.securityText}>
                         • All transactions are encrypted with SSL{'\n'}
                         • We never store your CVV{'\n'}

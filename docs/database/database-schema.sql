@@ -1,5 +1,4 @@
 -- SIXFINITY FITNESS APP - DATABASE SCHEMA
--- PostgreSQL + Supabase
 
 -- PROFILES TABLE
 CREATE TABLE IF NOT EXISTS public.profiles (
@@ -2852,9 +2851,7 @@ CREATE INDEX IF NOT EXISTS idx_wallet_topup_user_id ON public.wallet_topup(user_
 CREATE INDEX IF NOT EXISTS idx_wallet_topup_status ON public.wallet_topup(transaction_status);
 CREATE INDEX IF NOT EXISTS idx_wallet_topup_ref ON public.wallet_topup(transaction_ref_no);
 
--- ============================================================================
 -- 5. TRANSACTIONS TABLE
--- ============================================================================
 CREATE TABLE IF NOT EXISTS public.transactions (
     transaction_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -3513,9 +3510,7 @@ CREATE TRIGGER update_booking_details_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
--- ============================================================================
 -- TRIGGER: Auto-create Booking History on Completion
--- ============================================================================
 CREATE OR REPLACE FUNCTION create_booking_history_on_completion()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -3647,9 +3642,6 @@ CREATE TRIGGER trigger_calculate_refund_on_cancellation
     FOR EACH ROW
     EXECUTE FUNCTION calculate_refund_on_cancellation();
 
--- ============================================================================
--- ROW LEVEL SECURITY (RLS) POLICIES
--- ============================================================================
 
 -- Enable RLS
 ALTER TABLE public.bookings ENABLE ROW LEVEL SECURITY;
@@ -3778,18 +3770,8 @@ $$ LANGUAGE plpgsql;
 
 -- SIXFINITY APP - MORE TAB DATABASE SCHEMA
 -- Part 4: Referrals & Rewards Tables
--- ============================================================================
--- This migration creates tables for:
--- - Users (referral code extension)
--- - Referrals tracking
--- - Referral rewards configuration
--- - Reward points wallet
--- - Reward transactions
--- ===================--=========================================================
 
--- ============================================================================
 -- 1. EXTEND USER_PROFILES TABLE FOR REFERRALS
--- ============================================================================
 -- Add referral columns to existing user_profiles table
 
 ALTER TABLE public.user_profiles 
@@ -3802,9 +3784,7 @@ ADD COLUMN IF NOT EXISTS subscription_status VARCHAR(20) DEFAULT 'none' CHECK (s
 CREATE INDEX IF NOT EXISTS idx_user_profiles_referral_code ON public.user_profiles(referral_code);
 CREATE INDEX IF NOT EXISTS idx_user_profiles_referred_by ON public.user_profiles(referred_by);
 
--- ============================================================================
 -- 2. REFERRALS TABLE
--- ============================================================================
 CREATE TABLE IF NOT EXISTS public.referrals (
     referral_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     
@@ -3877,9 +3857,7 @@ CREATE INDEX idx_referrals_status ON public.referrals(referral_status);
 CREATE INDEX idx_referrals_stage ON public.referrals(current_stage);
 CREATE INDEX idx_referrals_fraud ON public.referrals(is_fraud_suspected);
 
--- ============================================================================
 -- 3. REFERRAL REWARDS CONFIGURATION TABLE
--- ============================================================================
 CREATE TABLE IF NOT EXISTS public.referral_rewards (
     reward_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     
@@ -3926,9 +3904,7 @@ CREATE TABLE IF NOT EXISTS public.referral_rewards (
 -- Create index
 CREATE INDEX idx_referral_rewards_active ON public.referral_rewards(is_active);
 
--- ============================================================================
 -- 4. REWARD POINTS WALLET TABLE
--- ============================================================================
 CREATE TABLE IF NOT EXISTS public.reward_points_wallet (
     wallet_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID UNIQUE NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -3963,9 +3939,8 @@ CREATE TABLE IF NOT EXISTS public.reward_points_wallet (
 CREATE INDEX idx_reward_points_wallet_user_id ON public.reward_points_wallet(user_id);
 CREATE INDEX idx_reward_points_wallet_tier ON public.reward_points_wallet(tier_level);
 
--- ============================================================================
+
 -- 5. REWARD TRANSACTIONS TABLE
--- ============================================================================
 CREATE TABLE IF NOT EXISTS public.reward_transactions (
     transaction_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -4020,9 +3995,8 @@ CREATE INDEX idx_reward_transactions_type ON public.reward_transactions(transact
 CREATE INDEX idx_reward_transactions_date ON public.reward_transactions(transaction_date DESC);
 CREATE INDEX idx_reward_transactions_referral ON public.reward_transactions(related_referral_id);
 
--- ============================================================================
+
 -- FUNCTIONS FOR REFERRAL CODE GENERATION
--- ============================================================================
 
 -- Function to generate unique referral code
 CREATE OR REPLACE FUNCTION generate_referral_code()
@@ -4066,9 +4040,7 @@ CREATE TRIGGER trigger_create_referral_code
     FOR EACH ROW
     EXECUTE FUNCTION create_referral_code_for_user();
 
--- ============================================================================
 -- FUNCTION: Create Reward Wallet for New User
--- ============================================================================
 CREATE OR REPLACE FUNCTION create_reward_wallet_for_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -4085,9 +4057,7 @@ CREATE TRIGGER trigger_create_reward_wallet_for_new_user
     FOR EACH ROW
     EXECUTE FUNCTION create_reward_wallet_for_new_user();
 
--- ============================================================================
 -- TRIGGER: Update Referral Status on Milestone
--- ============================================================================
 CREATE OR REPLACE FUNCTION update_referral_on_milestone()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -4121,14 +4091,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Note: You'll need to create triggers on relevant tables to call this function
--- Example: CREATE TRIGGER trigger_update_referral_on_profile_change
---          AFTER UPDATE ON public.user_profiles FOR EACH ROW
---          EXECUTE FUNCTION update_referral_on_milestone();
 
--- ============================================================================
 -- FUNCTION: Process Referral Reward
--- ============================================================================
 CREATE OR REPLACE FUNCTION process_referral_reward(
     p_referral_id UUID,
     p_stage VARCHAR(50)
@@ -4221,9 +4185,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- ============================================================================
 -- FUNCTION: Redeem Reward Points
--- ============================================================================
 CREATE OR REPLACE FUNCTION redeem_reward_points(
     p_user_id UUID,
     p_points_amount INTEGER,
@@ -4271,9 +4233,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- ============================================================================
 -- TRIGGERS FOR AUTOMATIC UPDATES
--- ============================================================================
 
 CREATE TRIGGER update_referrals_updated_at
     BEFORE UPDATE ON public.referrals
@@ -4285,9 +4245,6 @@ CREATE TRIGGER update_referral_rewards_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
--- ============================================================================
--- ROW LEVEL SECURITY (RLS) POLICIES
--- ============================================================================
 
 -- Enable RLS
 ALTER TABLE public.referrals ENABLE ROW LEVEL SECURITY;
@@ -4331,9 +4288,7 @@ CREATE POLICY "System can insert reward transactions"
     ON public.reward_transactions FOR INSERT
     WITH CHECK (auth.uid() = user_id);
 
--- ============================================================================
 -- SEED DATA: Referral Rewards Configuration
--- ============================================================================
 -- Insert default reward configurations
 
 INSERT INTO public.referral_rewards (reward_stage, referrer_points, referee_points, referrer_cash_amount, referee_cash_amount, reward_type, title, description, is_active, display_order)
@@ -4346,10 +4301,6 @@ VALUES
     ('retention_60days', 400, 0, 20.00, 0.00, 'combo', '60-Day Retention', 'Referrer earns $20 + 400 points for 60-day retention.', TRUE, 6),
     ('retention_90days', 500, 0, 25.00, 0.00, 'combo', '90-Day Retention', 'Referrer earns $25 + 500 points for 90-day retention.', TRUE, 7)
 ON CONFLICT (reward_stage) DO NOTHING;
-
--- ============================================================================
--- END OF MIGRATION
--- ============================================================================
 
 
 
@@ -4427,9 +4378,7 @@ CREATE INDEX idx_notifications_timestamp ON public.notifications(user_id, timest
 CREATE INDEX idx_notifications_unread ON public.notifications(user_id, status) WHERE status = 'unread';
 CREATE INDEX idx_notifications_scheduled ON public.notifications(scheduled_for) WHERE sent_at IS NULL;
 
--- ============================================================================
 -- 2. NOTIFICATION PREFERENCES TABLE
--- ============================================================================
 CREATE TABLE IF NOT EXISTS public.notification_preferences (
     preference_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID UNIQUE NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -4507,9 +4456,7 @@ CREATE TABLE IF NOT EXISTS public.notification_preferences (
 -- Create index
 CREATE INDEX idx_notification_preferences_user_id ON public.notification_preferences(user_id);
 
--- ============================================================================
 -- 3. FAQ TABLE
--- ============================================================================
 CREATE TABLE IF NOT EXISTS public.faq (
     faq_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     
@@ -4561,9 +4508,7 @@ CREATE INDEX idx_faq_active ON public.faq(is_active);
 CREATE INDEX idx_faq_popular ON public.faq(is_popular) WHERE is_active = TRUE;
 CREATE INDEX idx_faq_search ON public.faq USING gin(to_tsvector('english', question || ' ' || answer));
 
--- ============================================================================
 -- 4. SUPPORT REQUESTS TABLE
--- ============================================================================
 CREATE TABLE IF NOT EXISTS public.support_requests (
     request_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -4631,9 +4576,8 @@ CREATE INDEX idx_support_requests_priority ON public.support_requests(priority);
 CREATE INDEX idx_support_requests_category ON public.support_requests(category);
 CREATE INDEX idx_support_requests_date ON public.support_requests(submitted_at DESC);
 
--- ============================================================================
 -- 5. SUPPORT CHAT TABLE
--- ============================================================================
+
 CREATE TABLE IF NOT EXISTS public.support_chat (
     chat_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     request_id UUID NOT NULL REFERENCES public.support_requests(request_id) ON DELETE CASCADE,
@@ -4677,9 +4621,7 @@ CREATE INDEX idx_support_chat_request_id ON public.support_chat(request_id);
 CREATE INDEX idx_support_chat_timestamp ON public.support_chat(request_id, timestamp);
 CREATE INDEX idx_support_chat_sender ON public.support_chat(sender_type, sender_id);
 
--- ============================================================================
 -- 6. ISSUE REPORTS TABLE
--- ============================================================================
 CREATE TABLE IF NOT EXISTS public.issue_reports (
     issue_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -4740,9 +4682,7 @@ CREATE INDEX idx_issue_reports_status ON public.issue_reports(status);
 CREATE INDEX idx_issue_reports_priority ON public.issue_reports(priority);
 CREATE INDEX idx_issue_reports_date ON public.issue_reports(reported_at DESC);
 
--- ============================================================================
 -- FUNCTIONS
--- ============================================================================
 
 -- Function to generate ticket number
 CREATE OR REPLACE FUNCTION generate_ticket_number()

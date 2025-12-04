@@ -8,8 +8,8 @@ import { GymTabsNavigator } from './GymTabsNavigator';
 import {
   HomeScreen,
   MoreScreen,
-  WorkoutScreen,
 } from '@/screens/app';
+import { WorkoutScreen } from '@/screens/app/train/WorkoutScreen';
 import { palette, radii, shadows } from '@/theme';
 
 const Tab = createBottomTabNavigator<AppTabParamList>();
@@ -27,7 +27,7 @@ export const AppTabsNavigator = () => {
 
   return (
     <Tab.Navigator
-      id={undefined}
+      id="AppTabs"
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarShowLabel: true,

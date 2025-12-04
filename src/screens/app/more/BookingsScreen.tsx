@@ -42,7 +42,7 @@ export default function BookingsScreen() {
                 type: 'trainer',
                 date: new Date(Date.now() + 86400000), // Tomorrow
                 duration: 60,
-                price: 50,
+                price: 4500,
                 status: 'confirmed',
                 location: 'SIXFINITY Gym - Downtown',
                 notes: 'Bring workout gear',
@@ -53,7 +53,7 @@ export default function BookingsScreen() {
                 type: 'class',
                 date: new Date(Date.now() + 172800000), // 2 days
                 duration: 45,
-                price: 25,
+                price: 2500,
                 status: 'confirmed',
                 location: 'SIXFINITY Gym - Mall',
             },
@@ -65,7 +65,7 @@ export default function BookingsScreen() {
                 type: 'class',
                 date: new Date(Date.now() - 86400000), // Yesterday
                 duration: 60,
-                price: 30,
+                price: 3000,
                 status: 'completed',
                 location: 'SIXFINITY Gym - Downtown',
             },
@@ -77,7 +77,7 @@ export default function BookingsScreen() {
                 type: 'trainer',
                 date: new Date(Date.now() - 172800000),
                 duration: 30,
-                price: 40,
+                price: 4000,
                 status: 'canceled',
                 location: 'SIXFINITY Gym - Beach',
             },

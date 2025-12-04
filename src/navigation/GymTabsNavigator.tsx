@@ -11,7 +11,7 @@ const Tab = createMaterialTopTabNavigator();
 export const GymTabsNavigator = () => {
     return (
         <Tab.Navigator
-            id={undefined}
+            id="GymTabs"
             screenOptions={{
                 tabBarStyle: {
                     backgroundColor: palette.background,

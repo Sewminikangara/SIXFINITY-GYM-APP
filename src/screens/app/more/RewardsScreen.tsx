@@ -315,7 +315,7 @@ export default function RewardsScreen() {
                             <Text style={styles.sectionTitle}>💡 How to Earn Points</Text>
                             <View style={styles.earnList}>
                                 <View style={styles.earnItem}>
-                                    <Text style={styles.earnIcon}>🏋️</Text>
+                                    <Text style={styles.earnIcon}></Text>
                                     <View style={styles.earnDetails}>
                                         <Text style={styles.earnText}>Gym Check-in</Text>
                                         <Text style={styles.earnSubtext}>50 points per visit</Text>
@@ -323,7 +323,7 @@ export default function RewardsScreen() {
                                     <Text style={styles.earnPoints}>+50</Text>
                                 </View>
                                 <View style={styles.earnItem}>
-                                    <Text style={styles.earnIcon}>📅</Text>
+                                    <Text style={styles.earnIcon}></Text>
                                     <View style={styles.earnDetails}>
                                         <Text style={styles.earnText}>Complete Booking</Text>
                                         <Text style={styles.earnSubtext}>10 points per ₹100 spent</Text>
@@ -331,7 +331,7 @@ export default function RewardsScreen() {
                                     <Text style={styles.earnPoints}>+10</Text>
                                 </View>
                                 <View style={styles.earnItem}>
-                                    <Text style={styles.earnIcon}>🎯</Text>
+                                    <Text style={styles.earnIcon}></Text>
                                     <View style={styles.earnDetails}>
                                         <Text style={styles.earnText}>Weekly Goal</Text>
                                         <Text style={styles.earnSubtext}>Complete fitness goals</Text>
@@ -339,7 +339,7 @@ export default function RewardsScreen() {
                                     <Text style={styles.earnPoints}>+100</Text>
                                 </View>
                                 <View style={styles.earnItem}>
-                                    <Text style={styles.earnIcon}>👥</Text>
+                                    <Text style={styles.earnIcon}></Text>
                                     <View style={styles.earnDetails}>
                                         <Text style={styles.earnText}>Refer a Friend</Text>
                                         <Text style={styles.earnSubtext}>Per successful signup</Text>
@@ -351,7 +351,7 @@ export default function RewardsScreen() {
 
                         {/* Tier Benefits */}
                         <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>🏆 Tier Benefits</Text>
+                            <Text style={styles.sectionTitle}> Tier Benefits</Text>
                             <View style={styles.tiersList}>
                                 {Object.entries(tierInfo).map(([key, tier]) => (
                                     <View

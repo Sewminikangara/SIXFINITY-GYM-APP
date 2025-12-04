@@ -12,11 +12,11 @@ export { GymDetailScreen } from './gyms/GymDetailScreen';
 export { MyGymsScreen } from './gyms/MyGymsScreen';
 export { LiveStatusScreen } from './gyms/LiveStatusScreen';
 export { CheckInScreen } from './gyms/CheckInScreen';
-export { TrainersScreen } from './gyms/TrainersScreen';
-export { TrainerDetailScreen } from './gyms/TrainerDetailScreen';
 
 // ==================== WORKOUTS TAB ====================
 export { WorkoutScreen } from './train/WorkoutScreen';
+export { TrainersListScreen as TrainersScreen } from './train/TrainersListScreen';
+export { TrainerDetailScreen } from './train/TrainerDetailScreen';
 export { ProgressScreen } from './train/ProgressScreen';
 export { BodyStatsScreen } from './train/BodyStatsScreen';
 export { FitnessGoalsScreen } from './train/FitnessGoalsScreen';

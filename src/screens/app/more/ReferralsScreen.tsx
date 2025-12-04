@@ -81,7 +81,7 @@ export default function ReferralsScreen() {
     const handleShare = async () => {
         try {
             await Share.share({
-                message: `Join SIXFINITY with my referral code ${referralCode} and get ₹50 off your first booking! ${referralLink}`,
+                message: `Join SIXFINITY with my referral code ${referralCode} and get 50% off your first booking! ${referralLink}`,
                 title: 'Join SIXFINITY',
             });
         } catch (error) {
@@ -126,7 +126,7 @@ export default function ReferralsScreen() {
                 <View style={styles.codeCard}>
                     <Text style={styles.codeCardTitle}>Your Referral Code</Text>
                     <Text style={styles.codeCardSubtitle}>
-                        Share your code with friends and earn ₹50 for each successful signup!
+                        Share your code with friends and earn 50% off for each successful signup!
                     </Text>
 
                     <View style={styles.codeContainer}>
@@ -137,7 +137,7 @@ export default function ReferralsScreen() {
                             style={styles.copyButton}
                             onPress={() => copyToClipboard(referralCode, 'Referral code')}
                         >
-                            <Text style={styles.copyButtonText}>📋 Copy</Text>
+                            <Text style={styles.copyButtonText}> Copy</Text>
                         </TouchableOpacity>
                     </View>
 
@@ -181,7 +181,7 @@ export default function ReferralsScreen() {
 
                 {/* How It Works */}
                 <View style={styles.infoCard}>
-                    <Text style={styles.infoTitle}>💡 How It Works</Text>
+                    <Text style={styles.infoTitle}> How It Works</Text>
                     <View style={styles.stepsList}>
                         <View style={styles.step}>
                             <View style={styles.stepNumber}>
@@ -202,7 +202,7 @@ export default function ReferralsScreen() {
                                 <Text style={styles.stepNumberText}>3</Text>
                             </View>
                             <Text style={styles.stepText}>
-                                Both of you get ₹50 reward credited to wallet!
+                                Both of you get 50% off reward credited to wallet!
                             </Text>
                         </View>
                     </View>
@@ -214,7 +214,7 @@ export default function ReferralsScreen() {
 
                     {referrals.length === 0 ? (
                         <View style={styles.emptyContainer}>
-                            <Text style={styles.emptyIcon}>👥</Text>
+                            <Text style={styles.emptyIcon}></Text>
                             <Text style={styles.emptyText}>No referrals yet</Text>
                             <Text style={styles.emptySubtext}>
                                 Start sharing your code to earn rewards!
@@ -263,7 +263,7 @@ export default function ReferralsScreen() {
 
                 {/* Terms */}
                 <View style={styles.termsCard}>
-                    <Text style={styles.termsTitle}>📋 Terms & Conditions</Text>
+                    <Text style={styles.termsTitle}> Terms & Conditions</Text>
                     <Text style={styles.termsText}>
                         • Referral reward credited after friend completes first booking{'\n'}
                         • Maximum 50 referrals per month{'\n'}

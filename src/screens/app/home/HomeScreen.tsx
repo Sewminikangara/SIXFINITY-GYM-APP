@@ -9,6 +9,8 @@ import {
     TouchableOpacity,
     Dimensions,
     ImageBackground,
+    ActivityIndicator,
+    Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { CompositeNavigationProp } from '@react-navigation/native';
@@ -19,6 +21,8 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { palette, spacing, typography } from '@/theme';
 import { useAuth } from '@/context/AuthContext';
 import { AppTabParamList, AppStackParamList } from '@/navigation/types';
+import { useHomeData } from '@/hooks/useHomeData';
+import { completeWorkout } from '@/services/homeService';
 
 const { width } = Dimensions.get('window');
 
@@ -30,7 +34,8 @@ type HomeScreenNavigation = CompositeNavigationProp<
 export const HomeScreen = () => {
     const navigation = useNavigation<HomeScreenNavigation>();
     const { user } = useAuth();
-    const [refreshing, setRefreshing] = useState(false);
+    const { loading, refreshing, data, refresh, pedometerAvailable } = useHomeData(user?.id || null);
+    const [selectedMetric, setSelectedMetric] = useState<'weight' | 'steps' | 'calories'>('weight');
 
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const slideAnim = useRef(new Animated.Value(50)).current;
@@ -51,8 +56,46 @@ export const HomeScreen = () => {
     }, []);
 
     const onRefresh = async () => {
-        setRefreshing(true);
-        setTimeout(() => setRefreshing(false), 1500);
+        await refresh();
+    };
+
+    const handleStartWorkout = () => {
+        Alert.alert(
+            'Start Workout',
+            'How long did you workout?',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: '30 min',
+                    onPress: () => logWorkout(30),
+                },
+                {
+                    text: '45 min',
+                    onPress: () => logWorkout(45),
+                },
+                {
+                    text: '60 min',
+                    onPress: () => logWorkout(60),
+                },
+            ]
+        );
+    };
+
+    const logWorkout = async (duration: number) => {
+        if (!user) return;
+
+        try {
+            await completeWorkout(user.id, {
+                name: 'General Workout',
+                duration,
+                caloriesBurned: Math.round(duration * 7), // Estimate: 7 calories per minute
+            });
+
+            Alert.alert('Success', `Workout completed! ${duration} minutes logged.`);
+            await refresh(); // Refresh dashboard data
+        } catch (error) {
+            Alert.alert('Error', 'Failed to log workout');
+        }
     };
 
     return (
@@ -99,7 +142,7 @@ export const HomeScreen = () => {
 
                     <TouchableOpacity
                         style={styles.quickActionBtn}
-                        onPress={() => navigation.navigate('Trainers')}
+                        onPress={() => navigation.navigate('Workout')}
                         activeOpacity={0.8}
                     >
                         <LinearGradient
@@ -112,7 +155,11 @@ export const HomeScreen = () => {
                         </LinearGradient>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.quickActionBtn}>
+                    <TouchableOpacity
+                        style={styles.quickActionBtn}
+                        onPress={() => navigation.navigate('AddMeal')}
+                        activeOpacity={0.8}
+                    >
                         <LinearGradient
                             colors={[palette.neonGreen, palette.neonGreenDim]}
                             start={{ x: 0, y: 0 }}
@@ -126,7 +173,11 @@ export const HomeScreen = () => {
 
                 {/* Quick Action Buttons Row 2 */}
                 <Animated.View style={[styles.quickActionsRow, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-                    <TouchableOpacity style={styles.quickActionBtn}>
+                    <TouchableOpacity
+                        style={styles.quickActionBtn}
+                        onPress={() => handleStartWorkout()}
+                        activeOpacity={0.8}
+                    >
                         <LinearGradient
                             colors={[palette.neonGreen, palette.neonGreenDim]}
                             start={{ x: 0, y: 0 }}
@@ -137,7 +188,11 @@ export const HomeScreen = () => {
                         </LinearGradient>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.quickActionBtn}>
+                    <TouchableOpacity
+                        style={styles.quickActionBtn}
+                        onPress={() => navigation.navigate('BodyStats')}
+                        activeOpacity={0.8}
+                    >
                         <LinearGradient
                             colors={[palette.neonGreen, palette.neonGreenDim]}
                             start={{ x: 0, y: 0 }}
@@ -148,7 +203,11 @@ export const HomeScreen = () => {
                         </LinearGradient>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.quickActionBtn}>
+                    <TouchableOpacity
+                        style={styles.quickActionBtn}
+                        onPress={() => navigation.navigate('Meals')}
+                        activeOpacity={0.8}
+                    >
                         <LinearGradient
                             colors={[palette.neonGreen, palette.neonGreenDim]}
                             start={{ x: 0, y: 0 }}
@@ -164,42 +223,117 @@ export const HomeScreen = () => {
                 <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
                     <Text style={styles.sectionTitle}>Today's Schedule</Text>
 
-                    <TouchableOpacity style={styles.scheduleCard}>
-                        <ImageBackground
-                            source={{ uri: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=400&fit=crop' }}
-                            style={styles.scheduleImage}
-                            imageStyle={styles.scheduleImageStyle}
-                        >
-                            <LinearGradient
-                                colors={['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.7)']}
-                                style={styles.scheduleOverlay}
-                            >
-                                <Text style={styles.scheduleTitle}>Upcoming gym{'\n'}bookings</Text>
-                                <Text style={styles.scheduleSubtitle}>
-                                    Lorem ipsum dolor sit amet, consectetur{'\n'}
-                                    adipiscing elit. Sed do eiusmod tempor{'\n'}
-                                    incididunt ut labore.
-                                </Text>
-
-                                <View style={styles.scheduleDots}>
-                                    <View style={[styles.dot, styles.dotActive]} />
-                                    <View style={styles.dot} />
-                                    <View style={styles.dot} />
-                                    <View style={styles.dot} />
-                                    <View style={styles.dot} />
-                                </View>
-
-                                <TouchableOpacity style={styles.scheduleArrow}>
-                                    <LinearGradient
-                                        colors={[palette.neonGreen, palette.neonGreenDim]}
-                                        style={styles.arrowCircle}
+                    {loading ? (
+                        <View style={styles.loadingContainer}>
+                            <ActivityIndicator size="large" color={palette.neonGreen} />
+                        </View>
+                    ) : data.schedule.gymBookings.length > 0 ||
+                        data.schedule.trainerSessions.length > 0 ||
+                        data.schedule.plannedWorkouts.length > 0 ? (
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scheduleScroll}>
+                            {data.schedule.gymBookings.map((booking) => (
+                                <TouchableOpacity
+                                    key={booking.id}
+                                    style={styles.scheduleCard}
+                                >
+                                    <ImageBackground
+                                        source={{ uri: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=400&fit=crop' }}
+                                        style={styles.scheduleImage}
+                                        imageStyle={styles.scheduleImageStyle}
                                     >
-                                        <Icon name="chevron-right" size={24} color={palette.background} />
-                                    </LinearGradient>
+                                        <LinearGradient
+                                            colors={['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.7)']}
+                                            style={styles.scheduleOverlay}
+                                        >
+                                            <Text style={styles.scheduleTitle}>Gym Booking</Text>
+                                            <Text style={styles.scheduleSubtitle}>
+                                                {booking.gymName}{'\n'}
+                                                {booking.timeSlot}{'\n'}
+                                                {booking.gymAddress}
+                                            </Text>
+                                        </LinearGradient>
+                                    </ImageBackground>
                                 </TouchableOpacity>
-                            </LinearGradient>
-                        </ImageBackground>
-                    </TouchableOpacity>
+                            ))}
+                            {data.schedule.trainerSessions.map((session) => (
+                                <TouchableOpacity
+                                    key={session.id}
+                                    style={styles.scheduleCard}
+                                >
+                                    <ImageBackground
+                                        source={{ uri: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&h=400&fit=crop' }}
+                                        style={styles.scheduleImage}
+                                        imageStyle={styles.scheduleImageStyle}
+                                    >
+                                        <LinearGradient
+                                            colors={['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.7)']}
+                                            style={styles.scheduleOverlay}
+                                        >
+                                            <Text style={styles.scheduleTitle}>Trainer Session</Text>
+                                            <Text style={styles.scheduleSubtitle}>
+                                                With {session.trainerName}{'\n'}
+                                                {session.sessionType}{'\n'}
+                                                {session.time}
+                                            </Text>
+                                        </LinearGradient>
+                                    </ImageBackground>
+                                </TouchableOpacity>
+                            ))}
+                            {data.schedule.plannedWorkouts.map((workout) => (
+                                <TouchableOpacity
+                                    key={workout.id}
+                                    style={styles.scheduleCard}
+                                    onPress={handleStartWorkout}
+                                >
+                                    <ImageBackground
+                                        source={{ uri: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&h=400&fit=crop' }}
+                                        style={styles.scheduleImage}
+                                        imageStyle={styles.scheduleImageStyle}
+                                    >
+                                        <LinearGradient
+                                            colors={['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.7)']}
+                                            style={styles.scheduleOverlay}
+                                        >
+                                            <Text style={styles.scheduleTitle}>Planned Workout</Text>
+                                            <Text style={styles.scheduleSubtitle}>
+                                                {workout.name}{'\n'}
+                                                {workout.duration} minutes{'\n'}
+                                                {workout.time}
+                                            </Text>
+                                        </LinearGradient>
+                                    </ImageBackground>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+                    ) : (
+                        <TouchableOpacity style={styles.scheduleCard} onPress={() => navigation.navigate('GymFinder')}>
+                            <ImageBackground
+                                source={{ uri: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=400&fit=crop' }}
+                                style={styles.scheduleImage}
+                                imageStyle={styles.scheduleImageStyle}
+                            >
+                                <LinearGradient
+                                    colors={['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.7)']}
+                                    style={styles.scheduleOverlay}
+                                >
+                                    <Text style={styles.scheduleTitle}>No Schedule Today</Text>
+                                    <Text style={styles.scheduleSubtitle}>
+                                        Start your fitness journey!{'\n'}
+                                        Book a gym or trainer session{'\n'}
+                                        to get started.
+                                    </Text>
+                                    <TouchableOpacity style={styles.scheduleArrow}>
+                                        <LinearGradient
+                                            colors={[palette.neonGreen, palette.neonGreenDim]}
+                                            style={styles.arrowCircle}
+                                        >
+                                            <Icon name="chevron-right" size={24} color={palette.background} />
+                                        </LinearGradient>
+                                    </TouchableOpacity>
+                                </LinearGradient>
+                            </ImageBackground>
+                        </TouchableOpacity>
+                    )}
                 </Animated.View>
 
                 {/* Stats Cards Grid */}
@@ -207,6 +341,12 @@ export const HomeScreen = () => {
                     {/* Steps Today */}
                     <View style={styles.statCard}>
                         <View style={styles.statHeader}>
+                            {pedometerAvailable && (
+                                <View style={styles.liveIndicator}>
+                                    <View style={styles.liveDot} />
+                                    <Text style={styles.liveText}>LIVE</Text>
+                                </View>
+                            )}
                             <TouchableOpacity style={styles.statArrow}>
                                 <LinearGradient
                                     colors={[palette.neonGreen, palette.neonGreenDim]}
@@ -216,9 +356,14 @@ export const HomeScreen = () => {
                                 </LinearGradient>
                             </TouchableOpacity>
                         </View>
+                        <View style={styles.calorieBadge}>
+                            <Text style={styles.calorieText}>{data.summary.steps.toLocaleString()}</Text>
+                        </View>
                         <Text style={styles.statLabel}>Steps Today</Text>
                         <Text style={styles.statSubtext}>
-                            Lorem ipsum body text{'\n'}for stats and for motivation
+                            {pedometerAvailable ? '🔄 Real-time tracking' : 'Goal: 10,000 steps'}
+                            {'\n'}
+                            {data.summary.steps >= 10000 ? '🎯 Goal reached!' : 'Keep moving!'}
                         </Text>
                     </View>
 
@@ -235,12 +380,13 @@ export const HomeScreen = () => {
                             </TouchableOpacity>
                         </View>
                         <View style={styles.calorieBadge}>
-                            <Text style={styles.calorieText}>256 </Text>
-                            <Text style={styles.calorieUnit}>min</Text>
+                            <Text style={styles.calorieText}>{data.summary.caloriesBurned} </Text>
+                            <Text style={styles.calorieUnit}>kcal</Text>
                         </View>
                         <Text style={styles.statLabel}>Calories Burned</Text>
                         <Text style={styles.statSubtext}>
-                            Lorem ipsum body text{'\n'}for stats and for motivation
+                            You're burning energy!{'\n'}
+                            Great progress today
                         </Text>
                     </View>
 
@@ -256,9 +402,13 @@ export const HomeScreen = () => {
                                 </LinearGradient>
                             </TouchableOpacity>
                         </View>
+                        <View style={styles.calorieBadge}>
+                            <Text style={styles.calorieText}>{data.summary.workoutsCompleted}</Text>
+                        </View>
                         <Text style={styles.statLabel}>Workout{'\n'}Completed</Text>
                         <Text style={styles.statSubtext}>
-                            Lorem ipsum body text{'\n'}for stats and for motivation
+                            {data.summary.workoutsCompleted > 0 ? 'Great job today!' : 'Start your first workout!'}
+                            {'\n'}Keep it up!
                         </Text>
                     </View>
 
@@ -275,59 +425,68 @@ export const HomeScreen = () => {
                             </TouchableOpacity>
                         </View>
                         <View style={styles.calorieBadge}>
-                            <Text style={styles.calorieText}>256 </Text>
+                            <Text style={styles.calorieText}>{data.summary.activeMinutes} </Text>
                             <Text style={styles.calorieUnit}>min</Text>
                         </View>
                         <Text style={styles.statLabel}>Active Minutes</Text>
                         <Text style={styles.statSubtext}>
-                            Lorem ipsum body text{'\n'}for stats and for motivation
+                            Time you've been active{'\n'}
+                            today. Stay active!
                         </Text>
                     </View>
                 </Animated.View>
 
                 {/* Tips Section */}
                 <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-                    <Text style={styles.sectionTitle}>Tips</Text>
+                    <Text style={styles.sectionTitle}>AI Recommendations</Text>
 
-                    {/* Personalized workout tip */}
-                    <View style={[styles.tipCard, styles.tipCardGreen]}>
-                        <Text style={styles.tipTitle}>Personalized workout tip</Text>
-                        <Text style={styles.tipText}>
-                            Measure your body fat to keep track of muscle gain and fat
-                            reduction.Measure your body fat to keep track of muscle gain
-                            and fat reduction.
-                        </Text>
-                    </View>
-
-                    {/* Nutrition suggestion */}
-                    <View style={styles.tipCard}>
-                        <Text style={styles.tipTitle}>Nutrition suggestion</Text>
-                        <Text style={styles.tipText}>
-                            Measure your body fat to keep track of muscle gain and fat
-                            reduction.Measure your body fat to keep track of muscle gain
-                            and fat reduction.
-                        </Text>
-                    </View>
-
-                    {/* Recovery advice */}
-                    <View style={styles.tipCard}>
-                        <Text style={styles.tipTitle}>Recovery advice</Text>
-                        <Text style={styles.tipText}>
-                            Measure your body fat to keep track of muscle gain and fat
-                            reduction.Measure your body fat to keep track of muscle gain
-                            and fat reduction.
-                        </Text>
-                    </View>
+                    {loading ? (
+                        <View style={{ padding: 20, alignItems: 'center' }}>
+                            <ActivityIndicator size="small" color={palette.neonGreen} />
+                        </View>
+                    ) : data.recommendations.length > 0 ? (
+                        data.recommendations.map((tip, index) => (
+                            <View
+                                key={index}
+                                style={[
+                                    styles.tipCard,
+                                    index === 0 && styles.tipCardGreen,
+                                ]}
+                            >
+                                <Text style={styles.tipTitle}>{tip.title}</Text>
+                                <Text style={styles.tipText}>{tip.message}</Text>
+                            </View>
+                        ))
+                    ) : (
+                        <View style={styles.tipCard}>
+                            <Text style={styles.tipTitle}>No recommendations yet</Text>
+                            <Text style={styles.tipText}>
+                                Complete your profile and start tracking your activities to get personalized AI recommendations!
+                            </Text>
+                        </View>
+                    )}
                 </Animated.View>
 
                 {/* Motivational Quote Section */}
                 <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-                    <Text style={styles.sectionTitle}>Motivational Quote</Text>
+                    <Text style={styles.sectionTitle}>Today's Motivation</Text>
+                    <View style={[styles.tipCard, styles.motivationalQuoteCard]}>
+                        <Icon name="format-quote-open" size={32} color={palette.neonGreen} style={{ marginBottom: 8 }} />
+                        <Text style={styles.motivationalQuoteText}>
+                            {loading ? 'Loading...' : data.quote}
+                        </Text>
+                        <Icon name="format-quote-close" size={32} color={palette.neonGreen} style={{ alignSelf: 'flex-end', marginTop: 8 }} />
+                    </View>
                 </Animated.View>
 
-                {/* Progress History Card */}
+                {/* Progress History / Weekly Progress Card */}
                 <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-                    <TouchableOpacity style={styles.progressCard}>
+                    <Text style={styles.sectionTitle}>Weekly Progress</Text>
+
+                    <TouchableOpacity
+                        style={styles.progressCard}
+                        onPress={() => navigation.navigate('BodyStats')}
+                    >
                         <ImageBackground
                             source={{ uri: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&h=400&fit=crop' }}
                             style={styles.progressImage}
@@ -337,12 +496,12 @@ export const HomeScreen = () => {
                                 colors={['rgba(0,0,0,0.4)', 'rgba(0,0,0,0.8)']}
                                 style={styles.progressOverlay}
                             >
-                                <Text style={styles.progressQuote}>
-                                    I don't see things and you see{'\n'}
-                                    things and say why and i see{'\n'}
-                                    things and say why not
-                                </Text>
                                 <Text style={styles.progressTitle}>Progress{'\n'}History</Text>
+                                <Text style={styles.progressQuote}>
+                                    Track your weekly progress{'\n'}
+                                    View detailed stats and charts{'\n'}
+                                    Tap to see your journey
+                                </Text>
 
                                 <TouchableOpacity style={styles.progressArrow}>
                                     <LinearGradient
@@ -609,5 +768,49 @@ const styles = StyleSheet.create({
     },
     bottomSpacing: {
         height: 40,
+    },
+    loadingContainer: {
+        padding: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    scheduleScroll: {
+        marginHorizontal: -spacing.lg,
+        paddingHorizontal: spacing.lg,
+    },
+    motivationalQuoteCard: {
+        backgroundColor: 'rgba(197, 255, 74, 0.05)',
+        borderColor: palette.neonGreen,
+        paddingVertical: spacing.lg,
+    },
+    motivationalQuoteText: {
+        ...typography.body,
+        color: palette.textPrimary,
+        fontSize: 16,
+        lineHeight: 24,
+        textAlign: 'center',
+        fontStyle: 'italic',
+    },
+    liveIndicator: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(197, 255, 74, 0.2)',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 12,
+        marginRight: 8,
+    },
+    liveDot: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        backgroundColor: palette.neonGreen,
+        marginRight: 4,
+    },
+    liveText: {
+        color: palette.neonGreen,
+        fontSize: 10,
+        fontWeight: '700',
+        letterSpacing: 0.5,
     },
 });

@@ -171,7 +171,7 @@ Thank you for booking with SIXFINITY!`,
 
                 {/* Success Note */}
                 <View style={styles.noteCard}>
-                    <Text style={styles.noteIcon}>💡</Text>
+                    <Text style={styles.noteIcon}></Text>
                     <Text style={styles.noteText}>
                         A confirmation email has been sent to your registered email address.
                         You can view your booking details anytime from the Bookings section.

@@ -1,0 +1,3375 @@
+{
+	"info": {
+		"_postman_id": "7d820b20-23c8-4228-a5dd-04a976faeaf3",
+		"name": "AI-GYM-API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "36185934",
+		"_collection_link": "https://winter-eclipse-377843.postman.co/workspace/My-Workspace~90e55141-1758-4342-8bb4-d0b404787b97/collection/36185934-7d820b20-23c8-4228-a5dd-04a976faeaf3?action=share&source=collection_link&creator=36185934"
+	},
+	"item": [
+		{
+			"name": "gym",
+			"item": [
+				{
+					"name": "Get All Gyms",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/gyms",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"gyms"
+							]
+						},
+						"description": "Retrieve all gyms from the database"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Gyms With Relations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/gyms/with-relations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"gyms",
+								"with-relations"
+							]
+						},
+						"description": "Retrieve all gyms with staff, trainers, equipment, and members"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Active Gyms",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/gyms/active",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"gyms",
+								"active"
+							]
+						},
+						"description": "Retrieve all active gyms"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Gyms By Subscription Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/gyms/subscription-status/Active",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"gyms",
+								"subscription-status",
+								"Active"
+							]
+						},
+						"description": "Retrieve gyms filtered by subscription status (Active, Inactive, Suspended, Expired)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Gym By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/gyms/{{gym_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"gyms",
+								"{{gym_id}}"
+							]
+						},
+						"description": "Retrieve a specific gym by its primary key ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Gym By ID With Relations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/gyms/{{gym_id}}/with-relations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"gyms",
+								"{{gym_id}}",
+								"with-relations"
+							]
+						},
+						"description": "Retrieve a specific gym with all related data (staff, trainers, equipment, members)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Gym By Gym ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/gyms/gym-id/{{gym_unique_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"gyms",
+								"gym-id",
+								"{{gym_unique_id}}"
+							]
+						},
+						"description": "Retrieve a gym by its unique gymId field"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Gym",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.environment.set('gym_id', jsonData.data.id);",
+									"        pm.environment.set('gym_unique_id', jsonData.data.gymId);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"gymId\": \"GYM001\",\n  \"gymName\": \"PowerFit Gym\",\n  \"ownerName\": \"John Smith\",\n  \"contactNumber\": \"+94771234567\",\n  \"emailAddress\": \"powerfit@example.com\",\n  \"address\": \"123 Main Street, Colombo\",\n  \"city\": \"Colombo\",\n  \"state\": \"Western\",\n  \"zipCode\": \"00100\",\n  \"country\": \"Sri Lanka\",\n  \"registrationDate\": \"2025-01-15\",\n  \"subscriptionPlan\": \"Premium\",\n  \"subscriptionStatus\": \"Active\",\n  \"subscriptionStartDate\": \"2025-01-15\",\n  \"subscriptionEndDate\": \"2026-01-15\",\n  \"maxMembers\": 500,\n  \"currentMembers\": 0,\n  \"website\": \"https://powerfit.com\",\n  \"logoUrl\": \"https://powerfit.com/logo.png\",\n  \"description\": \"A premium fitness center with state-of-the-art equipment and professional trainers\",\n  \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/gyms",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"gyms"
+							]
+						},
+						"description": "Create a new gym"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Basic Gym",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"gymId\": \"GYM002\",\n  \"gymName\": \"FitZone Gym\",\n  \"ownerName\": \"Jane Doe\",\n  \"contactNumber\": \"+94777654321\",\n  \"emailAddress\": \"fitzone@example.com\",\n  \"address\": \"456 Park Avenue\",\n  \"city\": \"Kandy\",\n  \"country\": \"Sri Lanka\",\n  \"registrationDate\": \"2025-02-01\",\n  \"subscriptionPlan\": \"Basic\",\n  \"subscriptionStatus\": \"Active\",\n  \"maxMembers\": 100\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/gyms",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"gyms"
+							]
+						},
+						"description": "Create a gym with minimum required fields"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Gym",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"gymName\": \"PowerFit Gym & Fitness Center\",\n  \"contactNumber\": \"+94771234999\",\n  \"maxMembers\": 600,\n  \"description\": \"A premium fitness center with state-of-the-art equipment, professional trainers, and modern facilities\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/gyms/{{gym_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"gyms",
+								"{{gym_id}}"
+							]
+						},
+						"description": "Update gym details"
+					},
+					"response": []
+				},
+				{
+					"name": "Deactivate Gym",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/gyms/{{gym_id}}/deactivate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"gyms",
+								"{{gym_id}}",
+								"deactivate"
+							]
+						},
+						"description": "Soft delete - deactivate a gym (sets isActive to false)"
+					},
+					"response": []
+				},
+				{
+					"name": "Activate Gym",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/gyms/{{gym_id}}/activate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"gyms",
+								"{{gym_id}}",
+								"activate"
+							]
+						},
+						"description": "Activate a gym (sets isActive to true)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Subscription Status",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"Suspended\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/gyms/{{gym_id}}/subscription-status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"gyms",
+								"{{gym_id}}",
+								"subscription-status"
+							]
+						},
+						"description": "Update gym subscription status (Active, Inactive, Suspended, Expired)"
+					},
+					"response": []
+				},
+				{
+					"name": "Increment Member Count",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/gyms/{{gym_unique_id}}/increment-members",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"gyms",
+								"{{gym_unique_id}}",
+								"increment-members"
+							]
+						},
+						"description": "Increment the current member count by 1"
+					},
+					"response": []
+				},
+				{
+					"name": "Decrement Member Count",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/gyms/{{gym_unique_id}}/decrement-members",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"gyms",
+								"{{gym_unique_id}}",
+								"decrement-members"
+							]
+						},
+						"description": "Decrement the current member count by 1"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Gym",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/gyms/{{gym_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"gyms",
+								"{{gym_id}}"
+							]
+						},
+						"description": "Permanently delete a gym and all related data (CASCADE)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Equipment",
+			"item": [
+				{
+					"name": "Get All Equipment",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/equipment",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"equipment"
+							]
+						},
+						"description": "Retrieve all equipment from the database"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Equipment by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/equipment/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"equipment",
+								"1"
+							]
+						},
+						"description": "Retrieve specific equipment by its primary key ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Equipment by Category - Cardio",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/equipment/category/Cardio",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"equipment",
+								"category",
+								"Cardio"
+							]
+						},
+						"description": "Retrieve all cardio equipment"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Equipment by Category - Strength",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/equipment/category/Strength",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"equipment",
+								"category",
+								"Strength"
+							]
+						},
+						"description": "Retrieve all strength training equipment"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Equipment by Status - Active",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/equipment/status/Active",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"equipment",
+								"status",
+								"Active"
+							]
+						},
+						"description": "Retrieve all active equipment"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Equipment by Status - Maintenance",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/equipment/status/Maintenance",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"equipment",
+								"status",
+								"Maintenance"
+							]
+						},
+						"description": "Retrieve all equipment under maintenance"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Equipment - Treadmill",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"equipmentName\": \"Treadmill Pro X500\",\n  \"category\": \"Cardio\",\n  \"purchaseDate\": \"2024-01-15\",\n  \"warranty\": \"3 Years\",\n  \"nextServiceDate\": \"2025-01-15\",\n  \"status\": \"Active\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/equipment",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"equipment"
+							]
+						},
+						"description": "Create a new treadmill equipment"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Equipment - Bench Press",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"equipmentName\": \"Olympic Bench Press Station\",\n  \"category\": \"Strength\",\n  \"purchaseDate\": \"2024-03-20\",\n  \"warranty\": \"5 Years\",\n  \"nextServiceDate\": \"2025-03-20\",\n  \"status\": \"Active\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/equipment",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"equipment"
+							]
+						},
+						"description": "Create a new bench press equipment"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Equipment - Rowing Machine",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"equipmentName\": \"Water Rowing Machine\",\n  \"category\": \"Cardio\",\n  \"purchaseDate\": \"2024-05-10\",\n  \"warranty\": \"2 Years\",\n  \"nextServiceDate\": \"2025-05-10\",\n  \"status\": \"Active\",\n  \"image1\": \"data:image/jpeg;base64,/9j/4AAQSkZJRg...\",\n  \"image2\": \"data:image/jpeg;base64,/9j/4AAQSkZJRg...\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/equipment",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"equipment"
+							]
+						},
+						"description": "Create equipment with images (base64 encoded)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Equipment",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"equipmentName\": \"Treadmill Pro X500 Advanced\",\n  \"warranty\": \"5 Years Extended\",\n  \"nextServiceDate\": \"2025-06-15\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/equipment/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"equipment",
+								"1"
+							]
+						},
+						"description": "Update existing equipment by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Equipment Status to Maintenance",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"Maintenance\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/equipment/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"equipment",
+								"1"
+							]
+						},
+						"description": "Update only the status of equipment to Maintenance"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Equipment Status to Inactive",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"Inactive\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/equipment/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"equipment",
+								"1"
+							]
+						},
+						"description": "Update only the status of equipment to Inactive"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Equipment",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/equipment/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"equipment",
+								"1"
+							]
+						},
+						"description": "Delete equipment by ID"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Equipment Category",
+			"item": [
+				{
+					"name": "Get All Equipment Categories",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/equipment-categories",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"equipment-categories"
+							]
+						},
+						"description": "Retrieve all equipment categories from the database"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Equipment Category by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/equipment-categories/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"equipment-categories",
+								"1"
+							]
+						},
+						"description": "Retrieve a specific equipment category by its primary key ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Equipment Categories by Status - Active",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/equipment-categories/status/Active",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"equipment-categories",
+								"status",
+								"Active"
+							]
+						},
+						"description": "Retrieve all active equipment categories"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Equipment Categories by Status - Inactive",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/equipment-categories/status/Inactive",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"equipment-categories",
+								"status",
+								"Inactive"
+							]
+						},
+						"description": "Retrieve all inactive equipment categories"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Equipment Category - Cardio",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"categoryName\": \"Cardio Equipment\",\n  \"status\": \"Active\",\n  \"description\": \"Equipment used for cardiovascular exercises including treadmills, ellipticals, and stationary bikes\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/equipment-categories",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"equipment-categories"
+							]
+						},
+						"description": "Create a new equipment category for cardio equipment"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Equipment Category - Strength",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"categoryName\": \"Strength Training\",\n  \"status\": \"Active\",\n  \"description\": \"Weight machines, free weights, and resistance training equipment for building muscle strength\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/equipment-categories",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"equipment-categories"
+							]
+						},
+						"description": "Create a new equipment category for strength training"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Equipment Category - Functional",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"categoryName\": \"Functional Training\",\n  \"status\": \"Active\",\n  \"description\": \"Equipment for functional fitness including kettlebells, medicine balls, and resistance bands\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/equipment-categories",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"equipment-categories"
+							]
+						},
+						"description": "Create a new equipment category for functional training"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Equipment Category",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"categoryName\": \"Cardio & Aerobic Equipment\",\n  \"description\": \"All equipment used for cardiovascular and aerobic exercises including treadmills, ellipticals, stationary bikes, and rowing machines\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/equipment-categories/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"equipment-categories",
+								"1"
+							]
+						},
+						"description": "Update an existing equipment category by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Category Status to Inactive",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"Inactive\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/equipment-categories/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"equipment-categories",
+								"1"
+							]
+						},
+						"description": "Update only the status of a category to Inactive"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Equipment Category",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/equipment-categories/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"equipment-categories",
+								"1"
+							]
+						},
+						"description": "Delete an equipment category by ID"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Member",
+			"item": [
+				{
+					"name": "Get All Members",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/members",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"members"
+							]
+						},
+						"description": "Retrieve all members from the database"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Member by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/members/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"members",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "Member ID"
+								}
+							]
+						},
+						"description": "Retrieve a specific member by their ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Member",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"memberId\":\"MEM-20251110-0001\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"dob\": \"1990-05-15\",\n  \"gender\": \"Male\",\n  \"phone\": \"+1-555-0123\",\n  \"email\": \"john.doe@example.com\",\n  \"jobTitle\": \"Software Engineer\",\n  \"startDate\": \"2024-01-15\",\n  \"subscriptionStatus\": \"Active\",\n  \"assignedTrainer\": \"Mike Johnson\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/members",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"members"
+							]
+						},
+						"description": "Create a new member in the database"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Member - Female",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"dob\": \"1995-08-20\",\n  \"gender\": \"Female\",\n  \"phone\": \"+1-555-0124\",\n  \"email\": \"jane.smith@example.com\",\n  \"jobTitle\": \"Marketing Manager\",\n  \"startDate\": \"2024-02-01\",\n  \"subscriptionStatus\": \"Active\",\n  \"assignedTrainer\": \"Sarah Williams\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/members",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"members"
+							]
+						},
+						"description": "Create a new female member"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Member - Minimal Fields",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Bob\",\n  \"lastName\": \"Wilson\",\n  \"dob\": \"1988-03-10\",\n  \"gender\": \"Male\",\n  \"phone\": \"+1-555-0125\",\n  \"email\": \"bob.wilson@example.com\",\n  \"startDate\": \"2024-03-01\",\n  \"subscriptionStatus\": \"Pending\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/members",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"members"
+							]
+						},
+						"description": "Create a member with only required fields (jobTitle and assignedTrainer are optional)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Member",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe Updated\",\n  \"dob\": \"1990-05-15\",\n  \"gender\": \"Male\",\n  \"phone\": \"+1-555-0123\",\n  \"email\": \"john.doe.updated@example.com\",\n  \"jobTitle\": \"Senior Software Engineer\",\n  \"startDate\": \"2024-01-15\",\n  \"subscriptionStatus\": \"Active\",\n  \"assignedTrainer\": \"Mike Johnson\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/members/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"members",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "Member ID to update"
+								}
+							]
+						},
+						"description": "Update an existing member's information"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Member - Partial",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"subscriptionStatus\": \"Inactive\",\n  \"assignedTrainer\": \"New Trainer Name\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/members/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"members",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "Member ID to update"
+								}
+							]
+						},
+						"description": "Update only specific fields of a member"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Member",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/members/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"members",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "21",
+									"description": "Member ID to delete"
+								}
+							]
+						},
+						"description": "Delete a member from the database"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Member Join Gym",
+			"item": [
+				{
+					"name": "Get Available Gyms",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/members/available-gyms",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"members",
+								"available-gyms"
+							]
+						},
+						"description": "Get all active gyms that members can join. Shows gym capacity info."
+					},
+					"response": []
+				},
+				{
+					"name": "Member Join Gym Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    console.log('Member successfully joined gym!');",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"gymId\": {{gym_id}}\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/members/{{member_id}}/join-gym",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"members",
+								"{{member_id}}",
+								"join-gym"
+							]
+						},
+						"description": "Request for an already registered member to join a gym. Automatically handles:\n- Transferring from old gym (if applicable)\n- Checking gym capacity\n- Updating member counts\n- Verifying gym is active"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Members",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/members",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"members"
+							]
+						},
+						"description": "Retrieve all members from the database"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Members With Gym",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/members/with-gym",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"members",
+								"with-gym"
+							]
+						},
+						"description": "Retrieve all members with their gym information"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Members By Gym ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/members/gym/{{gym_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"members",
+								"gym",
+								"{{gym_id}}"
+							]
+						},
+						"description": "Retrieve all members belonging to a specific gym"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Member By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/members/{{member_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"members",
+								"{{member_id}}"
+							]
+						},
+						"description": "Retrieve a specific member by their primary key ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Member By ID With Gym",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/members/{{member_id}}/with-gym",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"members",
+								"{{member_id}}",
+								"with-gym"
+							]
+						},
+						"description": "Retrieve a specific member with their gym information"
+					},
+					"response": []
+				},
+				{
+					"name": "Create New Member",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.environment.set('member_id', jsonData.data.id);",
+									"        if (jsonData.data.memberId) {",
+									"            pm.environment.set('member_unique_id', jsonData.data.memberId);",
+									"        }",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"gymId\": {{gym_id}},\n  \"memberId\": \"MEM001\",\n  \"firstName\": \"Sarah\",\n  \"lastName\": \"Johnson\",\n  \"dob\": \"1995-06-15\",\n  \"gender\": \"Female\",\n  \"phone\": \"+94771234567\",\n  \"email\": \"sarah.johnson@example.com\",\n  \"jobTitle\": \"Software Engineer\",\n  \"startDate\": \"2025-11-20\",\n  \"subscriptionStatus\": \"Active\",\n  \"assignedTrainer\": \"John Doe\",\n  \"goal\": \"Weight loss and muscle toning\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/members",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"members"
+							]
+						},
+						"description": "Create a new member account with gym assignment"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Member Without Gym",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.environment.set('member_without_gym_id', jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"memberId\": \"MEM999\",\n  \"firstName\": \"Alex\",\n  \"lastName\": \"Taylor\",\n  \"dob\": \"1996-08-25\",\n  \"gender\": \"Male\",\n  \"phone\": \"+94779999999\",\n  \"email\": \"alex.taylor@example.com\",\n  \"jobTitle\": \"Designer\",\n  \"startDate\": \"2025-11-20\",\n  \"subscriptionStatus\": \"Pending\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/members",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"members"
+							]
+						},
+						"description": "Create a member without gym (for testing join gym request)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Member",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phone\": \"+94771234999\",\n  \"email\": \"sarah.johnson.updated@example.com\",\n  \"jobTitle\": \"Senior Software Engineer\",\n  \"subscriptionStatus\": \"Active\",\n  \"assignedTrainer\": \"Jane Smith\",\n  \"goal\": \"Maintain fitness and build strength\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/members/{{member_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"members",
+								"{{member_id}}"
+							]
+						},
+						"description": "Update member information"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Member",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/members/{{member_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"members",
+								"{{member_id}}"
+							]
+						},
+						"description": "Remove member from the system"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Member Gym Request",
+			"item": [
+				{
+					"name": "1. Member Submits Join Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"gymId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/members/:memberId/join-gym",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"members",
+								":memberId",
+								"join-gym"
+							],
+							"variable": [
+								{
+									"key": "memberId",
+									"value": "1",
+									"description": "Member ID"
+								}
+							]
+						},
+						"description": "Member submits a request to join a gym. Status will be set to 'pending'."
+					},
+					"response": []
+				},
+				{
+					"name": "2. Get Pending Members for Gym",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/members/gym/:gymId/pending",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"members",
+								"gym",
+								":gymId",
+								"pending"
+							],
+							"variable": [
+								{
+									"key": "gymId",
+									"value": "1",
+									"description": "Gym ID (numeric)"
+								}
+							]
+						},
+						"description": "Get all members with pending join requests for a specific gym."
+					},
+					"response": []
+				},
+				{
+					"name": "3. Get Approved Members for Gym",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/members/gym/:gymId/approved",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"members",
+								"gym",
+								":gymId",
+								"approved"
+							],
+							"variable": [
+								{
+									"key": "gymId",
+									"value": "1",
+									"description": "Gym ID (numeric)"
+								}
+							]
+						},
+						"description": "Get all approved/active members for a specific gym."
+					},
+					"response": []
+				},
+				{
+					"name": "4. Approve Member Request",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/members/:memberId/approve",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"members",
+								":memberId",
+								"approve"
+							],
+							"variable": [
+								{
+									"key": "memberId",
+									"value": "1",
+									"description": "Member ID to approve"
+								}
+							]
+						},
+						"description": "Approve a pending member gym join request. This will increment the gym's member count."
+					},
+					"response": []
+				},
+				{
+					"name": "5. Reject Member Request",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/members/:memberId/reject",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"members",
+								":memberId",
+								"reject"
+							],
+							"variable": [
+								{
+									"key": "memberId",
+									"value": "MEM-20251110-0002",
+									"description": "Member ID to reject"
+								}
+							]
+						},
+						"description": "Reject a pending member gym join request. This will remove the gym association."
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Members by Gym (All Statuses)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/members/gym/:gymId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"members",
+								"gym",
+								":gymId"
+							],
+							"variable": [
+								{
+									"key": "gymId",
+									"value": "1",
+									"description": "Gym ID (numeric)"
+								}
+							]
+						},
+						"description": "Get all members for a gym (includes pending, approved, and rejected)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Staff Schedules",
+			"item": [
+				{
+					"name": "Get All Staff Schedules",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/staff-schedules",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"staff-schedules"
+							]
+						},
+						"description": "Retrieve all staff schedules from the database"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Staff Schedule by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/staff-schedules/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"staff-schedules",
+								"1"
+							]
+						},
+						"description": "Retrieve a specific staff schedule by its primary key ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Staff Schedules by Staff ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/staff-schedules/staff/STF001",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"staff-schedules",
+								"staff",
+								"STF001"
+							]
+						},
+						"description": "Retrieve all schedules for a specific staff member by their staff ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Staff Schedules by Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/staff-schedules/status/Active",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"staff-schedules",
+								"status",
+								"Active"
+							]
+						},
+						"description": "Retrieve all schedules with a specific status (Active, Completed, Pending, Cancelled)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Staff Schedule",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"scheduleId\": \"SCH001\",\n  \"staffId\": \"STF001\",\n  \"staffName\": \"John Doe\",\n  \"shift\": \"Morning\",\n  \"scheduleDate\": \"2025-11-15\",\n  \"startTime\": \"08:00:00\",\n  \"endTime\": \"16:00:00\",\n  \"assignedTask\": \"Front desk and member check-ins\",\n  \"status\": \"Active\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/staff-schedules",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"staff-schedules"
+							]
+						},
+						"description": "Create a new staff schedule"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Staff Schedule",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"shift\": \"Evening\",\n  \"startTime\": \"14:00:00\",\n  \"endTime\": \"22:00:00\",\n  \"assignedTask\": \"Equipment maintenance and closing duties\",\n  \"status\": \"Active\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/staff-schedules/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"staff-schedules",
+								"1"
+							]
+						},
+						"description": "Update an existing staff schedule by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Staff Schedule",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/staff-schedules/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"staff-schedules",
+								"1"
+							]
+						},
+						"description": "Delete a staff schedule by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Staff Schedule - Example 2",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"scheduleId\": \"SCH002\",\n  \"staffId\": \"STF002\",\n  \"staffName\": \"Jane Smith\",\n  \"shift\": \"Evening\",\n  \"scheduleDate\": \"2025-11-15\",\n  \"startTime\": \"14:00:00\",\n  \"endTime\": \"22:00:00\",\n  \"assignedTask\": \"Equipment cleaning and maintenance\",\n  \"status\": \"Pending\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/staff-schedules",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"staff-schedules"
+							]
+						},
+						"description": "Create another staff schedule example"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Status to Completed",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"Completed\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/staff-schedules/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"staff-schedules",
+								"1"
+							]
+						},
+						"description": "Update only the status of a staff schedule to Completed"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Trainer",
+			"item": [
+				{
+					"name": "Get All Trainers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/trainers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"trainers"
+							]
+						},
+						"description": "Retrieves a list of all trainers from the database"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Trainer by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/trainers/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"trainers",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "Trainer ID (integer)"
+								}
+							]
+						},
+						"description": "Retrieves a specific trainer by their ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Trainer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"trainerId\": \"TR001\",\n  \"trainerName\": \"John Doe\",\n  \"dateOfBirth\": \"1990-05-15\",\n  \"contactNumber\": \"+1-555-123-4567\",\n  \"specialization\": \"Personal Training\",\n  \"certifications\": \"ACE Certified Personal Trainer, NASM Nutrition Coach\",\n  \"applicationDate\": \"2025-01-15\",\n  \"gender\": \"Male\",\n  \"emailAddress\": \"john.doe@example.com\",\n  \"experience\": \"5 years\",\n  \"region\": \"New York\",\n  \"status\": \"Active\",\n  \"profileImageUrl\": \"https://example.com/images/john-doe.jpg\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/trainers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"trainers"
+							]
+						},
+						"description": "Creates a new trainer record"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Trainer - Female",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"trainerId\": \"TR002\",\n  \"trainerName\": \"Jane Smith\",\n  \"dateOfBirth\": \"1988-08-22\",\n  \"contactNumber\": \"+1-555-987-6543\",\n  \"specialization\": \"Yoga & Pilates\",\n  \"certifications\": \"RYT-200, Pilates Method Alliance Certified\",\n  \"applicationDate\": \"2025-02-01\",\n  \"gender\": \"Female\",\n  \"emailAddress\": \"jane.smith@example.com\",\n  \"experience\": \"8 years\",\n  \"region\": \"Los Angeles\",\n  \"status\": \"Active\",\n  \"profileImageUrl\": \"https://example.com/images/jane-smith.jpg\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/trainers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"trainers"
+							]
+						},
+						"description": "Creates a new female trainer record"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Trainer - Pending Status",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"trainerId\": \"TR003\",\n  \"trainerName\": \"Mike Johnson\",\n  \"dateOfBirth\": \"1995-03-10\",\n  \"contactNumber\": \"+1-555-456-7890\",\n  \"specialization\": \"CrossFit & HIIT\",\n  \"certifications\": \"CrossFit Level 1 Trainer\",\n  \"applicationDate\": \"2025-03-15\",\n  \"gender\": \"Male\",\n  \"emailAddress\": \"mike.johnson@example.com\",\n  \"experience\": \"3 years\",\n  \"region\": \"Chicago\",\n  \"status\": \"Pending\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/trainers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"trainers"
+							]
+						},
+						"description": "Creates a trainer with pending status (new application)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Trainer",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"trainerName\": \"John Doe Updated\",\n  \"contactNumber\": \"+1-555-999-8888\",\n  \"specialization\": \"Personal Training & Nutrition\",\n  \"certifications\": \"ACE Certified Personal Trainer, NASM Nutrition Coach, ISSA Strength & Conditioning\",\n  \"experience\": \"6 years\",\n  \"status\": \"Active\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/trainers/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"trainers",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "Trainer ID to update"
+								}
+							]
+						},
+						"description": "Updates an existing trainer record"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Trainer Status to Inactive",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"Inactive\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/trainers/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"trainers",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "Trainer ID to update"
+								}
+							]
+						},
+						"description": "Updates trainer status to Inactive"
+					},
+					"response": []
+				},
+				{
+					"name": "Approve Pending Trainer",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"Active\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/trainers/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"trainers",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "3",
+									"description": "Pending Trainer ID to approve"
+								}
+							]
+						},
+						"description": "Approves a pending trainer application by setting status to Active"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Trainer",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/trainers/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"trainers",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "Trainer ID to delete"
+								}
+							]
+						},
+						"description": "Deletes a trainer from the database"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Trainer Schedule",
+			"item": [
+				{
+					"name": "Get All Trainer Schedules",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/trainer-schedules",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trainer-schedules"
+							]
+						},
+						"description": "Retrieve all trainer schedules from the database"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Trainer Schedule by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/trainer-schedules/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trainer-schedules",
+								"1"
+							]
+						},
+						"description": "Retrieve a specific trainer schedule by its primary key ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Schedules by Trainer ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/trainer-schedules/trainer/TR001",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trainer-schedules",
+								"trainer",
+								"TR001"
+							]
+						},
+						"description": "Retrieve all schedules for a specific trainer"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Schedules by Member ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/trainer-schedules/member/MEM001",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trainer-schedules",
+								"member",
+								"MEM001"
+							]
+						},
+						"description": "Retrieve all schedules assigned to a specific member"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Schedules by Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/trainer-schedules/status/Active",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trainer-schedules",
+								"status",
+								"Active"
+							]
+						},
+						"description": "Retrieve all schedules with a specific status (Active, Reschedule, Pending, Completed)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Trainer Schedule",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"trainerId\": \"TR001\",\n  \"trainerName\": \"John Smith\",\n  \"assignedMemberName\": \"Jane Doe\",\n  \"assignedMemberId\": \"MEM001\",\n  \"sessionName\": \"Strength Training\",\n  \"sessionDate\": \"2025-11-15\",\n  \"sessionTime\": \"10:00:00\",\n  \"status\": \"Active\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/trainer-schedules",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trainer-schedules"
+							]
+						},
+						"description": "Create a new trainer schedule"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Trainer Schedule - Cardio Session",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"trainerId\": \"TR002\",\n  \"trainerName\": \"Sarah Johnson\",\n  \"assignedMemberName\": \"Mike Wilson\",\n  \"assignedMemberId\": \"MEM002\",\n  \"sessionName\": \"Cardio & Endurance\",\n  \"sessionDate\": \"2025-11-16\",\n  \"sessionTime\": \"14:00:00\",\n  \"status\": \"Pending\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/trainer-schedules",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trainer-schedules"
+							]
+						},
+						"description": "Create another trainer schedule example"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Trainer Schedule - Yoga Session",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"trainerId\": \"TR003\",\n  \"trainerName\": \"Emily Davis\",\n  \"assignedMemberName\": \"Lisa Anderson\",\n  \"assignedMemberId\": \"MEM003\",\n  \"sessionName\": \"Yoga & Flexibility\",\n  \"sessionDate\": \"2025-11-17\",\n  \"sessionTime\": \"08:00:00\",\n  \"status\": \"Active\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/trainer-schedules",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trainer-schedules"
+							]
+						},
+						"description": "Create yoga session schedule"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Trainer Schedule",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sessionDate\": \"2025-11-20\",\n  \"sessionTime\": \"11:00:00\",\n  \"status\": \"Reschedule\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/trainer-schedules/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trainer-schedules",
+								"1"
+							]
+						},
+						"description": "Update an existing trainer schedule (partial update supported)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Schedule Status to Completed",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"Completed\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/trainer-schedules/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trainer-schedules",
+								"1"
+							]
+						},
+						"description": "Update schedule status to completed"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Trainer Schedule",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/trainer-schedules/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trainer-schedules",
+								"1"
+							]
+						},
+						"description": "Delete a trainer schedule by ID"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Authentication",
+					"item": [
+						{
+							"name": "Signup - Member (Full Name)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    const jsonData = pm.response.json();",
+											"    pm.environment.set(\"accessToken\", jsonData.data.tokens.accessToken);",
+											"    pm.environment.set(\"refreshToken\", jsonData.data.tokens.refreshToken);",
+											"    pm.environment.set(\"userId\", jsonData.data.user.id);",
+											"    pm.test(\"User registered successfully\", function () {",
+											"        pm.expect(jsonData.success).to.be.true;",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"fullName\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"member\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/auth/signup",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"signup"
+									]
+								},
+								"description": "Register a new member using full name (automatically splits into firstName and lastName)"
+							},
+							"response": []
+						},
+						{
+							"name": "Signup - Member (First & Last Name)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    const jsonData = pm.response.json();",
+											"    pm.environment.set(\"accessToken\", jsonData.data.tokens.accessToken);",
+											"    pm.environment.set(\"refreshToken\", jsonData.data.tokens.refreshToken);",
+											"    pm.environment.set(\"userId\", jsonData.data.user.id);",
+											"    pm.test(\"User registered successfully\", function () {",
+											"        pm.expect(jsonData.success).to.be.true;",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"email\": \"jane.smith@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"member\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/auth/signup",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"signup"
+									]
+								},
+								"description": "Register a new member using separate firstName and lastName fields (backward compatibility)"
+							},
+							"response": []
+						},
+						{
+							"name": "Signup - Gym Owner",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    const jsonData = pm.response.json();",
+											"    pm.environment.set(\"gymOwnerToken\", jsonData.data.tokens.accessToken);",
+											"    pm.environment.set(\"gymOwnerRefreshToken\", jsonData.data.tokens.refreshToken);",
+											"    pm.test(\"Gym owner registered successfully\", function () {",
+											"        pm.expect(jsonData.success).to.be.true;",
+											"        pm.expect(jsonData.data.user.role).to.equal(\"gym_owner\");",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"fullName\": \"Michael Johnson\",\n  \"email\": \"michael.gym@example.com\",\n  \"password\": \"gymowner123\",\n  \"role\": \"gym_owner\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/auth/signup",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"signup"
+									]
+								},
+								"description": "Register a new gym owner"
+							},
+							"response": []
+						},
+						{
+							"name": "Signup - Trainer",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    const jsonData = pm.response.json();",
+											"    pm.test(\"Trainer registered successfully\", function () {",
+											"        pm.expect(jsonData.success).to.be.true;",
+											"        pm.expect(jsonData.data.user.role).to.equal(\"trainer\");",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"fullName\": \"Sarah Wilson\",\n  \"email\": \"sarah.trainer@example.com\",\n  \"password\": \"trainer123\",\n  \"role\": \"trainer\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/auth/signup",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"signup"
+									]
+								},
+								"description": "Register a new trainer"
+							},
+							"response": []
+						},
+						{
+							"name": "Signup - Staff",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    const jsonData = pm.response.json();",
+											"    pm.test(\"Staff registered successfully\", function () {",
+											"        pm.expect(jsonData.success).to.be.true;",
+											"        pm.expect(jsonData.data.user.role).to.equal(\"staff\");",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"fullName\": \"David Brown\",\n  \"email\": \"david.staff@example.com\",\n  \"password\": \"staff123\",\n  \"role\": \"staff\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/auth/signup",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"signup"
+									]
+								},
+								"description": "Register a new staff member"
+							},
+							"response": []
+						},
+						{
+							"name": "Login - Member",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 200) {",
+											"    const jsonData = pm.response.json();",
+											"    pm.environment.set(\"accessToken\", jsonData.data.tokens.accessToken);",
+											"    pm.environment.set(\"refreshToken\", jsonData.data.tokens.refreshToken);",
+											"    pm.environment.set(\"userId\", jsonData.data.user.id);",
+											"    pm.test(\"Login successful\", function () {",
+											"        pm.expect(jsonData.success).to.be.true;",
+											"        pm.expect(jsonData.data.tokens.accessToken).to.exist;",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"password123\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/auth/login",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"login"
+									]
+								},
+								"description": "Login with email and password"
+							},
+							"response": []
+						},
+						{
+							"name": "Login - Invalid Credentials",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Login should fail with invalid credentials\", function () {",
+											"    pm.expect(pm.response.code).to.be.oneOf([400, 401]);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"wrongpassword\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/auth/login",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"login"
+									]
+								},
+								"description": "Test login with invalid credentials"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Token Management",
+					"item": [
+						{
+							"name": "Refresh Access Token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 200) {",
+											"    const jsonData = pm.response.json();",
+											"    pm.environment.set(\"accessToken\", jsonData.data.accessToken);",
+											"    pm.test(\"Token refreshed successfully\", function () {",
+											"        pm.expect(jsonData.success).to.be.true;",
+											"        pm.expect(jsonData.data.accessToken).to.exist;",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/auth/refresh",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"refresh"
+									]
+								},
+								"description": "Refresh access token using refresh token"
+							},
+							"response": []
+						},
+						{
+							"name": "Verify Token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Token is valid\", function () {",
+											"    const jsonData = pm.response.json();",
+											"    pm.expect(jsonData.success).to.be.true;",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/auth/verify",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"verify"
+									]
+								},
+								"description": "Verify if the access token is valid"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "User Management",
+					"item": [
+						{
+							"name": "Get Current User",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"User data retrieved successfully\", function () {",
+											"    const jsonData = pm.response.json();",
+											"    pm.expect(jsonData.success).to.be.true;",
+											"    pm.expect(jsonData.data.email).to.exist;",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/auth/me",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"me"
+									]
+								},
+								"description": "Get current authenticated user details"
+							},
+							"response": []
+						},
+						{
+							"name": "Logout",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Logout successful\", function () {",
+											"    const jsonData = pm.response.json();",
+											"    pm.expect(jsonData.success).to.be.true;",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/auth/logout",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"logout"
+									]
+								},
+								"description": "Logout and invalidate current refresh token"
+							},
+							"response": []
+						},
+						{
+							"name": "Logout All Sessions",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"All sessions logged out successfully\", function () {",
+											"    const jsonData = pm.response.json();",
+											"    pm.expect(jsonData.success).to.be.true;",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{accessToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/auth/logout-all",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"logout-all"
+									]
+								},
+								"description": "Logout from all sessions and invalidate all refresh tokens"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Validation Tests",
+					"item": [
+						{
+							"name": "Signup - Missing Email",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should fail with missing email\", function () {",
+											"    pm.expect(pm.response.code).to.equal(400);",
+											"    const jsonData = pm.response.json();",
+											"    pm.expect(jsonData.success).to.be.false;",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"fullName\": \"Test User\",\n  \"password\": \"password123\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/auth/signup",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"signup"
+									]
+								},
+								"description": "Test validation error for missing email"
+							},
+							"response": []
+						},
+						{
+							"name": "Signup - Invalid Email",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should fail with invalid email\", function () {",
+											"    pm.expect(pm.response.code).to.equal(400);",
+											"    const jsonData = pm.response.json();",
+											"    pm.expect(jsonData.success).to.be.false;",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"fullName\": \"Test User\",\n  \"email\": \"invalid-email\",\n  \"password\": \"password123\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/auth/signup",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"signup"
+									]
+								},
+								"description": "Test validation error for invalid email format"
+							},
+							"response": []
+						},
+						{
+							"name": "Signup - Short Password",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should fail with short password\", function () {",
+											"    pm.expect(pm.response.code).to.equal(400);",
+											"    const jsonData = pm.response.json();",
+											"    pm.expect(jsonData.success).to.be.false;",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"fullName\": \"Test User\",\n  \"email\": \"test@example.com\",\n  \"password\": \"12345\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/auth/signup",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"signup"
+									]
+								},
+								"description": "Test validation error for password less than 6 characters"
+							},
+							"response": []
+						},
+						{
+							"name": "Signup - Password Without Number",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should fail with password without number\", function () {",
+											"    pm.expect(pm.response.code).to.equal(400);",
+											"    const jsonData = pm.response.json();",
+											"    pm.expect(jsonData.success).to.be.false;",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"fullName\": \"Test User\",\n  \"email\": \"test@example.com\",\n  \"password\": \"password\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/auth/signup",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"signup"
+									]
+								},
+								"description": "Test validation error for password without at least one number"
+							},
+							"response": []
+						},
+						{
+							"name": "Signup - Missing Name",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should fail with missing name\", function () {",
+											"    pm.expect(pm.response.code).to.equal(400);",
+											"    const jsonData = pm.response.json();",
+											"    pm.expect(jsonData.success).to.be.false;",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/auth/signup",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"signup"
+									]
+								},
+								"description": "Test validation error when neither fullName nor firstName/lastName provided"
+							},
+							"response": []
+						},
+						{
+							"name": "Signup - Duplicate Email",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should fail with duplicate email\", function () {",
+											"    pm.expect(pm.response.code).to.be.oneOf([400, 409]);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"fullName\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"password123\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/auth/signup",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"signup"
+									]
+								},
+								"description": "Test error when trying to register with an already existing email"
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	]
+}

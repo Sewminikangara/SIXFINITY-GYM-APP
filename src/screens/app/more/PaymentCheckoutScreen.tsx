@@ -628,7 +628,7 @@ export default function PaymentCheckoutScreen() {
 
                 {/* Security Note */}
                 <View style={styles.securityNote}>
-                    <Text style={styles.securityIcon}>🔒</Text>
+                    <Text style={styles.securityIcon}></Text>
                     <Text style={styles.securityText}>
                         Your payment is secured with SSL encryption and processed by trusted payment gateways
                     </Text>
