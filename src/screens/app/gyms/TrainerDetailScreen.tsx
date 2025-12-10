@@ -23,7 +23,23 @@ type TrainerDetailRouteProp = RouteProp<AppStackParamList, 'TrainerDetail'>;
 export const TrainerDetailScreen = () => {
     const navigation = useNavigation();
     const route = useRoute<TrainerDetailRouteProp>();
-    const { trainer } = route.params;
+    const { trainer: routeTrainer, trainerId } = route.params;
+
+    // Use trainer from route params or fetch by trainerId if only ID provided
+    const trainer = routeTrainer || {
+        id: trainerId || '1',
+        name: 'Loading...',
+        rating: 0,
+        reviews: 0,
+        experience: 0,
+        specialization: [],
+        hourlyRate: 0,
+        availability: 'Available',
+        bio: '',
+        certifications: [],
+        achievements: [],
+        photos: [],
+    };
 
     const [activePhotoIndex, setActivePhotoIndex] = useState(0);
     const [activeCertIndex, setActiveCertIndex] = useState(0);

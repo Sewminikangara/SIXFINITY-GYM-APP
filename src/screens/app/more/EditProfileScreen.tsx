@@ -16,6 +16,8 @@ import { useAuth } from '@/context/AuthContext';
 import { palette, spacing, typography } from '@/theme';
 import { getUserProfile, updateProfile } from '@/services/profileService';
 import { Screen } from '@/components/Screen';
+import { getSupabaseUserId } from '@/utils/userHelpers';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 interface ProfileFormData {
     full_name: string;
@@ -51,9 +53,15 @@ export const EditProfileScreen = () => {
     const loadProfile = async () => {
         if (!user?.id) return;
 
+        const supabaseUserId = getSupabaseUserId(user);
+        if (!supabaseUserId) {
+            Alert.alert('Error', 'User session invalid. Please login again.');
+            return;
+        }
+
         try {
             setLoading(true);
-            const { data, error } = await getUserProfile(user.id);
+            const { data, error } = await getUserProfile(supabaseUserId);
 
             if (error) {
                 console.error('Error loading profile:', error);
@@ -82,6 +90,12 @@ export const EditProfileScreen = () => {
 
     const handleSave = async () => {
         if (!user?.id) return;
+
+        const supabaseUserId = getSupabaseUserId(user);
+        if (!supabaseUserId) {
+            Alert.alert('Error', 'User session invalid. Please login again.');
+            return;
+        }
 
         // Validation
         if (!formData.full_name.trim()) {
@@ -113,7 +127,7 @@ export const EditProfileScreen = () => {
                 profile_picture: formData.profile_picture,
             };
 
-            const { error } = await updateProfile(user.id, updateData);
+            const { error } = await updateProfile(supabaseUserId, updateData);
 
             if (error) {
                 throw error;
@@ -215,10 +229,11 @@ export const EditProfileScreen = () => {
                                     </Text>
                                 </View>
                             )}
-                            <View style={styles.photoOverlay}>
-                                <Text style={styles.photoOverlayText}>Change Photo</Text>
+                            <View style={styles.photoEditBadge}>
+                                <Icon name="camera" size={18} color="#FFFFFF" />
                             </View>
                         </TouchableOpacity>
+                        <Text style={styles.photoHint}>Tap to change photo</Text>
                     </View>
                 </View>
 
@@ -279,10 +294,10 @@ export const EditProfileScreen = () => {
                         <Text style={styles.label}>Gender</Text>
                         <View style={styles.genderContainer}>
                             {[
-                                { value: 'male', label: 'Male', emoji: '' },
-                                { value: 'female', label: 'Female', emoji: '' },
-                                { value: 'other', label: 'Other', emoji: '' },
-                                { value: 'prefer_not_to_say', label: 'Prefer not to say', emoji: '' },
+                                { value: 'male', label: 'Male' },
+                                { value: 'female', label: 'Female' },
+                                { value: 'other', label: 'Other' },
+                                { value: 'prefer_not_to_say', label: 'Prefer not to say' },
                             ].map((option) => (
                                 <TouchableOpacity
                                     key={option.value}
@@ -297,7 +312,6 @@ export const EditProfileScreen = () => {
                                         })
                                     }
                                 >
-                                    <Text style={styles.genderEmoji}>{option.emoji}</Text>
                                     <Text
                                         style={[
                                             styles.genderLabel,
@@ -466,6 +480,31 @@ const styles = StyleSheet.create({
         fontSize: 48,
         fontWeight: '700',
     },
+    photoEditBadge: {
+        position: 'absolute',
+        bottom: 4,
+        right: 4,
+        backgroundColor: palette.neonGreen,
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 3,
+        borderColor: palette.background,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 3,
+        elevation: 5,
+    },
+    photoHint: {
+        ...typography.caption,
+        color: palette.textSecondary,
+        fontSize: 13,
+        marginTop: spacing.sm,
+        fontWeight: '500',
+    },
     photoOverlay: {
         position: 'absolute',
         bottom: 0,
@@ -543,13 +582,10 @@ const styles = StyleSheet.create({
         backgroundColor: palette.brandPrimary,
         borderColor: palette.brandPrimary,
     },
-    genderEmoji: {
-        fontSize: 24,
-    },
     genderLabel: {
         ...typography.body,
         color: palette.textSecondary,
-        fontSize: 12,
+        fontSize: 13,
         fontWeight: '600',
         textAlign: 'center',
     },

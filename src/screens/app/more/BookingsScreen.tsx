@@ -265,7 +265,7 @@ export default function BookingsScreen() {
                                     </View>
                                     <View style={styles.detailRow}>
                                         <Text style={styles.detailIcon}></Text>
-                                        <Text style={styles.detailText}>₹{booking.price.toFixed(2)}</Text>
+                                        <Text style={styles.detailText}>Rs. {booking.price.toFixed(2)}</Text>
                                     </View>
                                 </View>
 

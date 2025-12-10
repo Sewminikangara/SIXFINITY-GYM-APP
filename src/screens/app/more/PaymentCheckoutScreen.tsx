@@ -145,20 +145,16 @@ export default function PaymentCheckoutScreen() {
 
             // Load payment methods
             const methodsResult = await getPaymentMethods(user.id);
-            console.log('Payment methods loaded:', methodsResult.data?.length || 0);
             if (methodsResult.data && methodsResult.data.length > 0) {
                 setPaymentMethods(methodsResult.data);
                 // Auto-select default payment method
                 const defaultMethod = methodsResult.data.find(m => m.is_default);
                 if (defaultMethod) {
                     setSelectedMethod(defaultMethod.payment_method_id);
-                    console.log('Default method selected:', defaultMethod.payment_method_id);
                 } else {
                     setSelectedMethod(methodsResult.data[0].payment_method_id);
-                    console.log('First method selected:', methodsResult.data[0].payment_method_id);
                 }
             } else {
-                console.log('No payment methods found - user needs to add one');
             }
         } catch (error) {
             console.error('Error loading payment data:', error);
@@ -205,7 +201,7 @@ export default function PaymentCheckoutScreen() {
             setAppliedCoupon({ code: couponCode.toUpperCase(), discount });
             setShowCouponInput(false);
             setCouponCode('');
-            Alert.alert('Success', `Coupon applied! You saved ₹${discount}`);
+            Alert.alert('Success', `Coupon applied! You saved Rs. ${discount}`);
         } else {
             Alert.alert('Invalid Coupon', 'This coupon code is not valid or has expired');
         }
@@ -231,7 +227,7 @@ export default function PaymentCheckoutScreen() {
 
         Alert.alert(
             'Confirm Payment',
-            `You will be charged ₹${finalAmount.toFixed(2)}. Continue?`,
+            `You will be charged Rs. ${finalAmount.toFixed(2)}. Continue?`,
             [
                 { text: 'Cancel', style: 'cancel' },
                 {
@@ -420,13 +416,13 @@ export default function PaymentCheckoutScreen() {
                     <View style={styles.card}>
                         <View style={styles.priceRow}>
                             <Text style={styles.priceLabel}>Base Fee</Text>
-                            <Text style={styles.priceValue}>₹{bookingDetails.baseFee.toFixed(2)}</Text>
+                            <Text style={styles.priceValue}>Rs. {bookingDetails.baseFee.toFixed(2)}</Text>
                         </View>
                         {bookingDetails.discount > 0 && (
                             <View style={styles.priceRow}>
                                 <Text style={styles.priceLabel}>Discount</Text>
                                 <Text style={[styles.priceValue, styles.discountText]}>
-                                    -₹{bookingDetails.discount.toFixed(2)}
+                                    -Rs. {bookingDetails.discount.toFixed(2)}
                                 </Text>
                             </View>
                         )}
@@ -439,19 +435,19 @@ export default function PaymentCheckoutScreen() {
                                     </TouchableOpacity>
                                 </Text>
                                 <Text style={[styles.priceValue, styles.discountText]}>
-                                    -₹{appliedCoupon.discount.toFixed(2)}
+                                    -Rs. {appliedCoupon.discount.toFixed(2)}
                                 </Text>
                             </View>
                         )}
                         <View style={styles.priceRow}>
                             <Text style={styles.priceLabel}>Tax & Fees</Text>
-                            <Text style={styles.priceValue}>₹{bookingDetails.tax.toFixed(2)}</Text>
+                            <Text style={styles.priceValue}>Rs. {bookingDetails.tax.toFixed(2)}</Text>
                         </View>
                         <View style={styles.divider} />
                         <View style={styles.priceRow}>
                             <Text style={styles.subtotalLabel}>Subtotal</Text>
                             <Text style={styles.subtotalValue}>
-                                ₹{(bookingDetails.finalAmount - (appliedCoupon?.discount || 0)).toFixed(2)}
+                                Rs. {(bookingDetails.finalAmount - (appliedCoupon?.discount || 0)).toFixed(2)}
                             </Text>
                         </View>
                         {walletDeduction > 0 && (
@@ -459,7 +455,7 @@ export default function PaymentCheckoutScreen() {
                                 <View style={styles.priceRow}>
                                     <Text style={styles.priceLabel}>Wallet Balance Used</Text>
                                     <Text style={[styles.priceValue, styles.discountText]}>
-                                        -₹{walletDeduction.toFixed(2)}
+                                        -Rs. {walletDeduction.toFixed(2)}
                                     </Text>
                                 </View>
                                 <View style={styles.divider} />
@@ -467,7 +463,7 @@ export default function PaymentCheckoutScreen() {
                         )}
                         <View style={styles.priceRow}>
                             <Text style={styles.totalLabel}>Total Payable</Text>
-                            <Text style={styles.totalValue}>₹{finalAmount.toFixed(2)}</Text>
+                            <Text style={styles.totalValue}>Rs. {finalAmount.toFixed(2)}</Text>
                         </View>
                     </View>
                 </View>
@@ -523,11 +519,11 @@ export default function PaymentCheckoutScreen() {
                                 </View>
                                 <View>
                                     <Text style={styles.walletLabel}>Use Wallet Balance</Text>
-                                    <Text style={styles.walletBalance}>Available: ₹{walletBalance.toFixed(2)}</Text>
+                                    <Text style={styles.walletBalance}>Available: Rs. {walletBalance.toFixed(2)}</Text>
                                 </View>
                             </View>
                             <Text style={styles.walletSavings}>
-                                Save ₹{Math.min(walletBalance, bookingDetails.finalAmount - (appliedCoupon?.discount || 0)).toFixed(2)}
+                                Save Rs. {Math.min(walletBalance, bookingDetails.finalAmount - (appliedCoupon?.discount || 0)).toFixed(2)}
                             </Text>
                         </TouchableOpacity>
                     </View>
@@ -537,24 +533,26 @@ export default function PaymentCheckoutScreen() {
                 {recommendedGateways.length > 0 && (
                     <View style={styles.section}>
                         <View style={styles.recommendedHeader}>
-                            <Text style={styles.recommendedIcon}>✨</Text>
+                            <View style={styles.recommendedBadge}>
+                                <Text style={styles.recommendedBadgeText}>TOP</Text>
+                            </View>
                             <View style={styles.recommendedTextContainer}>
                                 <Text style={styles.recommendedTitle}>Recommended for {userRegion === 'india' ? 'India' : 'International'}</Text>
-                                <Text style={styles.recommendedSubtitle}>Fast, secure & low fees</Text>
+                                <Text style={styles.recommendedSubtitle}>Fast, secure and low fees</Text>
                             </View>
                         </View>
                         <View style={styles.gatewaysList}>
                             {recommendedGateways.map((gateway, index) => (
                                 <View key={index} style={styles.gatewayChip}>
                                     <Text style={styles.gatewayIcon}>
-                                        {gateway === 'Razorpay' ? '⚡' :
-                                            gateway === 'Stripe' ? '' :
-                                                gateway === 'PayPal' ? '' :
-                                                    gateway === 'UPI' ? '' :
-                                                        gateway === 'Paytm' ? '' :
-                                                            gateway === 'PhonePe' ? '' :
-                                                                gateway === 'Apple Pay' ? '' :
-                                                                    gateway === 'Google Pay' ? 'G' : '✓'}
+                                        {gateway === 'Razorpay' ? 'RZ' :
+                                            gateway === 'Stripe' ? 'ST' :
+                                                gateway === 'PayPal' ? 'PP' :
+                                                    gateway === 'UPI' ? 'UPI' :
+                                                        gateway === 'Paytm' ? 'PTM' :
+                                                            gateway === 'PhonePe' ? 'PH' :
+                                                                gateway === 'Apple Pay' ? 'AP' :
+                                                                    gateway === 'Google Pay' ? 'GP' : 'PAY'}
                                     </Text>
                                     <Text style={styles.gatewayName}>{gateway}</Text>
                                 </View>
@@ -595,7 +593,6 @@ export default function PaymentCheckoutScreen() {
                                             selectedMethod === method.payment_method_id && styles.methodCardSelected,
                                         ]}
                                         onPress={() => {
-                                            console.log('Payment method tapped:', method.payment_method_id);
                                             setSelectedMethod(method.payment_method_id);
                                         }}
                                     >
@@ -639,7 +636,7 @@ export default function PaymentCheckoutScreen() {
             <View style={styles.footer}>
                 <View style={styles.footerAmount}>
                     <Text style={styles.footerLabel}>Total Amount</Text>
-                    <Text style={styles.footerValue}>₹{finalAmount.toFixed(2)}</Text>
+                    <Text style={styles.footerValue}>Rs. {finalAmount.toFixed(2)}</Text>
                 </View>
                 <TouchableOpacity
                     style={[
@@ -653,7 +650,7 @@ export default function PaymentCheckoutScreen() {
                         <ActivityIndicator color="#FFFFFF" />
                     ) : (
                         <Text style={styles.payButtonText}>
-                            {finalAmount === 0 ? 'Confirm Booking' : `Pay ₹${finalAmount.toFixed(2)}`}
+                            {finalAmount === 0 ? 'Confirm Booking' : `Pay Rs. ${finalAmount.toFixed(2)}`}
                         </Text>
                     )}
                 </TouchableOpacity>
@@ -663,7 +660,7 @@ export default function PaymentCheckoutScreen() {
             <PaymentProcessingModal
                 visible={processing}
                 amount={finalAmount}
-                currency="₹"
+                currency="Rs. "
                 paymentMethod={
                     selectedMethod
                         ? getMethodLabel(paymentMethods.find(m => m.payment_method_id === selectedMethod) as PaymentMethod)
@@ -1158,9 +1155,16 @@ const styles = StyleSheet.create({
         color: palette.textPrimary,
     },
     recommendedBadge: {
+        backgroundColor: 'rgba(185, 242, 72, 0.15)',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 6,
+        marginRight: spacing.sm,
+    },
+    recommendedBadgeText: {
         fontSize: 10,
-        fontWeight: '600',
+        fontWeight: '700',
         color: palette.brandPrimary,
-        marginTop: 2,
+        letterSpacing: 0.5,
     },
 });

@@ -23,6 +23,7 @@ import { useAuth } from '@/context/AuthContext';
 import { AppTabParamList, AppStackParamList } from '@/navigation/types';
 import { useHomeData } from '@/hooks/useHomeData';
 import { completeWorkout } from '@/services/homeService';
+import { getSupabaseUserId } from '@/utils/userHelpers';
 
 const { width } = Dimensions.get('window');
 
@@ -34,7 +35,11 @@ type HomeScreenNavigation = CompositeNavigationProp<
 export const HomeScreen = () => {
     const navigation = useNavigation<HomeScreenNavigation>();
     const { user } = useAuth();
-    const { loading, refreshing, data, refresh, pedometerAvailable } = useHomeData(user?.id || null);
+
+    // Get Supabase UUID for database queries
+    const supabaseUserId = getSupabaseUserId(user);
+
+    const { loading, refreshing, data, refresh, pedometerAvailable } = useHomeData(supabaseUserId);
     const [selectedMetric, setSelectedMetric] = useState<'weight' | 'steps' | 'calories'>('weight');
 
     const fadeAnim = useRef(new Animated.Value(0)).current;

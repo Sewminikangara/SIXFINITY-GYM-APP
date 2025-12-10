@@ -1,16 +1,17 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
-// Configure notification handler
-Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: true,
-        shouldShowBanner: true,
-        shouldShowList: true,
-    }),
-});
+// NOTE: expo-notifications removed from Expo Go in SDK 53+
+// This will work in development builds but is disabled for Expo Go
+// Notifications.setNotificationHandler({
+//     handleNotification: async () => ({
+//         shouldShowAlert: true,
+//         shouldPlaySound: true,
+//         shouldSetBadge: false,
+//         shouldShowBanner: true,
+//         shouldShowList: true,
+//     }),
+// });
 
 /**
  * Request notification permissions from the user
@@ -95,7 +96,7 @@ export const sendBookingConfirmation = async (booking: {
                     date: booking.date,
                     time: booking.time,
                 },
-                sound: true,
+                sound: 'default',
                 priority: Notifications.AndroidNotificationPriority.HIGH,
                 categoryIdentifier: 'bookings',
             },
@@ -139,7 +140,7 @@ export const scheduleSessionReminder = async (
                     date: booking.date,
                     time: booking.time,
                 },
-                sound: true,
+                sound: 'default',
                 priority: Notifications.AndroidNotificationPriority.HIGH,
                 categoryIdentifier: 'reminders',
             },
@@ -201,7 +202,7 @@ export const sendRescheduleNotification = async (
                     newTime: newBooking.time,
                     trainerName,
                 },
-                sound: true,
+                sound: 'default',
                 priority: Notifications.AndroidNotificationPriority.HIGH,
                 categoryIdentifier: 'bookings',
             },
@@ -238,7 +239,7 @@ export const sendCancellationNotification = async (
                     date: booking.date,
                     time: booking.time,
                 },
-                sound: true,
+                sound: 'default',
                 priority: Notifications.AndroidNotificationPriority.HIGH,
                 categoryIdentifier: 'bookings',
             },
@@ -268,7 +269,7 @@ export const sendReviewReminder = async (
                     bookingId,
                     trainerName,
                 },
-                sound: true,
+                sound: 'default',
                 priority: Notifications.AndroidNotificationPriority.DEFAULT,
                 categoryIdentifier: 'reminders',
             },

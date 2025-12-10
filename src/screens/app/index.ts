@@ -33,6 +33,9 @@ export { default as NotificationSettingsScreen } from './more/NotificationSettin
 export { default as NotificationsScreen } from './more/NotificationsScreen';
 export { default as HelpSupportScreen } from './more/HelpSupportScreen';
 
+// Progress & Stats
+export { default as ProgressStatsScreen } from './more/ProgressStatsScreen';
+
 // Wallet & Payments
 export { WalletScreen } from './more/WalletScreen';
 export { TransactionHistoryScreen } from './more/TransactionHistoryScreen';

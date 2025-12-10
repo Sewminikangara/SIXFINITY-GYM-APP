@@ -114,7 +114,6 @@ export const GymsScreen = () => {
                     )
                 ]);
             } catch (highAccuracyError) {
-                console.log('High accuracy failed, falling back to balanced:', highAccuracyError);
                 // Fallback: Try Balanced accuracy
                 try {
                     location = await Promise.race([
@@ -126,7 +125,6 @@ export const GymsScreen = () => {
                         )
                     ]);
                 } catch (balancedError) {
-                    console.log('Balanced accuracy failed, using last known:', balancedError);
                     // Last resort: Get last known position
                     location = await Location.getLastKnownPositionAsync({
                         maxAge: 60000, // Accept location up to 1 minute old
@@ -136,7 +134,6 @@ export const GymsScreen = () => {
 
             if (location && 'coords' in location) {
                 const { latitude, longitude, accuracy } = location.coords;
-                console.log(`Location obtained - Lat: ${latitude}, Lng: ${longitude}, Accuracy: ${accuracy}m`);
 
                 setUserLocation({ latitude, longitude });
 

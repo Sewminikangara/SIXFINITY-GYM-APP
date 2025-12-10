@@ -91,7 +91,7 @@ export default function PaymentFailedScreen() {
                 {/* Amount Card */}
                 <View style={styles.amountCard}>
                     <Text style={styles.amountLabel}>Transaction Amount</Text>
-                    <Text style={styles.amountValue}>₹{amount?.toFixed(2) || '0.00'}</Text>
+                    <Text style={styles.amountValue}>Rs. {amount?.toFixed(2) || '0.00'}</Text>
                     <View style={styles.statusBadge}>
                         <Text style={styles.statusText}>✕ Failed</Text>
                     </View>

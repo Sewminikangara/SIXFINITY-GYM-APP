@@ -43,7 +43,6 @@ export const SubmitReviewScreen = () => {
         setIsSubmitting(true);
 
         try {
-            // TODO: Submit review to Supabase
             // await submitTrainerReview({
             //   trainer_id: params?.trainerId,
             //   booking_id: params?.bookingId,

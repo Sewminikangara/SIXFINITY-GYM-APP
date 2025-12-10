@@ -10,7 +10,6 @@ import { useFonts } from 'expo-font';
 import { AuthProvider } from '@/context/AuthContext';
 import { RootNavigator } from '@/navigation/RootNavigator';
 import { palette } from '@/theme';
-import { requestNotificationPermissions } from '@/services/notificationsService';
 
 function App(): ReactElement {
   const isDarkMode = useColorScheme() === 'dark';
@@ -22,7 +21,17 @@ function App(): ReactElement {
 
   // Request notification permissions on app startup
   useEffect(() => {
-    requestNotificationPermissions();
+    const setupNotifications = async () => {
+      try {
+        const notificationModule = await import('./src/services/notificationsService');
+        if (notificationModule?.requestNotificationPermissions) {
+          await notificationModule.requestNotificationPermissions();
+        }
+      } catch (error) {
+        console.log('[APP] Notification setup skipped:', error);
+      }
+    };
+    setupNotifications();
   }, []);
 
   // Show loading screen while fonts are loading

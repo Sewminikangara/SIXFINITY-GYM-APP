@@ -2,7 +2,7 @@ import React from 'react';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { palette, typography } from '@/theme';
 import { Ionicons } from '@expo/vector-icons';
-import { GymsScreen } from '@/screens/app/gyms/GymsScreen';
+import { GymFinderScreen } from '@/screens/app/gyms/GymFinderScreen';
 import { MyGymsScreen } from '@/screens/app/gyms/MyGymsScreen';
 import { LiveStatusScreen } from '@/screens/app/gyms/LiveStatusScreen';
 
@@ -41,7 +41,7 @@ export const GymTabsNavigator = () => {
         >
             <Tab.Screen
                 name="FindGyms"
-                component={GymsScreen}
+                component={GymFinderScreen}
                 options={{
                     tabBarLabel: 'Find Gyms',
                     tabBarIcon: ({ color, focused }) => (

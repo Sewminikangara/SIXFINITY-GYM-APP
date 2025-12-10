@@ -68,7 +68,7 @@ export default function RewardsScreen() {
         {
             id: '3',
             type: 'redeemed',
-            description: 'Redeemed for ₹10 discount',
+            description: 'Redeemed for Rs. 10 discount',
             points: -200,
             date: new Date(Date.now() - 86400000 * 7),
         },
@@ -91,59 +91,59 @@ export default function RewardsScreen() {
     const redemptionOptions: RedemptionOption[] = [
         {
             id: '1',
-            title: '₹5 Discount',
+            title: 'Rs. 250 Discount',
             description: 'Use on any booking',
             pointsCost: 100,
-            icon: '💵',
-            value: 5,
+            icon: 'Rs. 250',
+            value: 250,
         },
         {
             id: '2',
-            title: '₹10 Discount',
+            title: 'Rs. 500 Discount',
             description: 'Use on any booking',
             pointsCost: 200,
-            icon: '💴',
-            value: 10,
+            icon: 'Rs. 500',
+            value: 500,
         },
         {
             id: '3',
-            title: '₹25 Discount',
+            title: 'Rs. 1,000 Discount',
             description: 'Use on any booking',
             pointsCost: 500,
-            icon: '💶',
-            value: 25,
+            icon: 'Rs. 1K',
+            value: 1000,
         },
         {
             id: '4',
-            title: '₹50 Discount',
+            title: 'Rs. 2,500 Discount',
             description: 'Use on any booking',
             pointsCost: 1000,
-            icon: '💷',
-            value: 50,
+            icon: 'Rs. 2.5K',
+            value: 2500,
         },
         {
             id: '5',
             title: 'Free Session',
             description: '1 free gym session',
             pointsCost: 1500,
-            icon: '🏋️',
-            value: 100,
+            icon: 'FREE',
+            value: 5000,
         },
         {
             id: '6',
             title: 'Premium Month',
             description: '1 month premium features',
             pointsCost: 2000,
-            icon: '⭐',
+            icon: 'PRO',
             value: 199,
         },
     ];
 
     const tierInfo = {
-        bronze: { name: 'Bronze', minPoints: 0, color: '#CD7F32', icon: '🥉' },
-        silver: { name: 'Silver', minPoints: 500, color: '#C0C0C0', icon: '🥈' },
-        gold: { name: 'Gold', minPoints: 2000, color: '#FFD700', icon: '🥇' },
-        platinum: { name: 'Platinum', minPoints: 5000, color: '#E5E4E2', icon: '💎' },
+        bronze: { name: 'Bronze', minPoints: 0, color: '#CD7F32', icon: 'BR' },
+        silver: { name: 'Silver', minPoints: 500, color: '#C0C0C0', icon: 'SI' },
+        gold: { name: 'Gold', minPoints: 2000, color: '#FFD700', icon: 'GO' },
+        platinum: { name: 'Platinum', minPoints: 5000, color: '#E5E4E2', icon: 'PL' },
     };
 
     const currentTierInfo = tierInfo[balance.currentTier];
@@ -326,7 +326,7 @@ export default function RewardsScreen() {
                                     <Text style={styles.earnIcon}></Text>
                                     <View style={styles.earnDetails}>
                                         <Text style={styles.earnText}>Complete Booking</Text>
-                                        <Text style={styles.earnSubtext}>10 points per ₹100 spent</Text>
+                                        <Text style={styles.earnSubtext}>10 points per Rs. 500 spent</Text>
                                     </View>
                                     <Text style={styles.earnPoints}>+10</Text>
                                 </View>

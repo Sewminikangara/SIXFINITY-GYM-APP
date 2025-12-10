@@ -10,6 +10,7 @@ import {
     TrainersScreen,
     TrainerDetailScreen,
     EditProfileScreen,
+    ProgressStatsScreen,
     BodyStatsScreen,
     FitnessGoalsScreen,
     AchievementsScreen,
@@ -72,6 +73,7 @@ export const AppNavigator = () => {
             <Stack.Screen name="RescheduleSession" component={RescheduleSessionScreen} options={{ presentation: 'card', headerShown: false }} />
 
             <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ presentation: 'card', headerShown: true, headerTitle: 'Edit Profile' }} />
+            <Stack.Screen name="ProgressStats" component={ProgressStatsScreen} options={{ presentation: 'card', headerShown: false }} />
             <Stack.Screen name="BodyStats" component={BodyStatsScreen} options={{ presentation: 'card', headerShown: true, headerTitle: 'Body Stats' }} />
             <Stack.Screen name="FitnessGoals" component={FitnessGoalsScreen} options={{ presentation: 'card', headerShown: true, headerTitle: 'Fitness Goals' }} />
             <Stack.Screen name="Achievements" component={AchievementsScreen} options={{ presentation: 'card', headerShown: true, headerTitle: 'Achievements' }} />

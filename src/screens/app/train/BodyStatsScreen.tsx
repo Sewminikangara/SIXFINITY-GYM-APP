@@ -20,6 +20,7 @@ import {
     updateBodyStats,
     calculateBMI,
 } from '@/services/profileService';
+import { getSupabaseUserId } from '@/utils/userHelpers';
 
 interface BodyStats {
     weight_kg: number;
@@ -68,17 +69,20 @@ export const BodyStatsScreen = () => {
     const loadBodyStats = async () => {
         if (!user?.id) return;
 
+        const supabaseUserId = getSupabaseUserId(user);
+        if (!supabaseUserId) return;
+
         try {
             setLoading(true);
 
             // Get latest stats
-            const { data: latest } = await getLatestBodyStats(user.id);
+            const { data: latest } = await getLatestBodyStats(supabaseUserId);
 
             // Get history (last 30 days)
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
             const { data: historyData } = await getBodyStatsHistory(
-                user.id,
+                supabaseUserId,
                 thirtyDaysAgo.toISOString().split('T')[0]
             );
 
@@ -107,6 +111,9 @@ export const BodyStatsScreen = () => {
     const handleAddStats = async () => {
         if (!user?.id) return;
 
+        const supabaseUserId = getSupabaseUserId(user);
+        if (!supabaseUserId) return;
+
         // Validation
         if (!formData.weight_kg || !formData.height_cm) {
             Alert.alert('Validation Error', 'Weight and height are required');
@@ -128,7 +135,7 @@ export const BodyStatsScreen = () => {
                 hips_cm: formData.hips_cm ? parseFloat(formData.hips_cm) : null,
             };
 
-            const { error } = await updateBodyStats(user.id, statsData);
+            const { error } = await updateBodyStats(supabaseUserId, statsData);
 
             if (error) {
                 throw error;
@@ -180,20 +187,17 @@ export const BodyStatsScreen = () => {
         title,
         value,
         unit,
-        emoji,
         subtitle,
         trend,
     }: {
         title: string;
         value: number | null;
         unit: string;
-        emoji: string;
         subtitle?: string;
         trend?: { value: number; isPositive: boolean };
     }) => (
         <View style={styles.statCard}>
             <View style={styles.statHeader}>
-                <Text style={styles.statEmoji}>{emoji}</Text>
                 <Text style={styles.statTitle}>{title}</Text>
             </View>
             <Text style={styles.statValue}>
@@ -264,13 +268,10 @@ export const BodyStatsScreen = () => {
 
     return (
         <Screen>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Text style={styles.backButtonText}>‹ Back</Text>
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Body Stats</Text>
+            <View style={styles.simpleHeader}>
+                <Text style={styles.screenTitle}>Body Stats</Text>
                 <TouchableOpacity onPress={() => setShowAddModal(true)} style={styles.addButton}>
-                    <Text style={styles.addButtonText}>+ Add</Text>
+                    <Text style={styles.addButtonText}>ADD</Text>
                 </TouchableOpacity>
             </View>
 
@@ -286,14 +287,12 @@ export const BodyStatsScreen = () => {
                                     title="Weight"
                                     value={currentStats.weight_kg}
                                     unit="kg"
-                                    emoji="⚖️"
                                     trend={calculateTrend('weight')}
                                 />
                                 <StatCard
                                     title="Height"
                                     value={currentStats.height_cm}
                                     unit="cm"
-                                    emoji="📏"
                                 />
                             </View>
 
@@ -302,7 +301,6 @@ export const BodyStatsScreen = () => {
                                     title="BMI"
                                     value={currentStats.bmi}
                                     unit=""
-                                    emoji="📊"
                                     subtitle={
                                         currentStats.bmi ? getBMICategory(currentStats.bmi).label : undefined
                                     }
@@ -312,7 +310,6 @@ export const BodyStatsScreen = () => {
                                     title="Body Fat"
                                     value={currentStats.body_fat_percentage}
                                     unit="%"
-                                    emoji="💪"
                                 />
                             </View>
 
@@ -321,16 +318,14 @@ export const BodyStatsScreen = () => {
                                     title="Muscle Mass"
                                     value={currentStats.muscle_mass_kg}
                                     unit="kg"
-                                    emoji="💪"
                                 />
                             </View>
                         </>
                     ) : (
                         <View style={styles.emptyState}>
-                            <Text style={styles.emptyStateEmoji}>📊</Text>
                             <Text style={styles.emptyStateText}>No stats recorded yet</Text>
                             <Text style={styles.emptyStateSubtext}>
-                                Tap the "+ Add" button to record your first measurement
+                                Tap the "ADD" button to record your first measurement
                             </Text>
                         </View>
                     )}
@@ -376,10 +371,10 @@ export const BodyStatsScreen = () => {
             >
                 <Screen>
                     <View style={styles.modalHeader}>
-                        <TouchableOpacity onPress={() => setShowAddModal(false)} style={styles.backButton}>
-                            <Text style={styles.backButtonText}>‹ Cancel</Text>
+                        <TouchableOpacity onPress={() => setShowAddModal(false)} style={styles.cancelButton}>
+                            <Text style={styles.cancelButtonText}>Cancel</Text>
                         </TouchableOpacity>
-                        <Text style={styles.headerTitle}>Add Measurement</Text>
+                        <Text style={styles.modalTitle}>Add Measurement</Text>
                         <TouchableOpacity
                             onPress={handleAddStats}
                             disabled={saving}
@@ -513,40 +508,31 @@ const styles = StyleSheet.create({
         ...typography.body,
         color: palette.textSecondary,
     },
-    header: {
+    simpleHeader: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: spacing.lg,
-        paddingTop: spacing.xl,
+        paddingTop: spacing.lg,
         paddingBottom: spacing.md,
     },
-    backButton: {
-        padding: spacing.sm,
-    },
-    backButtonText: {
-        ...typography.subtitle,
-        color: palette.brandPrimary,
-        fontSize: 32,
-        fontWeight: '300',
-    },
-    headerTitle: {
-        ...typography.heading2,
+    screenTitle: {
+        ...typography.heading1,
         color: palette.textPrimary,
-        fontSize: 20,
+        fontSize: 28,
         fontWeight: '700',
     },
     addButton: {
         backgroundColor: palette.brandPrimary,
-        paddingHorizontal: spacing.md,
+        paddingHorizontal: spacing.lg,
         paddingVertical: spacing.sm,
         borderRadius: 8,
     },
     addButtonText: {
         ...typography.subtitle,
-        color: palette.textPrimary,
+        color: '#000000',
         fontSize: 16,
-        fontWeight: '600',
+        fontWeight: '700',
     },
     scrollView: {
         flex: 1,
@@ -721,6 +707,21 @@ const styles = StyleSheet.create({
         paddingHorizontal: spacing.lg,
         paddingTop: spacing.xl,
         paddingBottom: spacing.md,
+    },
+    modalTitle: {
+        ...typography.heading2,
+        color: palette.textPrimary,
+        fontSize: 20,
+        fontWeight: '700',
+    },
+    cancelButton: {
+        padding: spacing.sm,
+    },
+    cancelButtonText: {
+        ...typography.subtitle,
+        color: palette.brandPrimary,
+        fontSize: 16,
+        fontWeight: '600',
     },
     saveButton: {
         backgroundColor: palette.brandPrimary,

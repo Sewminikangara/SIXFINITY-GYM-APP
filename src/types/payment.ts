@@ -139,6 +139,7 @@ export interface PayHerePaymentObject {
     items: string;
     amount: string;
     currency: Currency;
+    hash?: string; // MD5 hash for payment security
     first_name: string;
     last_name: string;
     email: string;

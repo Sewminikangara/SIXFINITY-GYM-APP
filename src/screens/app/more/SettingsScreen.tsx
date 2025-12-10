@@ -93,7 +93,9 @@ export default function SettingsScreen() {
 
                     <TouchableOpacity style={styles.settingRow}>
                         <View style={styles.settingLeft}>
-                            <Text style={styles.settingIcon}>👤</Text>
+                            <View style={styles.iconBadge}>
+                                <Text style={styles.iconText}>AC</Text>
+                            </View>
                             <Text style={styles.settingLabel}>Edit Profile</Text>
                         </View>
                         <Text style={styles.settingArrow}>→</Text>
@@ -101,7 +103,9 @@ export default function SettingsScreen() {
 
                     <TouchableOpacity style={styles.settingRow}>
                         <View style={styles.settingLeft}>
-                            <Text style={styles.settingIcon}>🔒</Text>
+                            <View style={styles.iconBadge}>
+                                <Text style={styles.iconText}>PW</Text>
+                            </View>
                             <Text style={styles.settingLabel}>Change Password</Text>
                         </View>
                         <Text style={styles.settingArrow}>→</Text>
@@ -109,7 +113,9 @@ export default function SettingsScreen() {
 
                     <TouchableOpacity style={styles.settingRow}>
                         <View style={styles.settingLeft}>
-                            <Text style={styles.settingIcon}>📧</Text>
+                            <View style={styles.iconBadge}>
+                                <Text style={styles.iconText}>EM</Text>
+                            </View>
                             <Text style={styles.settingLabel}>Email Preferences</Text>
                         </View>
                         <Text style={styles.settingArrow}>→</Text>
@@ -207,7 +213,9 @@ export default function SettingsScreen() {
 
                     <TouchableOpacity style={styles.settingRow}>
                         <View style={styles.settingLeft}>
-                            <Text style={styles.settingIcon}>⚖️</Text>
+                            <View style={styles.iconBadge}>
+                                <Text style={styles.iconText}>UT</Text>
+                            </View>
                             <Text style={styles.settingLabel}>Units</Text>
                         </View>
                         <View style={styles.settingRight}>
@@ -293,7 +301,9 @@ export default function SettingsScreen() {
 
                     <TouchableOpacity style={styles.settingRow}>
                         <View style={styles.settingLeft}>
-                            <Text style={styles.settingIcon}>ℹ</Text>
+                            <View style={styles.iconBadge}>
+                                <Text style={styles.iconText}>AB</Text>
+                            </View>
                             <Text style={styles.settingLabel}>About SIXFINITY</Text>
                         </View>
                         <Text style={styles.settingArrow}>→</Text>
@@ -337,9 +347,9 @@ export default function SettingsScreen() {
 
                 <View style={styles.footer}>
                     <Text style={styles.footerText}>
-                        Made with ❤️ by SIXFINITY Team
+                        Made by SIXFINITY Team
                     </Text>
-                    <Text style={styles.footerText}>© 2024 SIXFINITY. All rights reserved.</Text>
+                    <Text style={styles.footerText}>© 2025 SIXFINITY. All rights reserved.</Text>
                 </View>
             </ScrollView>
         </SafeAreaView>
@@ -398,6 +408,20 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         flex: 1,
+    },
+    iconBadge: {
+        width: 32,
+        height: 32,
+        borderRadius: 8,
+        backgroundColor: 'rgba(185, 242, 72, 0.1)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: spacing.md,
+    },
+    iconText: {
+        fontSize: 10,
+        fontWeight: '700',
+        color: palette.brandPrimary,
     },
     settingIcon: {
         fontSize: 20,

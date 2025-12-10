@@ -50,7 +50,6 @@ Be specific and accurate for nutrition database searching.`;
         });
 
         if (!response.ok) {
-            console.log(' AI search enhancement unavailable, using original query');
             return [query];
         }
 
@@ -60,7 +59,6 @@ Be specific and accurate for nutrition database searching.`;
 
         if (jsonMatch) {
             const terms = JSON.parse(jsonMatch[0]);
-            console.log('🤖 AI enhanced search terms:', terms);
             return terms;
         }
 
@@ -83,11 +81,9 @@ export async function searchFoods(query: string): Promise<FoodSearchResult[]> {
         // Check cache first
         const cached = searchCache.get(query.toLowerCase());
         if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-            console.log(' Returning cached results for:', query);
             return cached.results;
         }
 
-        console.log(' AI-powered search for:', query);
 
         // Get AI-enhanced search terms
         const searchTerms = await getAIEnhancedSearchTerms(query);
@@ -98,7 +94,6 @@ export async function searchFoods(query: string): Promise<FoodSearchResult[]> {
 
         // Use only top 2 terms to avoid rate limits
         for (const term of searchTerms.slice(0, 2)) {
-            console.log(`🔎 Searching USDA for term: "${term}"`);
             const response = await fetch(
                 `${USDA_API_URL}/foods/search?query=${encodeURIComponent(term)}&pageSize=5&api_key=${USDA_API_KEY}`
             );
@@ -111,7 +106,6 @@ export async function searchFoods(query: string): Promise<FoodSearchResult[]> {
             }
 
             const data = await response.json();
-            console.log(` USDA returned ${data.foods?.length || 0} foods for "${term}"`);
 
             if (!data.foods || data.foods.length === 0) continue;
 
@@ -149,7 +143,6 @@ export async function searchFoods(query: string): Promise<FoodSearchResult[]> {
             timestamp: Date.now()
         });
 
-        console.log(` AI-powered search found ${finalResults.length} unique foods`);
         return finalResults;
     } catch (error) {
         console.error('Food search error:', error);

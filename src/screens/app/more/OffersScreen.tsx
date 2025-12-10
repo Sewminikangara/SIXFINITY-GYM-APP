@@ -70,14 +70,14 @@ export default function OffersScreen() {
         {
             id: '3',
             title: 'Weekend Warrior',
-            description: '₹500 off on weekend bookings',
-            discount: '₹500 OFF',
+            description: 'Rs. 500 off on weekend bookings',
+            discount: 'Rs. 500 OFF',
             icon: '',
             validUntil: new Date(Date.now() + 7 * 86400000),
             status: 'available',
             terms: [
                 'Valid only on Saturdays and Sundays',
-                'Minimum booking value ₹1000',
+                'Minimum booking value Rs. 1000',
                 'Limited to 2 bookings per user',
                 'First come, first served',
             ],
@@ -95,7 +95,7 @@ export default function OffersScreen() {
             terms: [
                 'Valid for first-time users only',
                 'One-time use per account',
-                'Minimum booking value ₹500',
+                'Minimum booking value Rs. 500',
                 'Code will be applied automatically',
             ],
             category: 'general',

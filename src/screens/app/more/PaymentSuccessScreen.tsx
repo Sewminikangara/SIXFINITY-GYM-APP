@@ -89,7 +89,7 @@ Thank you for booking with SIXFINITY!`,
                 {/* Amount Card */}
                 <View style={styles.amountCard}>
                     <Text style={styles.amountLabel}>Amount Paid</Text>
-                    <Text style={styles.amountValue}>₹{amount?.toFixed(2) || '0.00'}</Text>
+                    <Text style={styles.amountValue}>Rs. {amount?.toFixed(2) || '0.00'}</Text>
                     <Text style={styles.amountDate}>{formatDate()}</Text>
                 </View>
 

@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Screen, Button } from '@/components';
 import { palette, spacing, typography, radii } from '@/theme';
 import { useAuth } from '@/context/AuthContext';
+import { getSupabaseUserId } from '@/utils/userHelpers';
 import mealService from '@/services/mealService';
 import foodSearchService, { FoodSearchResult } from '@/services/foodSearchService';
 
@@ -154,10 +155,15 @@ export const AddMealScreen: React.FC<AddMealScreenProps> = ({ navigation, route 
 
         try {
             setLoading(true);
+            const supabaseUserId = getSupabaseUserId(user);
+            if (!supabaseUserId) {
+                Alert.alert('Error', 'User ID not found');
+                return;
+            }
 
             // Create meal
             const meal = await mealService.createMeal({
-                user_id: user.id,
+                user_id: supabaseUserId,
                 meal_type: mealType,
                 meal_name: mealName.trim(),
                 total_calories: parseFloat(calories),

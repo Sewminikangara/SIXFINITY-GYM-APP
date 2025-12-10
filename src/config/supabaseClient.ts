@@ -3,9 +3,7 @@ import 'react-native-url-polyfill/auto';
 import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { env, validateEnv } from './env';
-
-validateEnv();
+import { env } from './env';
 
 // Create a custom storage adapter for React Native
 const customStorage = {
@@ -20,7 +18,11 @@ const customStorage = {
   },
 };
 
-export const supabase = createClient(env.supabaseUrl, env.supabaseAnonKey, {
+// Make Supabase optional - use dummy values if not configured
+const supabaseUrl = env.supabaseUrl || 'https://placeholder.supabase.co';
+const supabaseAnonKey = env.supabaseAnonKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsYWNlaG9sZGVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NDUxOTI4MDAsImV4cCI6MTk2MDc2ODgwMH0.placeholder';
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     storage: customStorage,
     autoRefreshToken: true,

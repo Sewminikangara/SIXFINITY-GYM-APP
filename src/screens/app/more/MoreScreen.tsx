@@ -17,6 +17,7 @@ import { getWalletBalance } from '@/services/walletService';
 import { getRewardWallet } from '@/services/referralService';
 import { getUnreadCount } from '@/services/notificationService';
 import { getSupportStats } from '@/services/supportService';
+import { getSupabaseUserId } from '@/utils/userHelpers';
 
 interface ProfileData {
   full_name: string | null;
@@ -54,20 +55,28 @@ export const MoreScreen = () => {
     try {
       setLoading(true);
 
+      // Get Supabase UUID
+      const supabaseUserId = getSupabaseUserId(user);
+      if (!supabaseUserId) {
+        console.warn('No Supabase user ID available');
+        setLoading(false);
+        return;
+      }
+
       // Load profile
-      const { data: profileData } = await getUserProfile(user.id);
+      const { data: profileData } = await getUserProfile(supabaseUserId);
 
       // Load wallet balance
-      const { data: walletData } = await getWalletBalance(user.id);
+      const { data: walletData } = await getWalletBalance(supabaseUserId);
 
       // Load reward points
-      const { data: rewardData } = await getRewardWallet(user.id);
+      const { data: rewardData } = await getRewardWallet(supabaseUserId);
 
       // Load unread notifications count
-      const { data: unreadCount } = await getUnreadCount(user.id);
+      const { data: unreadCount } = await getUnreadCount(supabaseUserId);
 
       // Load support stats
-      const { data: supportData } = await getSupportStats(user.id);
+      const { data: supportData } = await getSupportStats(supabaseUserId);
 
       setProfile({
         full_name: profileData?.full_name || null,
@@ -209,25 +218,31 @@ export const MoreScreen = () => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Progress & Stats</Text>
         <MenuItem
-          icon=""
+          icon="PS"
+          title="Progress & Stats"
+          subtitle="Track your fitness journey"
+          onPress={() => navigation.navigate('ProgressStats' as never)}
+        />
+        <MenuItem
+          icon="BS"
           title="Body Stats"
           subtitle="Track your measurements"
           onPress={() => navigation.navigate('BodyStats' as never)}
         />
         <MenuItem
-          icon=""
+          icon="FG"
           title="Fitness Goals"
           subtitle="Set and track your goals"
           onPress={() => navigation.navigate('FitnessGoals' as never)}
         />
         <MenuItem
-          icon=""
+          icon="AC"
           title="Achievements"
           subtitle="View your badges"
           onPress={() => navigation.navigate('Achievements' as never)}
         />
         <MenuItem
-          icon=""
+          icon="WD"
           title="Wearable Devices"
           subtitle="Connect fitness devices"
           onPress={() => navigation.navigate('WearableDevices' as never)}
@@ -237,45 +252,20 @@ export const MoreScreen = () => {
       {/* Wallet & Payments Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Wallet & Payments</Text>
-
-        {/* TEST BUTTON - for testing */}
-        <TouchableOpacity
-          style={styles.testButton}
-          onPress={() => {
-            (navigation as any).navigate('PaymentCheckout', {
-              bookingDetails: {
-                bookingId: '00000000-0000-0000-0000-000000000001',
-                gymName: 'PowerGym Downtown',
-                trainerName: 'John Fitness',
-                sessionDate: '2025-11-15',
-                sessionTime: '10:00 AM - 11:00 AM',
-                duration: 60,
-                baseFee: 500,
-                discount: 50,
-                tax: 45,
-                finalAmount: 495,
-                bookingType: 'gym' as const,
-              }
-            });
-          }}
-        >
-          <Text style={styles.testButtonText}> TEST PAYMENT CHECKOUT</Text>
-        </TouchableOpacity>
-
         <MenuItem
-          icon=""
+          icon="WL"
           title="My Wallet"
           subtitle={`Balance: $${stats.walletBalance.toFixed(2)}`}
           onPress={() => navigation.navigate('Wallet' as never)}
         />
         <MenuItem
-          icon=""
+          icon="TH"
           title="Transaction History"
           subtitle="View all transactions"
           onPress={() => navigation.navigate('TransactionHistory' as never)}
         />
         <MenuItem
-          icon=""
+          icon="PM"
           title="Payment Methods"
           subtitle="Manage payment methods"
           onPress={() => navigation.navigate('PaymentMethods' as never)}
@@ -286,7 +276,7 @@ export const MoreScreen = () => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Bookings</Text>
         <MenuItem
-          icon=""
+          icon="BK"
           title="My Bookings"
           subtitle="View and manage bookings"
           onPress={() => navigation.navigate('Bookings' as never)}
@@ -297,19 +287,19 @@ export const MoreScreen = () => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Referrals & Rewards</Text>
         <MenuItem
-          icon=""
+          icon="RF"
           title="Referral Program"
-          subtitle="Invite friends & earn rewards"
+          subtitle="Invite friends and earn rewards"
           onPress={() => navigation.navigate('Referrals' as never)}
         />
         <MenuItem
-          icon=""
+          icon="RW"
           title="My Rewards"
           subtitle={`${stats.rewardPoints} points available`}
           onPress={() => navigation.navigate('Rewards' as never)}
         />
         <MenuItem
-          icon=""
+          icon="OF"
           title="Offers & Deals"
           subtitle="View exclusive offers"
           onPress={() => navigation.navigate('Offers' as never)}
@@ -320,14 +310,14 @@ export const MoreScreen = () => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Notifications</Text>
         <MenuItem
-          icon=""
+          icon="NF"
           title="Notifications"
           subtitle="View all notifications"
           badge={stats.unreadNotifications}
           onPress={() => navigation.navigate('Notifications' as never)}
         />
         <MenuItem
-          icon=""
+          icon="NS"
           title="Notification Settings"
           subtitle="Manage preferences"
           onPress={() => navigation.navigate('NotificationSettings' as never)}
@@ -338,9 +328,9 @@ export const MoreScreen = () => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Settings</Text>
         <MenuItem
-          icon=""
+          icon="ST"
           title="App Settings"
-          subtitle="Preferences & configurations"
+          subtitle="Preferences and configurations"
           onPress={() => navigation.navigate('Settings' as never)}
         />
       </View>
@@ -349,14 +339,14 @@ export const MoreScreen = () => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Help & Support</Text>
         <MenuItem
-          icon="❓"
+          icon="HC"
           title="Help Center"
           subtitle="FAQs and support"
           badge={stats.openTickets}
           onPress={() => navigation.navigate('HelpSupport' as never)}
         />
         <MenuItem
-          icon=""
+          icon="CU"
           title="Contact Us"
           subtitle="Get in touch"
           onPress={() => navigation.navigate('HelpSupport' as never)}
@@ -365,13 +355,12 @@ export const MoreScreen = () => {
 
       {/* Sign Out Button */}
       <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-        <Text style={styles.signOutIcon}></Text>
         <Text style={styles.signOutText}>Sign Out</Text>
       </TouchableOpacity>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>SIXFINITY v1.0.0</Text>
-        <Text style={styles.footerSubtext}></Text>
+        <Text style={styles.footerText}>SIXFINITY GYM APP v1.0.0</Text>
+        <Text style={styles.footerSubtext}>Professional Fitness Management</Text>
       </View>
     </ScrollView>
   );
@@ -527,8 +516,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   menuIcon: {
-    fontSize: 24,
+    fontSize: 11,
+    fontWeight: '700',
+    color: palette.brandPrimary,
+    backgroundColor: 'rgba(185, 242, 72, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 6,
     marginRight: spacing.md,
+    minWidth: 32,
+    textAlign: 'center',
+    overflow: 'hidden',
   },
   menuTextContainer: {
     flex: 1,
@@ -571,27 +569,6 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '300',
   },
-  // Test Button - REMOVE AFTER TESTING
-  testButton: {
-    backgroundColor: palette.brandPrimary,
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.md,
-    padding: spacing.lg,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  testButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
   // Sign Out Button
   signOutButton: {
     backgroundColor: palette.danger,
@@ -603,10 +580,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  signOutIcon: {
-    fontSize: 20,
-    marginRight: spacing.sm,
   },
   signOutText: {
     ...typography.subtitle,

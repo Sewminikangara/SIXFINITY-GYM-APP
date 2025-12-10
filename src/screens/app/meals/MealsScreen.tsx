@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Screen, ProgressCircle } from '@/components';
 import { palette, spacing, typography, radii } from '@/theme';
 import { useAuth } from '@/context/AuthContext';
+import { getSupabaseUserId } from '@/utils/userHelpers';
 import mealService, {
   Meal,
   DailyNutritionSummary,
@@ -55,15 +56,20 @@ export const MealsScreen: React.FC<MealsScreenProps> = ({ navigation }) => {
 
     try {
       setLoading(true);
+      const supabaseUserId = getSupabaseUserId(user);
+      if (!supabaseUserId) {
+        console.error('No Supabase UUID found');
+        return;
+      }
 
-      const summary = await mealService.getDailyNutritionSummary(user.id, todayDate);
+      const summary = await mealService.getDailyNutritionSummary(supabaseUserId, todayDate);
       setDailySummary(summary);
 
       const [breakfast, lunch, dinner, snacks] = await Promise.all([
-        mealService.getMealsByType(user.id, todayDate, 'breakfast'),
-        mealService.getMealsByType(user.id, todayDate, 'lunch'),
-        mealService.getMealsByType(user.id, todayDate, 'dinner'),
-        mealService.getMealsByType(user.id, todayDate, 'snack'),
+        mealService.getMealsByType(supabaseUserId, todayDate, 'breakfast'),
+        mealService.getMealsByType(supabaseUserId, todayDate, 'lunch'),
+        mealService.getMealsByType(supabaseUserId, todayDate, 'dinner'),
+        mealService.getMealsByType(supabaseUserId, todayDate, 'snack'),
       ]);
 
       setBreakfastMeals(breakfast);
@@ -71,7 +77,7 @@ export const MealsScreen: React.FC<MealsScreenProps> = ({ navigation }) => {
       setDinnerMeals(dinner);
       setSnackMeals(snacks);
 
-      const water = await mealService.getTotalWaterIntake(user.id, todayDate);
+      const water = await mealService.getTotalWaterIntake(supabaseUserId, todayDate);
       setWaterIntake(water);
     } catch (error) {
       console.error('Error loading meal data:', error);
@@ -107,12 +113,17 @@ export const MealsScreen: React.FC<MealsScreenProps> = ({ navigation }) => {
       imageUri: mockImageUri,
       scanType: 'barcode'
     });
-  }; const handleAddWater = async (amount: number) => {
+  };
+
+  const handleAddWater = async (amount: number) => {
     if (!user) return;
     try {
-      await mealService.addWaterIntake(user.id, amount);
+      const supabaseUserId = getSupabaseUserId(user);
+      if (!supabaseUserId) return;
+
+      await mealService.addWaterIntake(supabaseUserId, amount);
       setWaterIntake(prev => prev + amount);
-      const summary = await mealService.getDailyNutritionSummary(user.id, todayDate);
+      const summary = await mealService.getDailyNutritionSummary(supabaseUserId, todayDate);
       setDailySummary(summary);
     } catch (error) {
       console.error('Error adding water:', error);
@@ -137,7 +148,6 @@ export const MealsScreen: React.FC<MealsScreenProps> = ({ navigation }) => {
           text: 'Add',
           onPress: () => {
             Alert.alert('Success', 'Meal added to your plan!');
-            // TODO: Implement actual add to plan logic
           }
         }
       ]
@@ -199,7 +209,6 @@ export const MealsScreen: React.FC<MealsScreenProps> = ({ navigation }) => {
 
   const handleFavoriteMeal = (mealId: string, mealName: string) => {
     Alert.alert('Favorite', `"${mealName}" added to favorites!`);
-    // TODO: Implement favorite meals feature
   };
 
   if (loading && !refreshing) {

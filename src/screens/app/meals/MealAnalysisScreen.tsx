@@ -17,6 +17,7 @@ import { palette, spacing, typography, radii } from '@/theme';
 import { AppStackParamList } from '@/navigation/types';
 import mealService from '@/services/mealService';
 import { useAuth } from '@/context/AuthContext';
+import { getSupabaseUserId } from '@/utils/userHelpers';
 import { analyzePhotoNutrition } from '@/services/nutritionService';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'MealAnalysis'>;
@@ -115,8 +116,14 @@ export const MealAnalysisScreen: React.FC<Props> = ({ navigation, route }) => {
         setSaving(true);
 
         try {
+            const supabaseUserId = getSupabaseUserId(user);
+            if (!supabaseUserId) {
+                Alert.alert('Error', 'User ID not found');
+                return;
+            }
+
             const mealData = {
-                user_id: user.id,
+                user_id: supabaseUserId,
                 meal_name: mealName,
                 meal_type: selectedMealType,
                 total_calories: nutrition.calories,

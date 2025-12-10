@@ -49,6 +49,123 @@ const FACILITY_ICONS: Record<string, string> = {
 const DISTANCE_OPTIONS = ['1 km', '3 km', '5 km', '10 km', '15 km', '20 km'];
 const PRICE_OPTIONS = ['$', '$$', '$$$', '$$$$'];
 
+// Sample gyms data when database is empty
+function getSampleGyms(country: string, userLocation: { latitude: number; longitude: number } | null): Gym[] {
+    const sriLankaGyms: Gym[] = [
+        {
+            id: 'gym-1',
+            name: 'FitZone Colombo',
+            description: 'Premium fitness center with state-of-the-art equipment and expert trainers',
+            facilities: ['parking', 'wifi', 'shower', 'locker', 'trainer', 'pool', 'sauna', 'cafe'],
+            rating: 4.8,
+            reviewCount: 245,
+            priceRange: '$$$',
+            pricePerMonth: 12500,
+            image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop',
+            images: [
+                'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop',
+                'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&h=600&fit=crop',
+            ],
+            location: {
+                latitude: 6.9271,
+                longitude: 79.8612,
+                address: '123 Galle Road, Colombo 03',
+                city: 'Colombo',
+                country: 'Sri Lanka',
+            },
+            openingHours: '5:00 AM - 11:00 PM',
+            phoneNumber: '+94 11 234 5678',
+            website: 'https://fitzone.lk',
+            membershipTypes: ['Monthly', 'Quarterly', 'Annual'],
+            distance: userLocation ? `${(Math.random() * 5 + 1).toFixed(1)} km` : undefined,
+        },
+        {
+            id: 'gym-2',
+            name: 'PowerHouse Gym Kandy',
+            description: 'Spacious gym with CrossFit zone and professional training programs',
+            facilities: ['parking', 'wifi', 'shower', 'locker', 'trainer', 'crossfit', 'nutrition'],
+            rating: 4.6,
+            reviewCount: 189,
+            priceRange: '$$',
+            pricePerMonth: 8500,
+            image: 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&h=600&fit=crop',
+            images: [
+                'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&h=600&fit=crop',
+                'https://images.unsplash.com/photo-1577221084712-45b0445d2b00?w=800&h=600&fit=crop',
+            ],
+            location: {
+                latitude: 7.2906,
+                longitude: 80.6337,
+                address: '45 Peradeniya Road, Kandy',
+                city: 'Kandy',
+                country: 'Sri Lanka',
+            },
+            openingHours: '6:00 AM - 10:00 PM',
+            phoneNumber: '+94 81 223 4567',
+            membershipTypes: ['Monthly', 'Quarterly'],
+            distance: userLocation ? `${(Math.random() * 10 + 2).toFixed(1)} km` : undefined,
+        },
+        {
+            id: 'gym-3',
+            name: 'Elite Fitness Negombo',
+            description: '24/7 gym with modern equipment and group classes',
+            facilities: ['24hours', 'parking', 'wifi', 'shower', 'locker', 'yoga', 'zumba', 'hiit'],
+            rating: 4.7,
+            reviewCount: 156,
+            priceRange: '$$',
+            pricePerMonth: 9000,
+            image: 'https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=800&h=600&fit=crop',
+            images: [
+                'https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=800&h=600&fit=crop',
+                'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&h=600&fit=crop',
+            ],
+            location: {
+                latitude: 7.2084,
+                longitude: 79.8358,
+                address: '78 Lewis Place, Negombo',
+                city: 'Negombo',
+                country: 'Sri Lanka',
+            },
+            openingHours: '24 Hours',
+            phoneNumber: '+94 31 222 3456',
+            membershipTypes: ['Monthly', 'Annual', '24/7 Access'],
+            distance: userLocation ? `${(Math.random() * 8 + 1).toFixed(1)} km` : undefined,
+        },
+        {
+            id: 'gym-4',
+            name: 'BodyTech Galle',
+            description: 'Modern fitness studio with personal training and nutrition counseling',
+            facilities: ['parking', 'wifi', 'shower', 'locker', 'trainer', 'nutrition', 'supplement'],
+            rating: 4.9,
+            reviewCount: 98,
+            priceRange: '$$$$',
+            pricePerMonth: 15000,
+            image: 'https://images.unsplash.com/photo-1558611848-73f7eb4001a1?w=800&h=600&fit=crop',
+            images: [
+                'https://images.unsplash.com/photo-1558611848-73f7eb4001a1?w=800&h=600&fit=crop',
+                'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop',
+            ],
+            location: {
+                latitude: 6.0535,
+                longitude: 80.2210,
+                address: '12 Fort Road, Galle',
+                city: 'Galle',
+                country: 'Sri Lanka',
+            },
+            openingHours: '6:00 AM - 9:00 PM',
+            phoneNumber: '+94 91 223 4567',
+            membershipTypes: ['Monthly', 'Quarterly', 'VIP'],
+            distance: userLocation ? `${(Math.random() * 12 + 3).toFixed(1)} km` : undefined,
+        },
+    ];
+
+    if (country === 'Sri Lanka' || country === 'All') {
+        return sriLankaGyms;
+    }
+
+    return [];
+}
+
 export const GymFinderScreen = () => {
     const navigation = useNavigation<GymFinderScreenNavigation>();
     const [searchQuery, setSearchQuery] = useState('');
@@ -73,9 +190,16 @@ export const GymFinderScreen = () => {
     const [gyms, setGyms] = useState<Gym[]>([]);
     const [loading, setLoading] = useState(false);
     const [locationStatus, setLocationStatus] = useState<'loading' | 'granted' | 'denied'>('loading');
+    const [availableCities, setAvailableCities] = useState<string[]>([]);
 
-    // Available cities for selected country
-    const availableCities = getCitiesByCountry(selectedCountry);
+    // Load available cities when country changes
+    useEffect(() => {
+        const loadCities = async () => {
+            const result = await getCitiesByCountry(selectedCountry);
+            setAvailableCities(result.data || []);
+        };
+        loadCities();
+    }, [selectedCountry]);
 
     // Request location permission and get user location
     useEffect(() => {
@@ -131,7 +255,15 @@ export const GymFinderScreen = () => {
         loadGyms();
     }, [selectedCountry, selectedCity, selectedDistance, selectedPriceRange, selectedFacilities, searchQuery, userLocation]);
 
-    const loadGyms = () => {
+    // Also load gyms on mount to ensure we have data immediately
+    useEffect(() => {
+        // Initial load with sample data
+        console.log('Initial load - showing sample gyms');
+        const sampleGyms = getSampleGyms('Sri Lanka', null);
+        setGyms(sampleGyms);
+    }, []);
+
+    const loadGyms = async () => {
         setLoading(true);
 
         // Auto-detect country based on GPS location if available
@@ -149,14 +281,14 @@ export const GymFinderScreen = () => {
             } else if (latitude >= 24 && latitude <= 26 && longitude >= 54 && longitude <= 56) {
                 detectedCountry = 'Dubai';
                 console.log('Detected location: Dubai');
-                if (selectedCountry !== 'Dubai') {
-                    setSelectedCountry('Dubai');
+                if (selectedCountry !== 'Dubai' as any) {
+                    setSelectedCountry('Dubai' as any);
                 }
             } else if (latitude >= -44 && latitude <= -10 && longitude >= 113 && longitude <= 154) {
                 detectedCountry = 'Australia';
                 console.log('Detected location: Australia');
-                if (selectedCountry !== 'Australia') {
-                    setSelectedCountry('Australia');
+                if (selectedCountry !== 'Australia' as any) {
+                    setSelectedCountry('Australia' as any);
                 }
             }
         }
@@ -172,11 +304,17 @@ export const GymFinderScreen = () => {
         };
 
         console.log('Filters applied:', JSON.stringify(filters, null, 2));
-        const results = filterGyms(filters);
+        const results = await filterGyms(filters);
         console.log(`Found ${results.length} gyms`);
 
-        // If we have user location, results are already sorted by distance
-        setGyms(results);
+        // If database is empty, use sample data
+        if (results.length === 0) {
+            console.log('No gyms found in database, using sample data');
+            const sampleGyms = getSampleGyms(detectedCountry, userLocation);
+            setGyms(sampleGyms);
+        } else {
+            setGyms(results);
+        }
         setLoading(false);
     };
 
@@ -1376,5 +1514,22 @@ const styles = StyleSheet.create({
         ...typography.body,
         color: palette.textSecondary,
         fontSize: 16,
+    },
+    locationBanner: {
+        backgroundColor: palette.neonGreen + '20',
+        paddingVertical: spacing.sm,
+        paddingHorizontal: spacing.lg,
+        marginHorizontal: spacing.lg,
+        marginBottom: spacing.md,
+        borderRadius: 8,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.sm,
+    },
+    locationBannerText: {
+        ...typography.body,
+        color: palette.neonGreen,
+        fontSize: 13,
+        fontWeight: '600',
     },
 });

@@ -49,7 +49,8 @@ export type AppStackParamList = {
   };
   Trainers: undefined;
   TrainerDetail: {
-    trainerId: string;
+    trainer?: any;
+    trainerId?: string;
   };
   TrainerMessage: {
     trainerId: string;
@@ -90,6 +91,7 @@ export type AppStackParamList = {
   BarcodeScanner: undefined;
   // Profile & Stats screens
   EditProfile: undefined;
+  ProgressStats: undefined;
   BodyStats: undefined;
   FitnessGoals: undefined;
   Achievements: undefined;

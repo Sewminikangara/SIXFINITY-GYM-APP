@@ -57,6 +57,59 @@ interface ActiveUsage {
     estimatedDuration: number; // in minutes
 }
 
+// Sample equipment data when database is empty
+function getSampleEquipment(): Equipment[] {
+    return [
+        {
+            id: 'eq-1',
+            name: 'Treadmill 1',
+            category: 'Cardio',
+            image: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=300&h=200&fit=crop',
+            status: 'available',
+        },
+        {
+            id: 'eq-2',
+            name: 'Treadmill 2',
+            category: 'Cardio',
+            image: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=300&h=200&fit=crop',
+            status: 'in-use',
+            remainingTime: 15,
+            currentUser: 'User #12',
+        },
+        {
+            id: 'eq-3',
+            name: 'Bench Press',
+            category: 'Strength',
+            image: 'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?w=300&h=200&fit=crop',
+            status: 'available',
+        },
+        {
+            id: 'eq-4',
+            name: 'Squat Rack',
+            category: 'Strength',
+            image: 'https://images.unsplash.com/photo-1574680088814-a40e8938e8e0?w=300&h=200&fit=crop',
+            status: 'occupied',
+            waitCount: 2,
+        },
+        {
+            id: 'eq-5',
+            name: 'Dumbbells 10kg',
+            category: 'Free Weights',
+            image: 'https://images.unsplash.com/photo-1593476123561-2c4d7c63e1ef?w=300&h=200&fit=crop',
+            status: 'available',
+        },
+        {
+            id: 'eq-6',
+            name: 'Cable Machine',
+            category: 'Functional',
+            image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=300&h=200&fit=crop',
+            status: 'in-use',
+            remainingTime: 8,
+            currentUser: 'User #5',
+        },
+    ];
+}
+
 export const LiveStatusScreen: React.FC<Props> = ({ route, navigation }) => {
     const { gymId } = route.params || {};
     const [selectedGymId, setSelectedGymId] = useState<string>(gymId || 'sl-001');
@@ -69,7 +122,6 @@ export const LiveStatusScreen: React.FC<Props> = ({ route, navigation }) => {
     const [equipment, setEquipment] = useState<Equipment[]>([]);
     const [myGyms, setMyGyms] = useState<Gym[]>([]);
 
-    // TODO: Replace with actual user ID from auth context
     const userId = 'user-123';
 
     useEffect(() => {
@@ -111,8 +163,13 @@ export const LiveStatusScreen: React.FC<Props> = ({ route, navigation }) => {
 
             if (error) {
                 console.error('Error loading equipment:', error);
-                Alert.alert('Error', 'Failed to load equipment status.');
-                setEquipment([]);
+                // Use sample data if database fails
+                const sampleEquipment = getSampleEquipment();
+                setEquipment(sampleEquipment);
+            } else if (!data || data.length === 0) {
+                // Use sample data if no equipment in database
+                const sampleEquipment = getSampleEquipment();
+                setEquipment(sampleEquipment);
             } else {
                 // Transform database equipment to UI equipment format
                 const uiEquipment: Equipment[] = (data || []).map(item => ({

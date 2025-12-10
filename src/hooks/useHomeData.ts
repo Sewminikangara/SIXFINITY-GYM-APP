@@ -108,11 +108,11 @@ export function useHomeData(userId: string | null) {
             }
             setError(null);
 
-            // Fetch all data in parallel
+            // Fetch all data in parallel, force refresh AI recommendations on pull-to-refresh
             const [quote, summary, recommendations, schedule, progress] = await Promise.all([
                 getDailyQuote(),
                 getDailySummary(userId),
-                getAIRecommendations(userId),
+                getAIRecommendations(userId, isRefresh), // Force refresh when user pulls to refresh
                 getTodaySchedule(userId),
                 getWeeklyProgress(userId),
             ]);

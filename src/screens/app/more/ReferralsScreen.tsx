@@ -167,13 +167,13 @@ export default function ReferralsScreen() {
                     </View>
                     <View style={[styles.statCard, styles.statCardWide]}>
                         <Text style={[styles.statValue, { color: palette.success }]}>
-                            ₹{stats.totalEarnings}
+                            Rs. {stats.totalEarnings}
                         </Text>
                         <Text style={styles.statLabel}>Total Earnings</Text>
                     </View>
                     <View style={[styles.statCard, styles.statCardWide]}>
                         <Text style={[styles.statValue, { color: palette.warning }]}>
-                            ₹{stats.pendingEarnings}
+                            Rs. {stats.pendingEarnings}
                         </Text>
                         <Text style={styles.statLabel}>Pending</Text>
                     </View>
@@ -252,7 +252,7 @@ export default function ReferralsScreen() {
                                             </Text>
                                         </View>
                                         {referral.reward > 0 && (
-                                            <Text style={styles.referralReward}>+₹{referral.reward}</Text>
+                                            <Text style={styles.referralReward}>+Rs. {referral.reward}</Text>
                                         )}
                                     </View>
                                 </View>

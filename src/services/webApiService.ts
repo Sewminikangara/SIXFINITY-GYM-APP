@@ -49,7 +49,6 @@ export interface ApiError {
  */
 export async function signup(data: SignupRequest): Promise<AuthResponse> {
     try {
-        console.log('🔄 Signing up with web system...', { email: data.email, role: data.role });
 
         const response = await fetch(`${WEB_API_BASE_URL}/auth/signup`, {
             method: 'POST',
@@ -65,7 +64,6 @@ export async function signup(data: SignupRequest): Promise<AuthResponse> {
             throw new Error(result.message || 'Signup failed');
         }
 
-        console.log('✅ Signup successful!', result);
         return result;
     } catch (error: any) {
         console.error('❌ Signup error:', error);
@@ -82,7 +80,6 @@ export async function signup(data: SignupRequest): Promise<AuthResponse> {
  */
 export async function login(data: LoginRequest): Promise<AuthResponse> {
     try {
-        console.log('🔄 Logging in with web system...', { email: data.email });
 
         const response = await fetch(`${WEB_API_BASE_URL}/auth/login`, {
             method: 'POST',
@@ -98,7 +95,6 @@ export async function login(data: LoginRequest): Promise<AuthResponse> {
             throw new Error(result.message || 'Login failed');
         }
 
-        console.log('✅ Login successful!', result);
         return result;
     } catch (error: any) {
         console.error('❌ Login error:', error);
@@ -179,7 +175,6 @@ export async function authenticatedRequest(
  * Logout (client-side only - clear tokens)
  */
 export function logout(): void {
-    console.log('🔓 Logging out...');
     // Tokens will be cleared in AuthContext
 }
 

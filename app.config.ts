@@ -3,6 +3,7 @@
 import { ConfigContext, ExpoConfig } from 'expo/config';
 
 type ExpoExtras = {
+    apiBaseUrl: string;
     supabaseUrl: string;
     supabaseAnonKey: string;
     supabaseRedirectScheme: string;
@@ -10,6 +11,7 @@ type ExpoExtras = {
 };
 
 const getExtra = (): ExpoExtras => ({
+    apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL ?? 'https://ai-gym-project.onrender.com',
     supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL ?? '',
     supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '',
     supabaseRedirectScheme: process.env.EXPO_PUBLIC_SUPABASE_REDIRECT_SCHEME ?? 'gymapp',

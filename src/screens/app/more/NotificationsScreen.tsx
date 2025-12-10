@@ -48,7 +48,7 @@ export default function NotificationsScreen() {
             id: '3',
             type: 'payment',
             title: 'Payment Successful',
-            message: '₹500 has been added to your wallet successfully.',
+            message: 'Rs. 500 has been added to your wallet successfully.',
             timestamp: new Date(Date.now() - 86400000 * 2),
             read: true,
         },

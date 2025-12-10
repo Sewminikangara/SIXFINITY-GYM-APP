@@ -17,7 +17,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export const RootNavigator = () => {
   const { status } = useAuth();
   const isDark = useColorScheme() === 'dark';
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState<boolean>(true);
 
   const theme = isDark ? darkNavigationTheme : lightNavigationTheme;
 

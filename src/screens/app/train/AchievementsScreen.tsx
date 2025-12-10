@@ -14,6 +14,7 @@ import {
 import { palette, spacing, typography } from '@/theme';
 import { useAuth } from '@/context/AuthContext';
 import * as profileService from '@/services/profileService';
+import { getSupabaseUserId } from '@/utils/userHelpers';
 
 interface Achievement {
     id: string;
@@ -85,8 +86,16 @@ export const AchievementsScreen: React.FC = () => {
             return;
         }
 
+        const supabaseUserId = getSupabaseUserId(user);
+        if (!supabaseUserId) {
+            console.log('No Supabase user ID available');
+            setLoading(false);
+            setRefreshing(false);
+            return;
+        }
+
         try {
-            const result = await profileService.getAchievements(user.id);
+            const result = await profileService.getAchievements(supabaseUserId);
             if (result.error) {
                 throw new Error(result.error.message || 'Failed to load achievements');
             }

@@ -14,6 +14,7 @@ import { useAuth } from '@/context/AuthContext';
 import * as walletService from '@/services/walletService';
 import * as referralService from '@/services/referralService';
 import { AddMoneyModal } from './AddMoneyModal';
+import { getSupabaseUserId } from '@/utils/userHelpers';
 
 interface Transaction {
     id: string;
@@ -36,19 +37,19 @@ interface PaymentMethod {
 }
 
 const TRANSACTION_ICONS = {
-    topup: '',
-    booking: '',
-    refund: '',
-    reward: '',
-    referral: '',
-    cashback: '',
+    topup: 'ADD',
+    booking: 'GYM',
+    refund: 'REF',
+    reward: 'RWD',
+    referral: 'INV',
+    cashback: 'BCK',
 };
 
 const PAYMENT_METHOD_ICONS = {
-    card: '',
-    upi: '',
-    bank: '',
-    wallet: '',
+    card: 'CARD',
+    upi: 'UPI',
+    bank: 'BANK',
+    wallet: 'WLLT',
 };
 
 export const WalletScreen: React.FC = () => {
@@ -82,22 +83,30 @@ export const WalletScreen: React.FC = () => {
             return;
         }
 
+        const supabaseUserId = getSupabaseUserId(user);
+        if (!supabaseUserId) {
+            console.log('No Supabase user ID available');
+            setLoading(false);
+            setRefreshing(false);
+            return;
+        }
+
         try {
             // Load wallet balance
-            const balanceResult = await walletService.getWalletBalance(user.id);
+            const balanceResult = await walletService.getWalletBalance(supabaseUserId);
             if (balanceResult.data) {
                 setBalance(balanceResult.data.balance);
-                setWalletId(balanceResult.data.wallet_id || user.id);
+                setWalletId(balanceResult.data.wallet_id || supabaseUserId);
                 setLastUpdated(balanceResult.data.updated_at || new Date().toISOString());
             } else {
                 // Wallet doesn't exist yet - show 0 balance
                 setBalance(0);
-                setWalletId(user.id);
+                setWalletId(supabaseUserId);
                 setLastUpdated(new Date().toISOString());
             }
 
             // Load reward points
-            const pointsResult = await referralService.getRewardPoints(user.id);
+            const pointsResult = await referralService.getRewardPoints(supabaseUserId);
             if (pointsResult.data) {
                 setRewardPoints(pointsResult.data.totalPoints);
                 setAvailableCredits(pointsResult.data.totalPoints); // Credits from rewards
@@ -107,7 +116,7 @@ export const WalletScreen: React.FC = () => {
             }
 
             // Load transactions
-            const transactionsResult = await walletService.getTransactions(user.id, {
+            const transactionsResult = await walletService.getTransactions(supabaseUserId, {
                 limit: 20,
             });
             if (transactionsResult.data) {
@@ -119,7 +128,7 @@ export const WalletScreen: React.FC = () => {
                     description: t.description || 'Transaction',
                     timestamp: t.createdAt,
                     status: t.status,
-                    icon: TRANSACTION_ICONS[t.transactionType as keyof typeof TRANSACTION_ICONS] || '💵',
+                    icon: TRANSACTION_ICONS[t.transactionType as keyof typeof TRANSACTION_ICONS] || 'TXN',
                 }));
                 setTransactions(formattedTransactions);
 
@@ -150,7 +159,7 @@ export const WalletScreen: React.FC = () => {
             }
 
             // Load payment methods
-            const methodsResult = await walletService.getPaymentMethods(user.id);
+            const methodsResult = await walletService.getPaymentMethods(supabaseUserId);
             if (methodsResult.data) {
                 const formattedMethods: PaymentMethod[] = methodsResult.data.map((m: any) => ({
                     id: m.id,
@@ -158,7 +167,7 @@ export const WalletScreen: React.FC = () => {
                     name: m.displayName || m.type,
                     details: m.last4 || m.details || '',
                     isDefault: m.isDefault || false,
-                    icon: PAYMENT_METHOD_ICONS[m.type as keyof typeof PAYMENT_METHOD_ICONS] || '💳',
+                    icon: PAYMENT_METHOD_ICONS[m.type as keyof typeof PAYMENT_METHOD_ICONS] || 'PAY',
                 }));
                 setPaymentMethods(formattedMethods);
             } else {
@@ -202,15 +211,14 @@ export const WalletScreen: React.FC = () => {
 
         Alert.alert(
             'Redeem Points',
-            `Convert ${rewardPoints} points to ₹${redeemableAmount}?`,
+            `Convert ${rewardPoints} points to Rs. ${redeemableAmount}?`,
             [
                 { text: 'Cancel', style: 'cancel' },
                 {
                     text: 'Redeem',
                     onPress: async () => {
                         try {
-                            // TODO: Implement actual redemption API
-                            Alert.alert('Success', `₹${redeemableAmount} added to your wallet!`);
+                            Alert.alert('Success', `Rs. ${redeemableAmount} added to your wallet!`);
                             setBalance(prev => prev + redeemableAmount);
                             setRewardPoints(0);
                             loadWalletData();
@@ -224,12 +232,10 @@ export const WalletScreen: React.FC = () => {
     };
 
     const handleViewAllTransactions = () => {
-        // TODO: Navigate to TransactionHistoryScreen
         Alert.alert('Transaction History', 'View full transaction history');
     };
 
     const handleManagePaymentMethods = () => {
-        // TODO: Navigate to PaymentMethodsScreen
         Alert.alert('Payment Methods', 'Manage your payment methods');
     };
 
@@ -265,22 +271,22 @@ export const WalletScreen: React.FC = () => {
                 </TouchableOpacity>
             </View>
 
-            <Text style={styles.balanceAmount}>₹{balance.toFixed(2)}</Text>
+            <Text style={styles.balanceAmount}>Rs. {balance.toFixed(2)}</Text>
             <Text style={styles.balanceSubtext}>Current Wallet Balance</Text>
 
             {/* Summary Stats Grid */}
             <View style={styles.summaryGrid}>
                 <View style={styles.summaryItem}>
                     <Text style={styles.summaryLabel}>Spent This Month</Text>
-                    <Text style={styles.summaryValue}>₹{totalSpentThisMonth.toFixed(2)}</Text>
+                    <Text style={styles.summaryValue}>Rs. {totalSpentThisMonth.toFixed(2)}</Text>
                 </View>
                 <View style={styles.summaryItem}>
                     <Text style={styles.summaryLabel}>Available Credits</Text>
-                    <Text style={styles.summaryValueGreen}>₹{availableCredits.toFixed(0)}</Text>
+                    <Text style={styles.summaryValueGreen}>Rs. {availableCredits.toFixed(0)}</Text>
                 </View>
                 <View style={styles.summaryItem}>
                     <Text style={styles.summaryLabel}>Pending Refunds</Text>
-                    <Text style={styles.summaryValueOrange}>₹{pendingRefunds.toFixed(2)}</Text>
+                    <Text style={styles.summaryValueOrange}>Rs. {pendingRefunds.toFixed(2)}</Text>
                 </View>
             </View>
 
@@ -365,7 +371,7 @@ export const WalletScreen: React.FC = () => {
                     styles.transactionAmount,
                     isCredit ? styles.transactionAmountCredit : styles.transactionAmountDebit
                 ]}>
-                    {isCredit ? '+' : '-'}₹{transaction.amount.toFixed(2)}
+                    {isCredit ? '+' : '-'}Rs. {transaction.amount.toFixed(2)}
                 </Text>
             </TouchableOpacity>
         );

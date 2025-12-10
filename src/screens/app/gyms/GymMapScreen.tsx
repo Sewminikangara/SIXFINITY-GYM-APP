@@ -127,14 +127,14 @@ export const GymMapScreen = () => {
         }
     };
 
-    const loadNearbyGyms = (lat: number, lng: number) => {
+    const loadNearbyGyms = async (lat: number, lng: number) => {
         const filters: GymFilters = {
             country: 'Sri Lanka',
             userLocation: { latitude: lat, longitude: lng },
             maxDistance: 50, // 50km radius
         };
 
-        const results = filterGyms(filters);
+        const results = await filterGyms(filters);
         setGyms(results);
     };
 

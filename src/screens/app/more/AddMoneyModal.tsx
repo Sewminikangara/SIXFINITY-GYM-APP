@@ -20,7 +20,7 @@ interface AddMoneyModalProps {
     onSuccess: () => void;
 }
 
-const QUICK_AMOUNTS = [500, 1000, 2000, 5000];
+const QUICK_AMOUNTS = [1000, 2500, 5000, 10000];
 
 export const AddMoneyModal: React.FC<AddMoneyModalProps> = ({ visible, onClose, onSuccess }) => {
     const { user } = useAuth();
@@ -72,13 +72,13 @@ export const AddMoneyModal: React.FC<AddMoneyModalProps> = ({ visible, onClose, 
             return;
         }
 
-        if (numAmount < 100) {
-            Alert.alert('Minimum Amount', 'Minimum top-up amount is ₹100');
+        if (numAmount < 500) {
+            Alert.alert('Minimum Amount', 'Minimum top-up amount is Rs. 500');
             return;
         }
 
-        if (numAmount > 50000) {
-            Alert.alert('Maximum Amount', 'Maximum top-up amount is ₹50,000 per transaction');
+        if (numAmount > 250000) {
+            Alert.alert('Maximum Amount', 'Maximum top-up amount is Rs. 250,000 per transaction');
             return;
         }
 
@@ -90,7 +90,7 @@ export const AddMoneyModal: React.FC<AddMoneyModalProps> = ({ visible, onClose, 
         // Show confirmation
         Alert.alert(
             'Confirm Top-Up',
-            `Are you sure you want to add ₹${numAmount.toFixed(2)} to your wallet?`,
+            `Are you sure you want to add Rs. ${numAmount.toFixed(2)} to your wallet?`,
             [
                 { text: 'Cancel', style: 'cancel' },
                 {
@@ -105,13 +105,12 @@ export const AddMoneyModal: React.FC<AddMoneyModalProps> = ({ visible, onClose, 
         try {
             setLoading(true);
 
-            // TODO: Integrate with actual payment gateway
             // For now, simulate successful top-up
             await new Promise(resolve => setTimeout(resolve, 2000));
 
             Alert.alert(
-                'Success! 🎉',
-                `₹${topUpAmount.toFixed(2)} has been added to your wallet successfully!`,
+                'Success',
+                `Rs. ${topUpAmount.toFixed(2)} has been added to your wallet successfully!`,
                 [
                     {
                         text: 'OK',
@@ -179,7 +178,7 @@ export const AddMoneyModal: React.FC<AddMoneyModalProps> = ({ visible, onClose, 
                         <View style={styles.section}>
                             <Text style={styles.sectionLabel}>Enter Amount</Text>
                             <View style={styles.amountInputContainer}>
-                                <Text style={styles.currencySymbol}>₹</Text>
+                                <Text style={styles.currencySymbol}>Rs. </Text>
                                 <TextInput
                                     style={styles.amountInput}
                                     value={amount}
@@ -189,7 +188,7 @@ export const AddMoneyModal: React.FC<AddMoneyModalProps> = ({ visible, onClose, 
                                     placeholderTextColor={palette.textTertiary}
                                 />
                             </View>
-                            <Text style={styles.limitText}>Min: ₹100 | Max: ₹50,000</Text>
+                            <Text style={styles.limitText}>Min: Rs. 500 | Max: Rs. 250,000</Text>
                         </View>
 
                         {/* Quick Amount Buttons */}
@@ -211,7 +210,7 @@ export const AddMoneyModal: React.FC<AddMoneyModalProps> = ({ visible, onClose, 
                                                 amount === quickAmount.toString() && styles.quickAmountTextSelected,
                                             ]}
                                         >
-                                            ₹{quickAmount}
+                                            Rs. {quickAmount}
                                         </Text>
                                     </TouchableOpacity>
                                 ))}
@@ -294,7 +293,7 @@ export const AddMoneyModal: React.FC<AddMoneyModalProps> = ({ visible, onClose, 
                                 <ActivityIndicator size="small" color="#FFFFFF" />
                             ) : (
                                 <Text style={styles.addMoneyButtonText}>
-                                    Add ₹{amount || '0'} to Wallet
+                                    Add Rs. {amount || '0'} to Wallet
                                 </Text>
                             )}
                         </TouchableOpacity>

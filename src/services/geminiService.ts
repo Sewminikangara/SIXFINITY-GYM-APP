@@ -33,7 +33,6 @@ interface NutritionData {
 
 export async function analyzeFoodImage(imageUri: string): Promise<RecognizedFood[]> {
     try {
-        console.log(' Analyzing food with Google Gemini AI...');
 
         // Convert image to base64
         const base64 = await FileSystem.readAsStringAsync(imageUri, {
@@ -91,7 +90,6 @@ export async function analyzeFoodImage(imageUri: string): Promise<RecognizedFood
         const result = await response.json();
         const text = result.candidates[0].content.parts[0].text;
 
-        console.log('🤖 Gemini AI Response:', text);
 
         // Parse JSON response
         const jsonMatch = text.match(/\[[\s\S]*\]/);
@@ -101,7 +99,6 @@ export async function analyzeFoodImage(imageUri: string): Promise<RecognizedFood
 
         const recognizedFoods: RecognizedFood[] = JSON.parse(jsonMatch[0]);
 
-        console.log(` Identified ${recognizedFoods.length} food items:`, recognizedFoods.map(f => f.foodName).join(', '));
 
         return recognizedFoods;
 
@@ -121,7 +118,6 @@ async function getNutritionFromUSDA(foodName: string, servingSize?: string): Pro
 
         const url = `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${USDA_API_KEY}&query=${query}&pageSize=1`;
 
-        console.log(` Querying USDA for: ${foodName}`);
 
         const response = await fetch(url);
         const data = await response.json();
@@ -161,7 +157,6 @@ async function getNutritionFromUSDA(foodName: string, servingSize?: string): Pro
  */
 export async function analyzePhotoForNutrition(imageUri: string): Promise<NutritionData> {
     try {
-        console.log('Starting REAL food analysis...');
 
         // Step 1: Identify food using Gemini AI
         const recognizedFoods = await analyzeFoodImage(imageUri);
@@ -173,13 +168,11 @@ export async function analyzePhotoForNutrition(imageUri: string): Promise<Nutrit
         // Step 2: Get nutrition for the primary food (highest confidence)
         const primaryFood = recognizedFoods.sort((a, b) => b.confidence - a.confidence)[0];
 
-        console.log(` Primary food: ${primaryFood.foodName} (${primaryFood.confidence}% confidence)`);
 
         // Step 3: Query USDA for accurate nutrition data
         const usdaNutrition = await getNutritionFromUSDA(primaryFood.foodName, primaryFood.servingSize);
 
         if (usdaNutrition) {
-            console.log(' Got accurate nutrition from USDA');
             return {
                 ...usdaNutrition,
                 source: 'gemini-usda',
@@ -187,7 +180,6 @@ export async function analyzePhotoForNutrition(imageUri: string): Promise<Nutrit
         }
 
         // Fallback: If USDA fails, use Gemini to estimate
-        console.log(' USDA not available, asking Gemini for nutrition estimate...');
 
         const nutritionEstimate = await getGeminiNutritionEstimate(primaryFood.foodName, primaryFood.servingSize);
 

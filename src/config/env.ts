@@ -1,6 +1,7 @@
 import Constants from 'expo-constants';
 
 type EnvExtra = Partial<{
+  apiBaseUrl: string;
   supabaseUrl: string;
   supabaseAnonKey: string;
   supabaseRedirectScheme: string;
@@ -16,6 +17,7 @@ type EnvExtra = Partial<{
 const extra = (Constants.expoConfig?.extra ?? {}) as EnvExtra;
 
 const publicEnv = {
+  apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL,
   supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
   supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
   supabaseRedirectScheme: process.env.EXPO_PUBLIC_SUPABASE_REDIRECT_SCHEME,
@@ -29,6 +31,7 @@ const publicEnv = {
 };
 
 export const env = {
+  apiBaseUrl: extra.apiBaseUrl ?? publicEnv.apiBaseUrl ?? 'http://localhost:3000',
   supabaseUrl: extra.supabaseUrl ?? publicEnv.supabaseUrl ?? '',
   supabaseAnonKey: extra.supabaseAnonKey ?? publicEnv.supabaseAnonKey ?? '',
   supabaseRedirectScheme: extra.supabaseRedirectScheme ?? publicEnv.supabaseRedirectScheme ?? 'gymapp',
@@ -48,9 +51,9 @@ export const validateEnv = () => {
   if (!env.supabaseAnonKey) missing.push('SUPABASE_ANON_KEY');
 
   if (missing.length > 0) {
-    console.warn(
-      `Missing environment variables: ${missing.join(', ')}. ` +
-      'Create a .env file based on .env.example before running the app.',
+    console.log(
+      `[ENV] ⚠️ Optional: ${missing.join(', ')} not set. ` +
+      'App will work with JWT auth only.',
     );
   }
 };

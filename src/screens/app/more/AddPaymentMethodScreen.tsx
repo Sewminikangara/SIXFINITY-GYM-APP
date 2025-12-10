@@ -52,9 +52,7 @@ export default function AddPaymentMethodScreen() {
     const paymentTypes = [
         { id: 'credit_card' as const, label: 'Credit Card', icon: '' },
         { id: 'debit_card' as const, label: 'Debit Card', icon: '' },
-        { id: 'upi' as const, label: 'UPI', icon: '' },
         { id: 'bank_account' as const, label: 'Bank Account', icon: '' },
-        { id: 'paypal' as const, label: 'PayPal', icon: '' },
     ];
 
     const detectCardBrand = (number: string) => {
@@ -164,8 +162,8 @@ export default function AddPaymentMethodScreen() {
             return false;
         }
 
-        if (!ifscCode.trim() || ifscCode.length !== 11) {
-            Alert.alert('Invalid IFSC', 'IFSC code must be 11 characters');
+        if (!ifscCode.trim() || (ifscCode.length < 7 || ifscCode.length > 12)) {
+            Alert.alert('Invalid Branch Code', 'Please enter valid bank branch code');
             return false;
         }
 
@@ -212,14 +210,8 @@ export default function AddPaymentMethodScreen() {
             case 'debit_card':
                 isValid = validateCard();
                 break;
-            case 'upi':
-                isValid = validateUPI();
-                break;
             case 'bank_account':
                 isValid = validateBank();
-                break;
-            case 'paypal':
-                isValid = validatePayPal();
                 break;
         }
 
@@ -247,15 +239,11 @@ export default function AddPaymentMethodScreen() {
                 paymentMethodData.card_holder_name = cardHolderName.trim();
                 // In production, send full card details to payment gateway for tokenization
                 // Never store full card number or CVV in your database
-            } else if (selectedType === 'upi') {
-                paymentMethodData.upi_id = upiId.trim();
             } else if (selectedType === 'bank_account') {
                 paymentMethodData.account_last_four = accountNumber.slice(-4);
                 paymentMethodData.bank_name = bankName.trim();
                 paymentMethodData.card_holder_name = accountHolderName.trim();
                 // In production, verify bank account with small deposit
-            } else if (selectedType === 'paypal') {
-                paymentMethodData.paypal_email = paypalEmail.trim();
             }
 
             const result = await addPaymentMethod(user.id, paymentMethodData);
@@ -359,24 +347,6 @@ export default function AddPaymentMethodScreen() {
         </>
     );
 
-    const renderUPIForm = () => (
-        <View style={styles.formGroup}>
-            <Text style={styles.label}>UPI ID *</Text>
-            <TextInput
-                style={styles.input}
-                placeholder="yourname@upi"
-                placeholderTextColor={palette.textTertiary}
-                value={upiId}
-                onChangeText={setUpiId}
-                autoCapitalize="none"
-                keyboardType="email-address"
-            />
-            <Text style={styles.hint}>
-                Enter your UPI ID (e.g., 9876543210@paytm, john@oksbi)
-            </Text>
-        </View>
-    );
-
     const renderBankForm = () => (
         <>
             <View style={styles.formGroup}>
@@ -395,23 +365,24 @@ export default function AddPaymentMethodScreen() {
             </View>
 
             <View style={styles.formGroup}>
-                <Text style={styles.label}>IFSC Code *</Text>
+                <Text style={styles.label}>Bank Branch Code *</Text>
                 <TextInput
                     style={styles.input}
-                    placeholder="SBIN0001234"
+                    placeholder="001234"
                     placeholderTextColor={palette.textTertiary}
                     value={ifscCode}
                     onChangeText={(text) => setIfscCode(text.toUpperCase())}
                     autoCapitalize="characters"
-                    maxLength={11}
+                    maxLength={12}
                 />
+                <Text style={styles.hint}>Bank branch code or swift code</Text>
             </View>
 
             <View style={styles.formGroup}>
                 <Text style={styles.label}>Account Holder Name *</Text>
                 <TextInput
                     style={styles.input}
-                    placeholder="Avishka RRRR"
+                    placeholder="Kamal Perera"
                     placeholderTextColor={palette.textTertiary}
                     value={accountHolderName}
                     onChangeText={setAccountHolderName}
@@ -422,31 +393,13 @@ export default function AddPaymentMethodScreen() {
                 <Text style={styles.label}>Bank Name *</Text>
                 <TextInput
                     style={styles.input}
-                    placeholder="State Bank of India"
+                    placeholder="Bank of Ceylon, Commercial Bank, etc."
                     placeholderTextColor={palette.textTertiary}
                     value={bankName}
                     onChangeText={setBankName}
                 />
             </View>
         </>
-    );
-
-    const renderPayPalForm = () => (
-        <View style={styles.formGroup}>
-            <Text style={styles.label}>PayPal Email *</Text>
-            <TextInput
-                style={styles.input}
-                placeholder="your.email@example.com"
-                placeholderTextColor={palette.textTertiary}
-                value={paypalEmail}
-                onChangeText={setPaypalEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-            />
-            <Text style={styles.hint}>
-                Enter the email associated with your PayPal account
-            </Text>
-        </View>
     );
 
     return (
@@ -490,9 +443,7 @@ export default function AddPaymentMethodScreen() {
                     <Text style={styles.sectionTitle}>Payment Details</Text>
                     <View style={styles.formCard}>
                         {(selectedType === 'credit_card' || selectedType === 'debit_card') && renderCardForm()}
-                        {selectedType === 'upi' && renderUPIForm()}
                         {selectedType === 'bank_account' && renderBankForm()}
-                        {selectedType === 'paypal' && renderPayPalForm()}
 
                         {/* Nickname */}
                         <View style={styles.formGroup}>

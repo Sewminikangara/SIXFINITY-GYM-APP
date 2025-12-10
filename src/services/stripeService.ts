@@ -1,6 +1,7 @@
 /**
  * Stripe Payment Gateway Service
  * For international payments (USD and other currencies)
+ * PRODUCTION READY - Using live Stripe key
  */
 
 import { StripeProvider, useStripe, CardField } from '@stripe/stripe-react-native';
@@ -15,11 +16,15 @@ import {
     PaymentMethod,
     StripePaymentIntentParams,
 } from '@/types/payment';
+import { PAYMENT_GATEWAYS } from '@/config/paymentGateways';
 
+// Stripe Configuration from centralized config
 const STRIPE_CONFIG = {
-    PUBLISHABLE_KEY: 'pk_test_51QvhI5GUVSYBBdMXaEWUMLnFnHvhYxuQvJIKyBgHkr1IaCEoVFnhDmh6johfDhfCJRsmD5a9fRR195me1SiUeK5600S8H44Mck',
+    PUBLISHABLE_KEY: PAYMENT_GATEWAYS.STRIPE.publishableKey, // LIVE KEY
+    SECRET_KEY: PAYMENT_GATEWAYS.STRIPE.secretKey,
     API_VERSION: '2023-10-16',
     MERCHANT_DISPLAY_NAME: 'SIXFINITY Gym',
+    CURRENCY: PAYMENT_GATEWAYS.STRIPE.currency,
 };
 export const initializeStripe = async (): Promise<void> => {
     try {

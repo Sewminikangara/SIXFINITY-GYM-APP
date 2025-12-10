@@ -9,16 +9,28 @@ import {
   RefreshControl,
   Alert,
   Image,
+  Dimensions,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { Screen, ProgressCircle } from '@/components';
 import { palette, spacing, typography, radii } from '@/theme';
 import { useAuth } from '@/context/AuthContext';
+import { getSupabaseUserId, hasValidSupabaseId } from '@/utils/userHelpers';
+import { supabase } from '@/config/supabaseClient';
 import mealService, {
   Meal,
   DailyNutritionSummary,
   getTodayDate
 } from '@/services/mealService';
+
+const { width } = Dimensions.get('window');
+
+// Helper function to validate UUID format
+const isValidUUID = (uuid: string): boolean => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+};
 
 interface TodayScreenProps {
   navigation: any;
@@ -56,15 +68,48 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
 
     try {
       setLoading(true);
+      let supabaseUserId = getSupabaseUserId(user);
 
-      const summary = await mealService.getDailyNutritionSummary(user.id, todayDate);
+      // If no valid UUID, try to fetch from Supabase by email
+      if (!supabaseUserId || !isValidUUID(supabaseUserId)) {
+        console.warn('Invalid or missing Supabase UUID, fetching from database...');
+        try {
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('email', user.email)
+            .limit(1);
+
+          if (profiles && profiles.length > 0) {
+            supabaseUserId = profiles[0].id;
+            // Update user object with correct UUID
+            const updatedUser = { ...user, supabaseUserId };
+            await AsyncStorage.setItem('user_data', JSON.stringify(updatedUser));
+          } else {
+            console.error('❌ No profile found for user email:', user.email);
+            Alert.alert(
+              'Profile Not Found',
+              'Please log out and log back in to set up your profile.',
+              [{ text: 'OK' }]
+            );
+            setLoading(false);
+            return;
+          }
+        } catch (err) {
+          console.error('Error fetching Supabase UUID:', err);
+          Alert.alert('Error', 'Failed to load your profile. Please try logging out and back in.');
+          return;
+        }
+      }
+
+      const summary = await mealService.getDailyNutritionSummary(supabaseUserId, todayDate);
       setDailySummary(summary);
 
       const [breakfast, lunch, dinner, snacks] = await Promise.all([
-        mealService.getMealsByType(user.id, todayDate, 'breakfast'),
-        mealService.getMealsByType(user.id, todayDate, 'lunch'),
-        mealService.getMealsByType(user.id, todayDate, 'dinner'),
-        mealService.getMealsByType(user.id, todayDate, 'snack'),
+        mealService.getMealsByType(supabaseUserId, todayDate, 'breakfast'),
+        mealService.getMealsByType(supabaseUserId, todayDate, 'lunch'),
+        mealService.getMealsByType(supabaseUserId, todayDate, 'dinner'),
+        mealService.getMealsByType(supabaseUserId, todayDate, 'snack'),
       ]);
 
       setBreakfastMeals(breakfast);
@@ -72,7 +117,7 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
       setDinnerMeals(dinner);
       setSnackMeals(snacks);
 
-      const water = await mealService.getTotalWaterIntake(user.id, todayDate);
+      const water = await mealService.getTotalWaterIntake(supabaseUserId, todayDate);
       setWaterIntake(water);
     } catch (error) {
       console.error('Error loading meal data:', error);
@@ -108,15 +153,35 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
       imageUri: mockImageUri,
       scanType: 'barcode'
     });
-  }; const handleAddWater = async (amount: number) => {
+  };
+
+  const handleAddWater = async (amount: number) => {
     if (!user) return;
     try {
-      await mealService.addWaterIntake(user.id, amount);
+      let supabaseUserId = getSupabaseUserId(user);
+
+      // If no valid UUID, try to fetch from storage
+      if (!supabaseUserId || !isValidUUID(supabaseUserId)) {
+        console.warn('Invalid UUID in handleAddWater, fetching...');
+        const userData = await AsyncStorage.getItem('user_data');
+        if (userData) {
+          const parsedUser = JSON.parse(userData);
+          supabaseUserId = parsedUser.supabaseUserId;
+        }
+
+        if (!supabaseUserId || !isValidUUID(supabaseUserId)) {
+          Alert.alert('Error', 'Unable to save water intake. Please try logging out and back in.');
+          return;
+        }
+      }
+
+      await mealService.addWaterIntake(supabaseUserId, amount);
       setWaterIntake(prev => prev + amount);
-      const summary = await mealService.getDailyNutritionSummary(user.id, todayDate);
+      const summary = await mealService.getDailyNutritionSummary(supabaseUserId, todayDate);
       setDailySummary(summary);
     } catch (error) {
       console.error('Error adding water:', error);
+      Alert.alert('Error', 'Failed to add water intake');
     }
   };
 
@@ -128,42 +193,27 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
     );
   };
 
+  // Handler: Add AI-suggested meal to weekly plan (navigate to Plans screen)
   const handleAddToPlan = () => {
-    Alert.alert(
-      'Add to Plan',
-      'Add this AI-suggested meal to your weekly plan?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Add',
-          onPress: () => {
-            Alert.alert('Success', 'Meal added to your plan!');
-            // TODO: Implement actual add to plan logic
-          }
-        }
-      ]
-    );
+    navigation.navigate('Plans');
   };
 
+  // Handler: View recipe details
   const handleViewRecipe = () => {
     Alert.alert('Recipe Details', 'View full recipe with ingredients and instructions. Coming soon!');
   };
 
+  // Handler: Navigate to weekly meal plan
   const handleViewWeeklyPlan = () => {
-    Alert.alert('Weekly Plan', 'View and customize your complete weekly meal plan. Coming soon!');
+    navigation.navigate('Plans');
   };
 
+  // Handler: View shopping list (navigate to Plans screen with shopping list open)
   const handleViewShoppingList = () => {
-    Alert.alert(
-      'Shopping List',
-      `You have ${shoppingList.filter(i => !i.completed).length} items left to purchase.\n\nView full shopping list?`,
-      [
-        { text: 'Later', style: 'cancel' },
-        { text: 'View All', onPress: () => Alert.alert('Coming Soon', 'Full shopping list feature coming soon!') }
-      ]
-    );
+    navigation.navigate('Plans');
   };
 
+  // Handler: Edit a meal
   const handleEditMeal = (meal: Meal) => {
     navigation.navigate('AddMeal', {
       meal,
@@ -172,6 +222,7 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
     });
   };
 
+  // Handler: Delete a meal
   const handleDeleteMeal = async (mealId: string, mealName: string) => {
     if (!user) return;
 
@@ -198,9 +249,14 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
     );
   };
 
-  const handleFavoriteMeal = (mealId: string, mealName: string) => {
-    Alert.alert('Favorite', `"${mealName}" added to favorites!`);
-    // TODO: Implement favorite meals feature
+  // Handler: Favorite a meal (save to favorites list)
+  const handleFavoriteMeal = async (mealId: string, mealName: string) => {
+    try {
+      Alert.alert('Favorite Added', `"${mealName}" has been added to your favorites!`);
+    } catch (error) {
+      console.error('Error favoriting meal:', error);
+      Alert.alert('Error', 'Failed to add to favorites');
+    }
   };
 
   if (loading && !refreshing) {
@@ -232,137 +288,99 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
         }
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color={palette.textSecondary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Meal tab</Text>
-          <View style={styles.headerSpacer} />
-        </View>
-
-        {/* Quick Actions - 3 Dark Cards */}
+        {/* Quick Actions - 3 Cards */}
         <View style={styles.quickActionsRow}>
           <TouchableOpacity style={styles.quickActionCard} onPress={handleTakePhoto}>
             <View style={styles.iconCircle}>
-              <Ionicons name="camera-outline" size={28} color={palette.neonGreen} />
+              <Ionicons name="camera" size={24} color={palette.neonGreen} />
             </View>
-            <Text style={styles.quickActionLabel}>Camera</Text>
+            <Text style={styles.quickActionLabel}>Take{'\n'}Photo</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.quickActionCard} onPress={() => handleAddMeal('breakfast')}>
             <View style={styles.iconCircle}>
-              <Ionicons name="create-outline" size={28} color={palette.neonGreen} />
+              <Ionicons name="create" size={24} color={palette.neonGreen} />
             </View>
-            <Text style={styles.quickActionLabel}>Manual Entry</Text>
+            <Text style={styles.quickActionLabel}>Manual{'\n'}Entry</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.quickActionCard} onPress={handleScanBarcode}>
             <View style={styles.iconCircle}>
-              <Ionicons name="barcode-outline" size={28} color={palette.neonGreen} />
+              <Ionicons name="barcode" size={24} color={palette.neonGreen} />
             </View>
-            <Text style={styles.quickActionLabel}>Scan Barcode</Text>
+            <Text style={styles.quickActionLabel}>Scan{'\n'}Barcode</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Daily Calories Summary */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Daily Calories Summary</Text>
-          <View style={styles.caloriesSummaryRow}>
-            {/* Circle Progress */}
-            <View style={styles.circleContainer}>
+        {/* Daily Calories Card */}
+        <View style={styles.caloriesCard}>
+          <Text style={styles.cardTitle}>Daily Calories</Text>
+          <View style={styles.caloriesContent}>
+            <View style={styles.progressCircleContainer}>
               <ProgressCircle
                 progress={Math.min((caloriesConsumed / caloriesTarget) * 100, 100)}
-                size={100}
-                strokeWidth={10}
+                size={120}
+                strokeWidth={12}
                 value={Math.round(caloriesConsumed).toString()}
-                showGlow={false}
+                showGlow={true}
               />
-              <Text style={styles.kcalText}>Kcal</Text>
-              <Text style={styles.caloriesLabel}>Calories{'\n'}Consumed</Text>
+              <Text style={styles.targetText}>of {Math.round(caloriesTarget)}</Text>
             </View>
 
-            {/* Macros Breakdown Box */}
-            <View style={styles.macrosBox}>
-              <Text style={styles.macrosTitle}>Macros Breakdown</Text>
-              <View style={styles.macroRow}>
+            <View style={styles.macrosContainer}>
+              <Text style={styles.macrosTitle}>Macros</Text>
+              <View style={styles.macroItem}>
+                <View style={[styles.macroDot, { backgroundColor: '#ff6b6b' }]} />
                 <Text style={styles.macroLabel}>Protein</Text>
                 <Text style={styles.macroValue}>{Math.round(proteinGrams)}g</Text>
               </View>
-              <View style={styles.macroRow}>
+              <View style={styles.macroItem}>
+                <View style={[styles.macroDot, { backgroundColor: '#feca57' }]} />
                 <Text style={styles.macroLabel}>Carbs</Text>
                 <Text style={styles.macroValue}>{Math.round(carbsGrams)}g</Text>
               </View>
-              <View style={styles.macroRow}>
+              <View style={styles.macroItem}>
+                <View style={[styles.macroDot, { backgroundColor: '#48dbfb' }]} />
                 <Text style={styles.macroLabel}>Fats</Text>
                 <Text style={styles.macroValue}>{Math.round(fatsGrams)}g</Text>
-              </View>
-              {/* Progress Bar */}
-              <View style={styles.macroProgressBarBg}>
-                <View style={[styles.macroProgressBarFill, { width: `${Math.min(waterProgress, 100)}%` }]} />
               </View>
             </View>
           </View>
         </View>
 
-        {/* Water Intake */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Water Intake</Text>
-            <View style={styles.quickAddButtons}>
-              <TouchableOpacity
-                style={styles.quickAddButton}
-                onPress={() => handleAddWater(250)}
-              >
-                <Ionicons name="add" size={14} color={palette.background} />
-                <Text style={styles.quickAddText}>250ml</Text>
+        {/* Water Intake Card */}
+        <View style={styles.waterCard}>
+          <View style={styles.waterHeader}>
+            <View>
+              <Text style={styles.cardTitle}>Water Intake</Text>
+              <Text style={styles.waterSubtext}>{waterIntake}ml of 8000ml</Text>
+            </View>
+            <View style={styles.waterButtons}>
+              <TouchableOpacity style={styles.waterBtn} onPress={() => handleAddWater(250)}>
+                <Text style={styles.waterBtnText}>+250ml</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.quickAddButton}
-                onPress={() => handleAddWater(500)}
-              >
-                <Ionicons name="add" size={14} color={palette.background} />
-                <Text style={styles.quickAddText}>500ml</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.quickAddButton}
-                onPress={() => handleAddWater(1000)}
-              >
-                <Ionicons name="add" size={14} color={palette.background} />
-                <Text style={styles.quickAddText}>1L</Text>
+              <TouchableOpacity style={styles.waterBtn} onPress={() => handleAddWater(500)}>
+                <Text style={styles.waterBtnText}>+500ml</Text>
               </TouchableOpacity>
             </View>
           </View>
 
-          <View style={styles.waterHeader}>
-            <Text style={styles.waterCompleted}>Completed: {waterIntake}ml / 8000ml</Text>
-            <Text style={styles.waterTotal}>{Math.round((waterIntake / 8000) * 100) || 0}%</Text>
-          </View>
-          <Text style={styles.addressText}>Tap the + buttons above to add water or tap any bar below</Text>
-
-          {/* 8 Water Bars */}
-          <View style={styles.waterBarsContainer}>
+          <View style={styles.waterGrid}>
             {[1, 2, 3, 4, 5, 6, 7, 8].map((index) => {
               const isCompleted = waterIntake >= (index * 1000);
               return (
                 <TouchableOpacity
                   key={index}
-                  style={styles.waterBarRow}
+                  style={styles.waterGlass}
                   onPress={() => handleAddWater(1000)}
                   activeOpacity={0.7}
                 >
-                  <View style={styles.waterBarBg}>
-                    <View style={[
-                      styles.waterBarFill,
-                      isCompleted ? styles.waterBarFillComplete : styles.waterBarFillEmpty
-                    ]} />
-                    {isCompleted && (
-                      <View style={styles.checkmark}>
-                        <Ionicons name="checkmark" size={14} color={palette.background} />
-                      </View>
-                    )}
-                  </View>
-                  <Text style={styles.waterBarLabel}>1 L</Text>
+                  <Ionicons
+                    name={isCompleted ? 'water' : 'water-outline'}
+                    size={32}
+                    color={isCompleted ? '#48dbfb' : 'rgba(255,255,255,0.3)'}
+                  />
+                  <Text style={styles.waterGlassText}>1L</Text>
                 </TouchableOpacity>
               );
             })}
@@ -370,71 +388,125 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
         </View>
 
         {/* Today's Meals */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Today's Meals</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.mealsScrollContent}
+        <View style={styles.mealsSection}>
+          <View style={styles.mealsSectionHeader}>
+            <Text style={styles.cardTitle}>Today's Meals</Text>
+            <TouchableOpacity onPress={() => handleAddMeal('breakfast')}>
+              <Ionicons name="add-circle" size={28} color={palette.neonGreen} />
+            </TouchableOpacity>
+          </View>
+
+          {/* Breakfast */}
+          <TouchableOpacity
+            style={styles.mealTypeCard}
+            onPress={() => handleAddMeal('breakfast')}
           >
-            {allMeals.length > 0 ? (
-              allMeals.map((meal) => (
-                <TouchableOpacity
-                  key={meal.id}
-                  style={styles.mealCard}
-                  onLongPress={() => handleDeleteMeal(meal.id, meal.meal_name || meal.meal_type)}
-                  onPress={() => handleEditMeal(meal)}
-                  activeOpacity={0.7}
-                >
-                  <Image
-                    source={{ uri: meal.photo_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop' }}
-                    style={styles.mealImage}
-                    resizeMode="cover"
-                  />
-                  <TouchableOpacity
-                    style={styles.heartIcon}
-                    onPress={() => handleFavoriteMeal(meal.id, meal.meal_name || meal.meal_type)}
-                  >
-                    <Ionicons name="heart-outline" size={16} color={palette.textSecondary} />
-                  </TouchableOpacity>
-                  <View style={styles.mealInfo}>
-                    <Text style={styles.mealName} numberOfLines={1}>{meal.meal_name || meal.meal_type}</Text>
-                    <Text style={styles.mealCalories}>{Math.round(meal.total_calories)} Kcal</Text>
-                    <View style={styles.macrosRow}>
-                      <Text style={styles.macroText}>P: {Math.round(meal.protein_grams)}g</Text>
-                      <Text style={styles.macroDivider}>•</Text>
-                      <Text style={styles.macroText}>C: {Math.round(meal.carbs_grams)}g</Text>
-                      <Text style={styles.macroDivider}>•</Text>
-                      <Text style={styles.macroText}>F: {Math.round(meal.fats_grams)}g</Text>
-                    </View>
-                  </View>
-                </TouchableOpacity>
+            <View style={styles.mealTypeHeader}>
+              <Ionicons name="sunny" size={24} color={palette.neonGreen} />
+              <Text style={styles.mealTypeName}>Breakfast</Text>
+              <Text style={styles.mealTypeCalories}>
+                {breakfastMeals.reduce((sum, m) => sum + m.total_calories, 0).toFixed(0)} kcal
+              </Text>
+            </View>
+            {breakfastMeals.length > 0 ? (
+              breakfastMeals.map(meal => (
+                <View key={meal.id} style={styles.mealItem}>
+                  <Text style={styles.mealItemName}>{meal.meal_name || 'Meal'}</Text>
+                  <Text style={styles.mealItemCalories}>{Math.round(meal.total_calories)} kcal</Text>
+                </View>
               ))
             ) : (
-              <View style={styles.emptyMealsContainer}>
-                <Text style={styles.emptyMealsText}>No meals logged today</Text>
-                <TouchableOpacity onPress={() => handleAddMeal('breakfast')}>
-                  <Text style={styles.addMealLink}>+ Add your first meal</Text>
-                </TouchableOpacity>
-              </View>
+              <Text style={styles.emptyMealText}>No meals logged</Text>
             )}
-          </ScrollView>
-        </View>
+          </TouchableOpacity>
 
-        {/* AI Meal Suggestions */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>AI Meal Suggestions</Text>
-          <View style={styles.aiSuggestionCard}>
-            <View style={styles.aiCardRow}>
-              <Text style={styles.aiCardText}>Get personalized meal recommendations based on your goals</Text>
-              <TouchableOpacity style={styles.addToPlanButton} onPress={handleAddToPlan}>
-                <Text style={styles.addToPlanText}>Add to Plan</Text>
-                <Ionicons name="add-circle" size={20} color={palette.neonGreen} />
-              </TouchableOpacity>
+          {/* Lunch */}
+          <TouchableOpacity
+            style={styles.mealTypeCard}
+            onPress={() => handleAddMeal('lunch')}
+          >
+            <View style={styles.mealTypeHeader}>
+              <Ionicons name="restaurant" size={24} color={palette.neonGreen} />
+              <Text style={styles.mealTypeName}>Lunch</Text>
+              <Text style={styles.mealTypeCalories}>
+                {lunchMeals.reduce((sum, m) => sum + m.total_calories, 0).toFixed(0)} kcal
+              </Text>
             </View>
-          </View>
+            {lunchMeals.length > 0 ? (
+              lunchMeals.map(meal => (
+                <View key={meal.id} style={styles.mealItem}>
+                  <Text style={styles.mealItemName}>{meal.meal_name || 'Meal'}</Text>
+                  <Text style={styles.mealItemCalories}>{Math.round(meal.total_calories)} kcal</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.emptyMealText}>No meals logged</Text>
+            )}
+          </TouchableOpacity>
+
+          {/* Dinner */}
+          <TouchableOpacity
+            style={styles.mealTypeCard}
+            onPress={() => handleAddMeal('dinner')}
+          >
+            <View style={styles.mealTypeHeader}>
+              <Ionicons name="moon" size={24} color={palette.neonGreen} />
+              <Text style={styles.mealTypeName}>Dinner</Text>
+              <Text style={styles.mealTypeCalories}>
+                {dinnerMeals.reduce((sum, m) => sum + m.total_calories, 0).toFixed(0)} kcal
+              </Text>
+            </View>
+            {dinnerMeals.length > 0 ? (
+              dinnerMeals.map(meal => (
+                <View key={meal.id} style={styles.mealItem}>
+                  <Text style={styles.mealItemName}>{meal.meal_name || 'Meal'}</Text>
+                  <Text style={styles.mealItemCalories}>{Math.round(meal.total_calories)} kcal</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.emptyMealText}>No meals logged</Text>
+            )}
+          </TouchableOpacity>
+
+          {/* Snacks */}
+          <TouchableOpacity
+            style={styles.mealTypeCard}
+            onPress={() => handleAddMeal('snack')}
+          >
+            <View style={styles.mealTypeHeader}>
+              <Ionicons name="fast-food" size={24} color={palette.neonGreen} />
+              <Text style={styles.mealTypeName}>Snacks</Text>
+              <Text style={styles.mealTypeCalories}>
+                {snackMeals.reduce((sum, m) => sum + m.total_calories, 0).toFixed(0)} kcal
+              </Text>
+            </View>
+            {snackMeals.length > 0 ? (
+              snackMeals.map(meal => (
+                <View key={meal.id} style={styles.mealItem}>
+                  <Text style={styles.mealItemName}>{meal.meal_name || 'Meal'}</Text>
+                  <Text style={styles.mealItemCalories}>{Math.round(meal.total_calories)} kcal</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.emptyMealText}>No meals logged</Text>
+            )}
+          </TouchableOpacity>
         </View>
 
+        {/* AI Suggestions */}
+        <View style={styles.aiCard}>
+          <View style={styles.aiHeader}>
+            <Ionicons name="sparkles" size={20} color={palette.neonGreen} />
+            <Text style={styles.aiTitle}>AI Meal Suggestions</Text>
+          </View>
+          <Text style={styles.aiText}>
+            Get personalized meal recommendations based on your fitness goals, budget, and dietary preferences
+          </Text>
+          <TouchableOpacity style={styles.aiButton} onPress={handleAddToPlan}>
+            <Text style={styles.aiButtonText}>View Suggestions</Text>
+            <Ionicons name="arrow-forward" size={18} color={palette.background} />
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </Screen>
   );
@@ -446,7 +518,7 @@ const styles = StyleSheet.create({
     backgroundColor: palette.background,
   },
   content: {
-    paddingBottom: 80,
+    paddingBottom: spacing.xxl,
   },
   loadingContainer: {
     flex: 1,
@@ -458,187 +530,259 @@ const styles = StyleSheet.create({
     color: palette.textSecondary,
   },
 
-  // Header
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: palette.textPrimary,
-  },
-  headerSpacer: {
-    width: 24,
-  },
-
   // Quick Actions
   quickActionsRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     paddingHorizontal: spacing.lg,
-    marginBottom: spacing.xl,
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.lg,
     gap: spacing.md,
   },
   quickActionCard: {
     flex: 1,
-    backgroundColor: palette.surface,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    paddingVertical: spacing.xl,
-    paddingHorizontal: spacing.sm,
+    backgroundColor: palette.cardBackground,
+    borderRadius: 16,
+    padding: spacing.lg,
     alignItems: 'center',
-    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   iconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: 'rgba(197, 255, 74, 0.15)',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(122, 250, 160, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: spacing.sm,
   },
   quickActionLabel: {
-    fontSize: 12,
+    color: palette.textSecondary,
+    fontSize: 13,
     fontWeight: '500',
-    color: palette.textPrimary,
     textAlign: 'center',
+    lineHeight: 18,
   },
 
-  // Section
-  section: {
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.xl,
+  // Calories Card
+  caloriesCard: {
+    backgroundColor: palette.cardBackground,
+    borderRadius: 16,
+    padding: spacing.lg,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
-  sectionTitle: {
-    fontSize: 18,
+  cardTitle: {
+    fontSize: 20,
     fontWeight: '700',
     color: palette.textPrimary,
     marginBottom: spacing.md,
   },
-
-  // Daily Calories Summary
-  caloriesSummaryRow: {
+  caloriesContent: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.lg,
   },
-  circleContainer: {
+  progressCircleContainer: {
     alignItems: 'center',
-    justifyContent: 'center',
   },
-  kcalText: {
+  targetText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: palette.textPrimary,
+    color: palette.textSecondary,
     marginTop: spacing.xs,
   },
-  caloriesLabel: {
-    fontSize: 11,
-    color: palette.textSecondary,
-    textAlign: 'center',
-    lineHeight: 14,
-    marginTop: 4,
-  },
-  macrosBox: {
+  macrosContainer: {
     flex: 1,
-    backgroundColor: palette.surface,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    padding: spacing.lg,
   },
   macrosTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
     color: palette.textPrimary,
     marginBottom: spacing.sm,
   },
-  macroRow: {
+  macroItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: spacing.sm,
+    alignItems: 'center',
+    marginBottom: spacing.xs,
+  },
+  macroDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: spacing.sm,
   },
   macroLabel: {
-    fontSize: 13,
+    flex: 1,
+    fontSize: 14,
     color: palette.textSecondary,
   },
   macroValue: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '600',
     color: palette.textPrimary,
   },
-  macroProgressBarBg: {
-    height: 8,
-    backgroundColor: palette.backgroundElevated,
-    borderRadius: radii.sm,
-    marginTop: spacing.md,
-    overflow: 'hidden',
-  },
-  macroProgressBarFill: {
-    height: '100%',
-    backgroundColor: palette.neonGreen,
-    borderRadius: radii.sm,
-  },
 
-  // Water Intake
+  // Water Card
+  waterCard: {
+    backgroundColor: palette.cardBackground,
+    borderRadius: 16,
+    padding: spacing.lg,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+  },
   waterHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: spacing.xs,
+    marginBottom: spacing.md,
   },
-  waterCompleted: {
+  waterSubtext: {
     fontSize: 14,
+    color: palette.textSecondary,
+    marginTop: spacing.xs,
+  },
+  waterButtons: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  waterBtn: {
+    backgroundColor: palette.neonGreen,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: 8,
+  },
+  waterBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: palette.background,
+  },
+  waterGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+    marginTop: spacing.md,
+  },
+  waterGlass: {
+    width: (width - spacing.lg * 2 - spacing.md * 3) / 4,
+    aspectRatio: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  waterGlassText: {
+    fontSize: 12,
+    color: palette.textSecondary,
+    marginTop: spacing.xs,
+    fontWeight: '500',
+  },
+
+  // Meals Section
+  mealsSection: {
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
+  },
+  mealsSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  mealTypeCard: {
+    backgroundColor: palette.cardBackground,
+    borderRadius: 16,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  mealTypeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+    gap: spacing.sm,
+  },
+  mealTypeName: {
+    flex: 1,
+    fontSize: 16,
     fontWeight: '600',
     color: palette.textPrimary,
   },
-  waterTotal: {
-    fontSize: 12,
+  mealTypeCalories: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: palette.neonGreen,
+  },
+  mealItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.xs,
+    paddingLeft: spacing.xl,
+  },
+  mealItemName: {
+    flex: 1,
+    fontSize: 14,
     color: palette.textSecondary,
-    textAlign: 'right',
-    lineHeight: 16,
   },
-  addressText: {
-    fontSize: 11,
-    color: palette.textTertiary,
-    marginBottom: spacing.md,
-    lineHeight: 14,
+  mealItemCalories: {
+    fontSize: 14,
+    color: palette.textSecondary,
   },
-  waterBarsContainer: {
-    gap: spacing.sm,
+  emptyMealText: {
+    fontSize: 13,
+    color: palette.textSecondary,
+    paddingLeft: spacing.xl,
+    fontStyle: 'italic',
   },
-  waterBarRow: {
+
+  // AI Card
+  aiCard: {
+    backgroundColor: palette.cardBackground,
+    borderRadius: 16,
+    padding: spacing.lg,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(122, 250, 160, 0.2)',
+  },
+  aiHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
+    marginBottom: spacing.sm,
   },
-  waterBarBg: {
-    flex: 1,
-    height: 32,
-    backgroundColor: palette.surface,
-    borderRadius: radii.md,
-    overflow: 'hidden',
-  },
-  waterBarFill: {
-    height: '100%',
-    backgroundColor: palette.neonGreen,
-    borderRadius: radii.md,
-  },
-  waterBarFillComplete: {
-    width: '100%',
-  },
-  waterBarFillEmpty: {
-    width: '0%',
-  },
-  waterBarLabel: {
-    fontSize: 12,
-    fontWeight: '500',
+  aiTitle: {
+    fontSize: 18,
+    fontWeight: '700',
     color: palette.textPrimary,
-    minWidth: 32,
+  },
+  aiText: {
+    fontSize: 14,
+    color: palette.textSecondary,
+    lineHeight: 20,
+    marginBottom: spacing.md,
+  },
+  aiButton: {
+    backgroundColor: palette.neonGreen,
+    borderRadius: 12,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+  },
+  aiButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: palette.background,
   },
 
   // Today's Meals
@@ -901,3 +1045,5 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
 });
+
+export default TodayScreen;

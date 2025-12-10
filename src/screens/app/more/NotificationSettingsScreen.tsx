@@ -79,7 +79,9 @@ export default function NotificationSettingsScreen() {
                     <View style={styles.settingCard}>
                         <View style={styles.settingRow}>
                             <View style={styles.settingInfo}>
-                                <Text style={styles.settingIcon}>📱</Text>
+                                <View style={styles.iconBadge}>
+                                    <Text style={styles.iconText}>PN</Text>
+                                </View>
                                 <View style={styles.settingText}>
                                     <Text style={styles.settingLabel}>Push Notifications</Text>
                                     <Text style={styles.settingSubtext}>
@@ -397,6 +399,20 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         flex: 1,
         marginRight: spacing.md,
+    },
+    iconBadge: {
+        width: 32,
+        height: 32,
+        borderRadius: 8,
+        backgroundColor: 'rgba(185, 242, 72, 0.1)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: spacing.md,
+    },
+    iconText: {
+        fontSize: 10,
+        fontWeight: '700',
+        color: palette.brandPrimary,
     },
     settingIcon: {
         fontSize: 24,

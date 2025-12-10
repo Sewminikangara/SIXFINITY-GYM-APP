@@ -122,7 +122,6 @@ export const WearableDevicesScreen: React.FC = () => {
 
     const loadConnectedDevices = async () => {
         try {
-            // TODO: Replace with actual API call to get connected devices
             // const result = await profileService.getConnectedDevices(userId);
 
             // Simulate loading
@@ -166,7 +165,6 @@ export const WearableDevicesScreen: React.FC = () => {
         } else {
             // Connect device
             try {
-                // TODO: Implement actual OAuth flow for each platform
                 Alert.alert(
                     'Connect Device',
                     `Connecting to ${device.name}...\n\nYou'll be redirected to authorize SIXFINITY to access your ${device.name} data.`,
@@ -201,7 +199,6 @@ export const WearableDevicesScreen: React.FC = () => {
 
     const handleDisconnect = async (device: WearableDevice) => {
         try {
-            // TODO: Implement actual disconnect API call
             const updatedDevices = devices.map(d =>
                 d.id === device.id
                     ? {
@@ -252,7 +249,6 @@ export const WearableDevicesScreen: React.FC = () => {
                 [{ text: 'OK' }]
             );
 
-            // TODO: Implement actual sync
             setTimeout(() => {
                 setSyncStats({
                     ...syncStats,

@@ -22,6 +22,7 @@ import {
     deleteGoal,
     updateGoalProgress,
 } from '@/services/profileService';
+import { getSupabaseUserId } from '@/utils/userHelpers';
 
 interface FitnessGoal {
     goal_id: string;
@@ -86,11 +87,14 @@ export const FitnessGoalsScreen = () => {
     const loadGoals = async () => {
         if (!user?.id) return;
 
+        const supabaseUserId = getSupabaseUserId(user);
+        if (!supabaseUserId) return;
+
         try {
             setLoading(true);
 
-            const { data: goalsData } = await getFitnessGoals(user.id, true);
-            const { data: primary } = await getPrimaryGoal(user.id);
+            const { data: goalsData } = await getFitnessGoals(supabaseUserId, true);
+            const { data: primary } = await getPrimaryGoal(supabaseUserId);
 
             setGoals(goalsData || []);
             setPrimaryGoal(primary);
@@ -132,6 +136,8 @@ export const FitnessGoalsScreen = () => {
     const handleSaveGoal = async () => {
         if (!user?.id) return;
 
+        const supabaseUserId = getSupabaseUserId(user);
+
         // Validation
         if (!formData.goal_name.trim()) {
             Alert.alert('Validation Error', 'Please enter a goal name');
@@ -157,12 +163,39 @@ export const FitnessGoalsScreen = () => {
                 is_primary: goals.length === 0, // First goal is primary by default
             };
 
+            if (!supabaseUserId) {
+                // Save locally if no Supabase UUID
+                console.log('[Goals] No UUID - saving locally');
+                const localGoals = [...goals];
+
+                if (editingGoal) {
+                    const index = localGoals.findIndex(g => g.goal_id === editingGoal.goal_id);
+                    if (index !== -1) {
+                        localGoals[index] = { ...editingGoal, ...goalData };
+                    }
+                } else {
+                    const newGoal: FitnessGoal = {
+                        goal_id: `local_${Date.now()}`,
+                        ...goalData,
+                        start_date: new Date().toISOString(),
+                        is_completed: false,
+                        progress_percentage: 0,
+                    };
+                    localGoals.push(newGoal);
+                }
+
+                setGoals(localGoals);
+                Alert.alert('Success', editingGoal ? 'Goal updated!' : 'Goal created!');
+                setShowAddModal(false);
+                return;
+            }
+
             if (editingGoal) {
                 const { error } = await updateGoal(editingGoal.goal_id, goalData);
                 if (error) throw error;
                 Alert.alert('Success', 'Goal updated successfully');
             } else {
-                const { error } = await createGoal(user.id, goalData);
+                const { error } = await createGoal(supabaseUserId, goalData);
                 if (error) throw error;
                 Alert.alert('Success', 'Goal created successfully');
             }
@@ -200,6 +233,9 @@ export const FitnessGoalsScreen = () => {
 
     const handleSetPrimary = async (goal: FitnessGoal) => {
         if (!user?.id) return;
+
+        const supabaseUserId = getSupabaseUserId(user);
+        if (!supabaseUserId) return;
 
         try {
             const { error } = await updateGoal(goal.goal_id, { is_primary: true });
@@ -262,13 +298,12 @@ export const FitnessGoalsScreen = () => {
             <View style={[styles.goalCard, goal.is_primary && styles.goalCardPrimary]}>
                 {goal.is_primary && (
                     <View style={styles.primaryBadge}>
-                        <Text style={styles.primaryBadgeText}>⭐ Primary Goal</Text>
+                        <Text style={styles.primaryBadgeText}>Primary Goal</Text>
                     </View>
                 )}
 
                 <View style={styles.goalHeader}>
                     <View style={styles.goalHeaderLeft}>
-                        <Text style={styles.goalEmoji}>{typeInfo.emoji}</Text>
                         <View style={styles.goalTitleContainer}>
                             <Text style={styles.goalName}>{goal.goal_name}</Text>
                             {goal.description && (
@@ -346,13 +381,10 @@ export const FitnessGoalsScreen = () => {
 
     return (
         <Screen>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Text style={styles.backButtonText}>‹ Back</Text>
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Fitness Goals</Text>
+            <View style={styles.simpleHeader}>
+                <Text style={styles.screenTitle}>Fitness Goals</Text>
                 <TouchableOpacity onPress={handleAddGoal} style={styles.addButton}>
-                    <Text style={styles.addButtonText}>+ Add</Text>
+                    <Text style={styles.addButtonText}>ADD</Text>
                 </TouchableOpacity>
             </View>
 
@@ -360,7 +392,7 @@ export const FitnessGoalsScreen = () => {
                 {/* Primary Goal Highlight */}
                 {primaryGoal && (
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>🎯 Your Primary Goal</Text>
+                        <Text style={styles.sectionTitle}>Your Primary Goal</Text>
                         <GoalCard goal={primaryGoal} />
                     </View>
                 )}
@@ -372,10 +404,9 @@ export const FitnessGoalsScreen = () => {
                         goals.map((goal) => <GoalCard key={goal.goal_id} goal={goal} />)
                     ) : (
                         <View style={styles.emptyState}>
-                            <Text style={styles.emptyStateEmoji}>🎯</Text>
                             <Text style={styles.emptyStateText}>No goals set yet</Text>
                             <Text style={styles.emptyStateSubtext}>
-                                Tap the "+ Add" button to create your first fitness goal
+                                Tap the "ADD" button to create your first fitness goal
                             </Text>
                         </View>
                     )}
@@ -393,10 +424,10 @@ export const FitnessGoalsScreen = () => {
             >
                 <Screen>
                     <View style={styles.modalHeader}>
-                        <TouchableOpacity onPress={() => setShowAddModal(false)} style={styles.backButton}>
-                            <Text style={styles.backButtonText}>‹ Cancel</Text>
+                        <TouchableOpacity onPress={() => setShowAddModal(false)} style={styles.cancelButton}>
+                            <Text style={styles.cancelButtonText}>Cancel</Text>
                         </TouchableOpacity>
-                        <Text style={styles.headerTitle}>
+                        <Text style={styles.modalTitle}>
                             {editingGoal ? 'Edit Goal' : 'Add Goal'}
                         </Text>
                         <TouchableOpacity
@@ -427,7 +458,6 @@ export const FitnessGoalsScreen = () => {
                                             setFormData({ ...formData, goal_type: type.value, unit: type.unit })
                                         }
                                     >
-                                        <Text style={styles.goalTypeEmoji}>{type.emoji}</Text>
                                         <Text
                                             style={[
                                                 styles.goalTypeLabel,
@@ -547,40 +577,31 @@ const styles = StyleSheet.create({
         ...typography.body,
         color: palette.textSecondary,
     },
-    header: {
+    simpleHeader: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: spacing.lg,
-        paddingTop: spacing.xl,
+        paddingTop: spacing.lg,
         paddingBottom: spacing.md,
     },
-    backButton: {
-        padding: spacing.sm,
-    },
-    backButtonText: {
-        ...typography.subtitle,
-        color: palette.brandPrimary,
-        fontSize: 32,
-        fontWeight: '300',
-    },
-    headerTitle: {
-        ...typography.heading2,
+    screenTitle: {
+        ...typography.heading1,
         color: palette.textPrimary,
-        fontSize: 20,
+        fontSize: 28,
         fontWeight: '700',
     },
     addButton: {
         backgroundColor: palette.brandPrimary,
-        paddingHorizontal: spacing.md,
+        paddingHorizontal: spacing.lg,
         paddingVertical: spacing.sm,
         borderRadius: 8,
     },
     addButtonText: {
         ...typography.subtitle,
-        color: palette.textPrimary,
+        color: '#000000',
         fontSize: 16,
-        fontWeight: '600',
+        fontWeight: '700',
     },
     scrollView: {
         flex: 1,
@@ -764,6 +785,21 @@ const styles = StyleSheet.create({
         paddingHorizontal: spacing.lg,
         paddingTop: spacing.xl,
         paddingBottom: spacing.md,
+    },
+    modalTitle: {
+        ...typography.heading2,
+        color: palette.textPrimary,
+        fontSize: 20,
+        fontWeight: '700',
+    },
+    cancelButton: {
+        padding: spacing.sm,
+    },
+    cancelButtonText: {
+        ...typography.subtitle,
+        color: palette.brandPrimary,
+        fontSize: 16,
+        fontWeight: '600',
     },
     saveButton: {
         backgroundColor: palette.brandPrimary,

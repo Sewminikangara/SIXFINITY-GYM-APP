@@ -21,9 +21,7 @@ export interface UnifiedNutritionData {
 
 export async function analyzePhotoNutrition(imageUri: string): Promise<UnifiedNutritionData> {
     try {
-        console.log('Analyzing photo with REAL AI (Google Gemini)...');
         const nutrition = await geminiService.analyzePhotoForNutrition(imageUri);
-        console.log(` AI identified: ${nutrition.foodName} (${nutrition.source})`);
 
         return {
             foodName: nutrition.foodName,
@@ -43,9 +41,14 @@ export async function analyzePhotoNutrition(imageUri: string): Promise<UnifiedNu
     }
 }
 
+// Helper function to get nutrition from USDA API
+const getNutritionFromUSDA = async (foodText: string): Promise<any> => {
+    // This is a placeholder - you can integrate with USDA API later
+    return getMockNutritionData(foodText);
+};
+
 export const analyzeManualEntry = async (foodText: string): Promise<UnifiedNutritionData> => {
     try {
-        console.log(' Searching for:', foodText);
         const nutrition = await getNutritionFromUSDA(foodText);
         return {
             foodName: nutrition.foodName,
@@ -66,12 +69,10 @@ export const analyzeManualEntry = async (foodText: string): Promise<UnifiedNutri
 };
 
 export const analyzeBarcodeNutrition = async (barcode: string): Promise<UnifiedNutritionData> => {
-    console.log('Barcode scanning not yet implemented. Barcode:', barcode);
     return getMockNutritionData('Scanned Product');
 };
 
 const getMockNutritionData = (foodName: string): UnifiedNutritionData => {
-    console.log(`Using mock data for: ${foodName}`);
     return {
         foodName: foodName,
         calories: 420,
